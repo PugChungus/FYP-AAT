@@ -4,7 +4,7 @@ app = Flask(__name__)
 
 app.config['DEBUG'] = True
 
-@app.route('/')
+@app.route('/') uhi
 def login():
     return render_template('login.html')
 
