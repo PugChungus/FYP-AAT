@@ -9,6 +9,10 @@
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" type="text/css" href="/css/register.css">
     <link rel="stylesheet" type="text/css" href="/css/register2.css">
+    <link rel="stylesheet" type="text/css" href="/css/loading.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+    
 </head>
 <body>
     <body class="img js-fullheight" style="background-image: url(/images/bg.jpg);">
@@ -19,13 +23,13 @@
                 <div class="row justify-content-center">
                     <div class="col-md-6 col-lg-4">
                         <div class="login-wrap p-0">
-                      <h3 class="mb-4 text-center">Register</h3>
+                      <h3 class="mb-4 text-center">Set Profile Picture</h3>
                       <form action="#" method="post" enctype="multipart/form-data">
                         <div id="profile-pic-container">
-
+                            <img id="profile-pic-preview src="" alt="Profile Picture">
                         </div>
                         <input type="file" accept="image/*" id="file-input" style="display: none;"/>
-                        <label for="file-input" id="upload-btn" onclick="document.getElementById('file-input').click()">Upload Profile Pic</label>
+                        <label for="file-input" id="upload-btn">Upload Profile Pic</label>
                       </form>
                   <div class="social d-flex text-center">
                       <a href="#" class="px-2 py-2 mr-md-1 rounded"><span class="ion-logo-facebook mr-2"></span>Complete Sign Up</a>
@@ -40,6 +44,7 @@
     <script src="/js/jquery.min.js"></script>
     <script src="/js/main.js"></script>
     <script src="/js/popper.js"></script>
+    <script src="/js/profilepic.js"></script>
 
 </body>
 </html>

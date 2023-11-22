@@ -1,0 +1,40 @@
+/* navbar.css */
+
+#navbar {
+    width: 100px; /* Adjust the width as needed */
+    background-color: gray; /* Set your desired background color */
+}
+
+.sidebar-sticky {
+    padding-top: 20px; /* Adjust the top padding as needed */
+}
+
+.nav.flex-column {
+    padding-left: 0;
+    padding-right: 5px;
+}
+
+.nav-item {
+    width: 100%; /* Make each item take the full width */
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 50px; /* Adjust the height as needed */
+    padding: 10px; /* Adjust the padding as needed */
+    color: #000; /* Set your desired text color */
+    text-decoration: none;
+    transition: background-color 0.3s;
+    font-family: 'Boxicons'; /* Add the font-family property for icons */
+}
+
+.nav-link i {
+    font-size: 24px; /* Adjust the font size as needed */
+    line-height: 1; /* Center the icon within its container */
+}
+
+.nav-link:hover {
+    background-color: white; /* Set your desired hover background color */
+}

@@ -8346,4 +8346,11 @@
           border: 1px solid transparent;
           background: #fbceb5;
           color: #fff; }
+
+          a.form-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+          }
   
