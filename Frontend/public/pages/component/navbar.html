@@ -1,47 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <link rel="stylesheet" href="https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css">
-
     <link rel="stylesheet" type="text/css" href="/css/navbar.css">
     <title>Document</title>
 </head>
-<body>
-  <div class="container-fluid">
-    <div class="row">
-        <nav id="navbar" class="col-md-2 d-none d-md-block  sidebar">
-            <div class="sidebar-sticky">
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="/pages/home.html">
-                          <i class='bx bx-home'"></i>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/pages/encrypt.html">
-                          <i class='bx bxs-lock'></i>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/pages/decrypt.html">
-                          <i class='bx bxs-lock-open'></i>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/pages/keymanagement.html">
-                          <i class='bx bx-key bx-rotate-90'></i>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </nav>
-      </div>
-  </div>
 
-  <script src="/js/navbar.js"></script>
+<body id="body-pd">
+    <header class="header" id="header">
+        <div class="header_toggle"> <i class='bx bx-menu' id="header-toggle"></i> </div>
+        <div class="header_img"> <img src="https://i.imgur.com/hczKIze.jpg" alt=""> </div>
+    </header>
+    <div class="l-navbar" id="nav-bar">
+        <nav class="nav">
+            <div>
+                <a href="/pages/home.html" class="nav_logo"> <i class='bx bx-layer nav_logo-icon'></i> <span class="nav_logo-name">JTR</span> </a>
+                <div class="nav_list">
+                    <a href="/pages/home.html" class="nav_link active"> <i class='bx bx-home' ></i> <span class="nav_name">Home</span> </a>
+                    <a href="/pages/encrypt.html" class="nav_link"> <i class='bx bxs-lock'></i> <span class="nav_name">Encrypt</span> </a>
+                    <a href="/pages/decrypt.html" class="nav_link"> <i class='bx bxs-lock-open'></i> <span class="nav_name">Decrypt</span> </a>
+                    <a href="/pages/keymanagement.html" class="nav_link"> <i class='bx bx-key'></i> <span class="nav_name">Key Management</span> </a>
+                    <a href="/pages/history.html" class="nav_link"> <i class='bx bx-history'></i> <span class="nav_name">History</span> </a>
+                    <a href="/pages/settings.html" class="nav_link"> <i class='bx bxs-cog'></i> <span class="nav_name">Settings</span> </a>
+                </div>
+            </div>
+            <a href="#" class="nav_link"> <i class='bx bx-log-out nav_icon'></i> <span class="nav_name">SignOut</span> </a>
+        </nav>
+    </div>
+    <!--Container Main start-->
+    <script src="/js/navbar.js"></script>
+    <script src="/js/callnavbar.js"></script>
 
 </body>
+
 </html>
