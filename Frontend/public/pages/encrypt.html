@@ -4,30 +4,119 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css">
     <link rel="stylesheet" type="text/css" href="/css/home.css">
     <link rel="stylesheet" type="text/css" href="/css/loading.css">
+    <link rel="stylesheet" type="text/css" href="/css/navbar.css">
+    <link rel="stylesheet" type="text/css" href="/css/encryptProgress.css">
+    <link rel="stylesheet" type="text/css" href="/css/dropzone.css">
+
 
     <title>Document</title>
 </head>
 
-<div class="loader"></div>
-<div id="nav-bar"></div>
 
-<body class="custom-background">
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Include the navigation bar -->
-            <div id="navbar-container" class="col-md-1"></div>
-
-            <div class="col-md-9">
-                <h1>ENCRYPT</h1>
+<body id="body-pd">
+    <header class="header" id="header">
+        <div class="header_toggle"> <i class='bx bx-menu' id="header-toggle"></i> </div>
+        <div class="header_img"> <img src="https://i.imgur.com/hczKIze.jpg" alt=""> </div>
+    </header>
+    <div class="l-navbar" id="nav-bar">
+        <nav class="nav">
+            <div>
+                <a href="/pages/home.html" class="nav_logo"> <i class='bx bx-layer nav_logo-icon'></i> <span class="nav_logo-name">JTR</span> </a>
+                <div class="nav_list">
+                    <a href="/pages/home.html" class="nav_link"> <i class='bx bx-home' ></i> <span class="nav_name">Home</span> </a>
+                    <a href="/pages/encrypt.html" class="nav_link active"> <i class='bx bxs-lock'></i> <span class="nav_name">Encrypt</span> </a>
+                    <a href="/pages/decrypt.html" class="nav_link"> <i class='bx bxs-lock-open'></i> <span class="nav_name">Decrypt</span> </a>
+                    <a href="/pages/keymanagement.html" class="nav_link"> <i class='bx bx-key'></i> <span class="nav_name">Key Management</span> </a>
+                    <a href="/pages/history.html" class="nav_link"> <i class='bx bx-history'></i> <span class="nav_name">History</span> </a>
+                    <a href="/pages/settings.html" class="nav_link"> <i class='bx bxs-cog'></i> <span class="nav_name">Settings</span> </a>
+                </div>
             </div>
+            <a href="#" class="nav_link"> <i class='bx bx-log-out nav_icon'></i> <span class="nav_name">Sign Out</span> </a>
+        </nav>
+    </div>
+    <div>
+        <div id="multi-step-form-container">
+            <!-- Form Steps / Progress Bar -->
+            <ul class="form-stepper form-stepper-horizontal text-center mx-auto pl-0">
+                <!-- Step 1 -->
+                <li class="form-stepper-active text-center form-stepper-list" step="1">
+                    <a class="mx-2">
+                        <span class="form-stepper-circle">
+                            <span><i class='bx bx-upload' ></i></span>
+                        </span>
+                        <div class="label">Upload Files</div>
+                    </a>
+                </li>
+                <!-- Step 2 -->
+                <li class="form-stepper-unfinished text-center form-stepper-list" step="2">
+                    <a class="mx-2">
+                        <span class="form-stepper-circle text-muted">
+                            <span><i class='bx bxs-edit-alt'></i></span>
+                        </span>
+                        <div class="label text-muted">Verify Files</div>
+                    </a>
+                </li>
+                <!-- Step 3 -->
+                <li class="form-stepper-unfinished text-center form-stepper-list" step="3">
+                    <a class="mx-2">
+                        <span class="form-stepper-circle text-muted">
+                            <span><i class='bx bxs-lock'></i></span>
+                        </span>
+                        <div class="label text-muted">Encrypt</div>
+                    </a>
+                </li>
+            </ul>
+            <!-- Step Wise Form Content -->
+            <form id="userAccountSetupForm" name="userAccountSetupForm" enctype="multipart/form-data" method="POST">
+                <!-- Step 1 Content -->
+                <section id="step-1" class="form-step">
+                    <div id="drop-area"
+                        ondrop="handleDrop(event)"
+                        ondragover="handleDragOver(event)"
+                        ondragleave="handleDragleave(event)">
+                        Drop Files Here
+                    </div>
+
+                    
+                    <div class="mt-3">
+                        <button class="button btn-navigate-form-step" type="button" id="next" step_number="2">Next</button>
+                    </div>
+                </section>
+                <!-- Step 2 Content, default hidden on page load. -->
+                <section id="step-2" class="form-step d-none">
+                    <h2 class="font-normal">Social Profiles</h2>
+                    <!-- Step 2 input fields -->
+                    <div class="mt-3">
+                        Step 2 input fields goes here..
+                    </div>
+                    <div class="mt-3">
+                        <button class="button btn-navigate-form-step" type="button" id="prev" step_number="1">Prev</button>
+                        <button class="button btn-navigate-form-step" type="button" id="next" step_number="3">Next</button>
+                    </div>
+                </section>
+                <!-- Step 3 Content, default hidden on page load. -->
+                <section id="step-3" class="form-step d-none">
+                    <h2 class="font-normal">Personal Details</h2>
+                    <!-- Step 3 input fields -->
+                    <div class="mt-3">
+                        Step 3 input fields goes here..
+                    </div>
+                    <div class="mt-3">
+                        <button class="button btn-navigate-form-step" type="button" id="prev" step_number="2">Prev</button>
+                        <button class="button submit-btn" id="next" type="submit">Save</button>
+                    </div>
+                </section>
+            </form>
         </div>
     </div>
 
-
-    <script src="/js/callnavbar.js"></script>
     <script src="/js/navbar.js"></script>
+    <script src="/js/encryptProgress.js"></script>
+    <script src="/js/dropzone.js"></script>
+    <!-- <script src="/js/callnavbar.js"></script> -->
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>

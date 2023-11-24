@@ -1,0 +1,9 @@
+#drop-area {
+    width: 500px;
+    height: 200px;
+    border: 2px dashed #ccc;
+    text-align: center;
+    line-height: 200px;
+    margin: 50px auto;
+    border-radius: 5px;
+}
