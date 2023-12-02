@@ -38,3 +38,7 @@
 .nav-link:hover {
     background-color: white; /* Set your desired hover background color */
 }
+
+.header_img {
+    cursor: pointer;
+}
