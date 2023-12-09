@@ -16,42 +16,42 @@
                 <div class="row justify-content-center">
                 </div>
                 <div class="row justify-content-center">
-                    <div class="col-md-6 col-lg-4">
-                        <div class="login-wrap p-0">
-                      <h3 class="mb-4 text-center">Register</h3>
-                      <form action="#" class="register-form">
-                          <div class="form-group">
-                            <p>Username</p>
-                              <input type="text" class="form-control" placeholder="Input Your Username" required>
+                  <div class="col-md-6 col-lg-4">
+                      <div class="login-wrap p-0">
+                          <h3 class="mb-4 text-center">Register</h3>
+                          <form action="#" class="register-form">
+                              <div class="form-group">
+                                  <p>Username</p>
+                                  <input id="username-field" type="text" class="form-control" placeholder="Input Your Username" required>
+                              </div>
+                              <div class="form-group">
+                                  <p>Email</p>
+                                  <input id="email-field" type="text" class="form-control" placeholder="Input Your Email">
+                              </div>
+                              <div class="form-group">
+                                  <p>Password</p>
+                                  <input id="password-field" type="password" class="form-control" placeholder="Input Your Password" required>
+                                  <span toggle="#password-field" class="fa fa-fw fa-eye field-icon toggle-password"></span>
+                              </div>
+                              <div class="form-group">
+                                  <p>Re-enter Password</p>
+                                  <input id="confirm-password-field" type="password" class="form-control" placeholder="Input Your Password Again" required>
+                                  <span toggle="#confirm-password-field" class="fa fa-fw fa-eye field-icon toggle-password"></span>
+                              </div>
+                          </form>
+                          <div class="social d-flex text-center">
+                              <button class="px-2 py-2 mr-md-1 rounded" onclick="register()"><span class="ion-logo-facebook mr-2"></span>Next</button>
                           </div>
-                          <div class="form-group">
-                            <p>Email</p>
-                            <input id="emial-field" type="text" class="form-control" placeholder="Input Your Email">
-                          </div>
-                    <div class="form-group">
-                        <p>Password </p>
-                      <input id="password-field" type="password" class="form-control" placeholder="Input Your Password" required>
-                      <span toggle="#password-field" class="fa fa-fw fa-eye field-icon toggle-password"></span>
-                    </div>
-                    <div class="form-group">
-                        <p>Re-enter Password </p>
-                      <input id="password-field" type="password" class="form-control" placeholder="Input Your Password Again" required>
-                      <span toggle="#password-field" class="fa fa-fw fa-eye field-icon toggle-password"></span>
-                    </div>
-                  </form>
-                  <div class="social d-flex text-center">
-                      <a href="/pages/login.html" class="px-2 py-2 mr-md-1 rounded"><span class="ion-logo-facebook mr-2"></span>Next</a>
+                      </div>
                   </div>
-                  </div>
-                    </div>
-                </div>
+              </div>              
             </div>
         </section>
-
+        
     <script src="/js/bootstrap.min.js"></script>
     <script src="/js/jquery.min.js"></script>
     <script src="/js/main.js"></script>
     <script src="/js/popper.js"></script>
-
+    <script src="/js/account.js"></script>
 </body>
 </html>

@@ -11,23 +11,20 @@
         <h1>Edit Profile</h1>
     </header>
     <section>
-        <form>
-            <div>
-                <img src="../images/osaker.jpg" alt="Profile Picture">
-                <label for="profile-picture">Change Profile Picture:</label>
-                <input type="file" id="profile-picture" name="profile-picture" accept="image/*">
-            </div>
-            
-            <label for="name">Name:</label>
-            <input type="text" id="name" name="name" value="John Doe" required>
+        <form id="profileForm">
+            <div id="pfp">
 
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" value="john.doe@example.com" required>
+            </div>
+            <div id="username-info">
+    
+            </div>
 
             <!-- Add more input fields for additional profile details -->
 
             <button type="submit">Save Changes</button>
         </form>
     </section>
+    
+    <script src="../js/edit_profile.js"></script>
 </body>
 </html>

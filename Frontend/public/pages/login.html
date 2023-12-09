@@ -19,32 +19,32 @@
                     <div class="col-md-6 col-lg-4">
                         <div class="login-wrap p-0">
                       <h3 class="mb-4 text-center">Have an account?</h3>
-                      <form action="#" class="signin-form">
-                          <div class="form-group">
-                              <input type="text" class="form-control" placeholder="Username" required>
-                          </div>
-                    <div class="form-group">
-                      <input id="password-field" type="password" class="form-control" placeholder="Password" required>
-                      <span toggle="#password-field" class="fa fa-fw fa-eye field-icon toggle-password"></span>
-                    </div>
-                    <div class="form-group">
-                        <a href='/pages/home.html' class="form-control btn btn-primary submit px-3 text-center">Sign In</a>
-                    </div>
-                    <div class="form-group d-md-flex">
-                        <div class="w-50">
-                            <label class="checkbox-wrap checkbox-primary">Remember Me
-                                          <input type="checkbox" checked>
-                                          <span class="checkmark"></span>
-                                        </label>
-                                    </div>
-                                    <div class="w-50 text-md-right">
-                                        <a href="#" style="color: #fff">Forgot Password</a>
-                                    </div>
-                    </div>
-                  </form>
+                      <form action="#" class="signin-form" onsubmit="login(event)">
+                        <div class="form-group">
+                            <input type="text" id="email-field" class="form-control" placeholder="Email" required>
+                        </div>
+                        <div class="form-group">
+                            <input id="password-field" type="password" class="form-control" placeholder="Password" required>
+                            <span toggle="#password-field" class="fa fa-fw fa-eye field-icon toggle-password"></span>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="form-control btn btn-primary submit px-3 text-center">Sign In</button>
+                        </div>
+                        <div class="form-group d-md-flex">
+                            <div class="w-50">
+                                <label class="checkbox-wrap checkbox-primary">Remember Me
+                                    <input type="checkbox" checked>
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div>
+                            <div class="w-50 text-md-right">
+                                <a href="/pages/forgetpassword.html" style="color: #fff">Forgot Password</a>
+                            </div>
+                        </div>
+                    </form>
                   <p class="w-100 text-center">&mdash; Or Register &mdash;</p>
                   <div class="social d-flex text-center">
-                      <a href="pages/register.html" class="px-2 py-2 mr-md-1 rounded"><span class="ion-logo-facebook mr-2"></span> Register Here</a>
+                      <a href="/pages/register.html" class="px-2 py-2 mr-md-1 rounded"><span class="ion-logo-facebook mr-2"></span> Register Here</a>
                   </div>
                   </div>
                     </div>
@@ -55,6 +55,7 @@
     <script src="/js/bootstrap.min.js"></script>
     <script src="/js/jquery.min.js"></script>
     <script src="/js/main.js"></script>
+    <script src="/js/account.js"></script>
     <script src="/js/popper.js"></script>
 
 </body>
