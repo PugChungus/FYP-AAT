@@ -5,6 +5,7 @@ const path = require('path');
 const crypto = require('crypto');
 const querystring = require("querystring") 
 const pool = require('./db-connection.js');
+const cors = require("cors")
 
 const app = express();
 const port = 3000;
@@ -29,6 +30,7 @@ async function hashPassword(password, salt) {
     try {
       const res = await argon2.hash({ pass: password, salt: salt });
       const encodedHash = res.encoded;
+      console.log("Hi")
       return encodedHash;
     } catch (err) {
       console.error(err.message, err.code);
@@ -36,11 +38,12 @@ async function hashPassword(password, salt) {
     }
 }
 
+
 async function verifyPassword(password, pass_db) {
-    let verificationResult;
     try {
         await argon2.verify({ pass: password, encoded: pass_db });
         verificationResult = true;
+        console.log("HI")
         return verificationResult
     } catch (e) {
         verificationResult = false;
@@ -74,8 +77,8 @@ app.post('/create_account', async (req, res) => {
 
         const random_salt = generateSalt(16)
         const encodedHash = await hashPassword(password, random_salt)
-        console.log(random_salt)
-        console.log(encodedHash)
+        console.log("Salt:", random_salt)
+        console.log("Encode Hash:", encodedHash)
 
         const [result] = await pool.execute(  //the execute method from the mysql2 takes care of proper escaping
             'INSERT INTO user_account (username, password, email_address) VALUES (?, ?, ?)',
@@ -130,12 +133,14 @@ app.post('/login', async (req, res) => {
             [email]
         );
 
+        console.log("Tables:", tables)
+
         const pass_db = tables[0]['password'];
         console.log(password);
         console.log(pass_db);
 
         verificationResult = await verifyPassword(password, pass_db)
-        console.log(verificationResult)
+        console.log("check:", verificationResult)
 
         if (verificationResult == true) {
             console.log("ok")

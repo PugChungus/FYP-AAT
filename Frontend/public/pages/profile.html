@@ -8,7 +8,11 @@
 </head>
 <body>
     <header>
-        <h1 style="z-index: 10;">User Profile 82</h1>
+        <h1>Profile</h1>
+
+        <nav>
+            <a id="goBackButton" href="#">Go Back</a>
+        </nav>
     </header>
     <section>
         <div id="user-info-pic">
@@ -19,6 +23,15 @@
         </div>
     </section>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Store the initial source page in session storage
+            var currentPage = window.location.pathname;
+            sessionStorage.setItem('initialSource', currentPage);
+        });
+    </script>
+
     <script src="../js/profile.js"></script>
+    <script src="../js/goback.js"></script>
 </body>
 </html>

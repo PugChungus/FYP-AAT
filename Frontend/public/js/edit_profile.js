@@ -50,7 +50,7 @@ document.getElementById('profileForm').addEventListener('submit', function (even
             console.error('Error:', result.error);
         } else {
             console.log('Success:', result.message);
-            window.location.href = 'http://localhost:3000/pages/profile.html';
+            window.history.back();
         }
     })
     .catch(error => console.error('Error:', error));

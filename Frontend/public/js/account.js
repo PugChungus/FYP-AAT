@@ -90,9 +90,11 @@ async function login(event) {
 
     const data = await response.json();
     count = data.result[0]['count(*)']
+    console.log("Count:", count)
 
     if (count == 1) {
       formData.append('password', password);
+      console.log("Hello")
       // account lockout after a number of tries?
       //mfa???
       const response = await fetch('http://localhost:3000/login', {
@@ -100,6 +102,7 @@ async function login(event) {
         body: formData,
       });
 
+      console.log("hello")
       const data = await response.json();
       if (data.result) {
         const count = data.result[0]['count(*)'];
