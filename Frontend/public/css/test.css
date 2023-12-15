@@ -1,0 +1,61 @@
+#file-details-container {
+    margin-top: 20px;
+}
+
+.file-details {
+    margin-bottom: 10px;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+/* Styles for the drag and drop box */
+#drop-area {
+    border: 2px dashed #ccc;
+    padding: 20px;
+    text-align: center;
+}
+
+#drop-area img {
+    margin-bottom: 10px;
+}
+
+/* Styles for the file table */
+#file-details-container {
+    margin-top: 20px;
+}
+
+.file-container {
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+/* Styles for the search input */
+#file-search {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+/* Styles for the search button */
+#basic-addon1 {
+    cursor: pointer;
+}
+
+/* Optional: Add some hover effects */
+.file-container:hover {
+    background-color: #f9f9f9;
+}
+
+/* Optional: Add some styling for selected files */
+.file-container.selected {
+    background-color: #e0e0e0;
+}

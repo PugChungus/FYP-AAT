@@ -8,6 +8,7 @@
     <link rel="stylesheet" type="text/css" href="/css/home.css">
     <link rel="stylesheet" type="text/css" href="/css/loading.css">
     <link rel="stylesheet" type="text/css" href="/css/navbar.css">
+    <link rel="stylesheet" type="text/css" href="/css/test.css">
 
 
     <title>Document</title>
@@ -40,7 +41,35 @@
     <div id="main-content" class="height-80 bg-light">
         <h1>DECRYPT</h1>
     </div>
+    <div>
+        <div class="decryptContainer">
+            <div id="file-info"></div>
+            <form id="upload-form" enctype="multipart/form-data">
+                <div class="button-container" id="selectFileButton">
+                    <div id="drop-area">
+                        <img src="../images/upload.png" alt="upload folder" width="100" height="100">
+                        <p>Drag and drop your files here</p>or
+                        <label for="file-input-decrypt" class="btn btn-primary rounded-pill">SELECT FILES</label>
+                        <input type="file" id="file-input-decrypt" name="files" multiple style="display: none;">
+                    </div>
+                </div>
+            </form>
+    
+            <div id="details">
+                <div id="file-details-container"></div>
+            </div>
+        </div>
+        <div class="FilesContainer" id="files-details-container">
+            <div class="input-group md-form form-sm form-2 pl-0">
+                <input class="form-control my-0 py-1 pl-3 purple-border" type="text" id="file-search" placeholder="Search something here..." aria-label="Search">
+                <span class="input-group-addon waves-effect purple lighten-2" id="basic-addon1"><a><i class="fa fa-search white-text" aria-hidden="true"></i></a></span>
+            </div>
+    
+            <div id="file_items"></div>
+        </div>
+    </div>
 
+    <script src="/js/filedrop.js"></script>
     <script src="/js/navbar.js"></script>
     <script src="/js/home.js"></script>
     <script src="/js/toprofilePage.js"></script>
