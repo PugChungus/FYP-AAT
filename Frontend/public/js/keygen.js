@@ -1,37 +1,28 @@
-// keymanagement.js
-
-// Function to open the key card
 function openKeyCard() {
     document.getElementById('keyCard').style.display = 'block';
 }
 
-// Function to close the key card
 function closeKeyCard() {
     document.getElementById('keyCard').style.display = 'none';
 }
 
-// Function to generate a new key entry
 function generateKey() {
-    // Get the input value for Key Name
+
     var keyName = document.getElementById('keyName').value;
 
-    // Check if the Key Name is not empty
     if (keyName.trim() !== '') {
-        // Get the container for the key entries
+
         var keyEntriesContainer = document.querySelector('.responsive-table');
 
-        // Get the latest ID in the table
-        var latestId = 1; // Default to 1 if no entries are present
+        var latestId = 1; 
         var lastKeyEntry = keyEntriesContainer.querySelector('.table-row:last-child');
         if (lastKeyEntry) {
             latestId = parseInt(lastKeyEntry.querySelector('.col-1').textContent) + 1;
         }
 
-        // Create a new list item for the key entry
         var newKeyEntry = document.createElement('li');
         newKeyEntry.className = 'table-row';
 
-        // Create div elements for Id, Key Name, Date Created, Download, and Delete
         var col1 = document.createElement('div');
         col1.className = 'col col-1';
         col1.textContent = latestId;
@@ -45,13 +36,15 @@ function generateKey() {
         col3.textContent = getCurrentDateTime();
 
         var col4 = document.createElement('div');
-        col4.className = 'col col-4';
-        var downloadLink = document.createElement('a');
-        downloadLink.href = '#'; // Placeholder link
+        col4.className = 'col col-4 col-right';
+
+        // Create the download icon
+        var downloadLink = document.createElement('i');
+        downloadLink.href = '#';
         downloadLink.addEventListener('click', function (event) {
-            // Prevent the default behavior of the link
+
             event.preventDefault();
-            // Implement download functionality here
+
             alert('Download functionality will be implemented here.');
         });
         var downloadIcon = document.createElement('i');
@@ -59,37 +52,34 @@ function generateKey() {
         downloadLink.appendChild(downloadIcon);
         col4.appendChild(downloadLink);
 
-        var col5 = document.createElement('div');
-        col5.className = 'col col-5';
+        var spacer = document.createElement('span');
+        spacer.className = 'icon-spacer';
+        col4.appendChild(spacer);
+
+        // Create the delete icon
         var deleteIcon = document.createElement('i');
-        deleteIcon.className = "bx bxs-x-circle"; // Corrected variable name
-        deleteIcon.href = '#'; // Placeholder link
+        deleteIcon.className = "bx bxs-x-circle"; 
+        deleteIcon.href = '#'; 
         deleteIcon.addEventListener('click', function (event) {
-            // Prevent the default behavior of the link
+
             event.preventDefault();
-            // Implement delete functionality here
+
             newKeyEntry.remove();
         });
-        col5.appendChild(deleteIcon);
+        col4.appendChild(deleteIcon);
 
-        // Append the div elements to the new key entry
         newKeyEntry.appendChild(col1);
         newKeyEntry.appendChild(col2);
         newKeyEntry.appendChild(col3);
         newKeyEntry.appendChild(col4);
-        newKeyEntry.appendChild(col5);
 
-        // Append the new key entry to the container
         keyEntriesContainer.appendChild(newKeyEntry);
-
-        // Close the key card after generating the key
         closeKeyCard();
     } else {
         alert('Please enter a Key Name.');
     }
 }
 
-// Function to get the current date and time in the required format
 function getCurrentDateTime() {
     var now = new Date();
     var year = now.getFullYear();
@@ -102,10 +92,7 @@ function getCurrentDateTime() {
     return formattedDateTime;
 }
 
-// Add an event listener to the "Generate Key" link
 document.getElementById('generateKeyButton').addEventListener('click', function (event) {
-    // Prevent the default behavior of the link
     event.preventDefault();
-    // Open the key card when the link is clicked
     openKeyCard();
 });

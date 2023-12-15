@@ -45,9 +45,9 @@ body {
     }
 
 
-    .table-row:hover {
+    /* .table-row:hover {
         background-color: silver;
-    }
+    } */
     .col-1 {
       flex-basis: 10%;
     }
@@ -131,6 +131,7 @@ a.generateKey:hover {
 a.importKey i,
 a.generateKey i {
     line-height: 1;
+
 }
 
 a.importKey {
@@ -169,3 +170,32 @@ a.importKey i {
 .col-right {
     margin-left: auto;
 }
+
+.responsive-table .table-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.responsive-table .col-right {
+  text-align: right;
+  flex-basis: 15%; /* Adjust the width as needed */
+}
+
+.icon-spacer {
+  margin-right: 10px;
+}
+
+
+
+.responsive-table .col-right i.bxs-download:hover {
+  border-radius: 5px;
+  background-color: silver;
+  padding: 2px;
+}
+
+.responsive-table .col-right i.bxs-x-circle:hover {
+  border-radius: 5px;
+  background-color: silver;
+  padding: 2px;
+}
+
