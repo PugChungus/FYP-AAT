@@ -1,31 +1,42 @@
+function ab2str(buf) {
+    return String.fromCharCode.apply(null, new Uint8Array(buf));
+}
+
 async function exportCryptoKey(key) {
-    const exported = await window.crypto.subtle.exportKey("raw", key);
-    const exportedKeyBuffer = new Uint8Array(exported);
-    
-    console.log(exportedKeyBuffer);
+    const exported = await window.crypto.subtle.exportKey("spki", key);
+    const exportedAsString = ab2str(exported);
+    const exportedAsBase64 = window.btoa(exportedAsString);
+    const pemExported = `-----BEGIN PUBLIC KEY-----\n${exportedAsBase64}\n-----END PUBLIC KEY-----`;
+  
+    const exportKeyOutput = document.querySelector(".exported-key");
+    exportKeyOutput.textContent = pemExported;
 }
 
 async function keygen() {
-    let keyPair = await window.crypto.subtle.generateKey(
-        {
-        name: "RSA-OAEP",
-        modulusLength: 4096,
-        publicExponent: new Uint8Array([1, 0, 1]),
-        hash: "SHA-256",
-        },
-        true,
-        ["encrypt", "decrypt"],
-    );
-    
-    const privateKey = keyPair.privateKey;
-    const publicKey = keyPair.publicKey;
+    try {
+        const keyPair = await window.crypto.subtle.generateKey(
+            {
+                name: "RSA-OAEP",
+                modulusLength: 2048,
+                publicExponent: new Uint8Array([1, 0, 1]),
+                hash: "SHA-256",
+            },
+            true,
+            ["encrypt", "decrypt"]
+        );
 
-    // Export private and public keys
-    await exportCryptoKey(privateKey);
-    await exportCryptoKey(publicKey);
+        const privateKey = keyPair.privateKey;
+        const publicKey = keyPair.publicKey;
 
-    console.log("Private Key:", privateKey);
-    console.log("Public Key:", publicKey);
+        console.log("Private Key:", privateKey);
+        console.log("Public Key:", publicKey);
+
+        // Export private and public keys
+        await exportCryptoKey(keyPair.publicKey);
+
+    } catch (error) {
+        console.error("Error generating key pair:", error);
+    }
 }
 
 // function getMessageEncoding() {
