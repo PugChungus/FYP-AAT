@@ -1,67 +1,161 @@
-function ab2str(buf) {
-    return String.fromCharCode.apply(null, new Uint8Array(buf));
+//data needs to be in array buffer before it can encrypt or decrypt
+//after encrypting convert back from array buffer to string
+
+function stringToArrayBuffer(str){
+    var buf = new ArrayBuffer(str.length);
+    var bufView = new Uint8Array(buf);
+    for (var i=0, strLen=str.length; i<strLen; i++) {
+        bufView[i] = str.charCodeAt(i);
+    }
+    return buf;
 }
 
-async function exportCryptoKey(key) {
-    const exported = await window.crypto.subtle.exportKey("spki", key);
-    const exportedAsString = ab2str(exported);
-    const exportedAsBase64 = window.btoa(exportedAsString);
-    const pemExported = `-----BEGIN PUBLIC KEY-----\n${exportedAsBase64}\n-----END PUBLIC KEY-----`;
-  
-    const exportKeyOutput = document.querySelector(".exported-key");
-    exportKeyOutput.textContent = pemExported;
+function arrayBufferToString(str){
+    var byteArray = new Uint8Array(str);
+    var byteString = '';
+    for(var i=0; i < byteArray.byteLength; i++) {
+        byteString += String.fromCodePoint(byteArray[i]);
+    }
+    return byteString;
 }
 
-async function keygen() {
-    try {
-        const keyPair = await window.crypto.subtle.generateKey(
-            {
-                name: "RSA-OAEP",
-                modulusLength: 2048,
-                publicExponent: new Uint8Array([1, 0, 1]),
-                hash: "SHA-256",
-            },
-            true,
-            ["encrypt", "decrypt"]
-        );
+function encryptDataWithPublicKey(data, key) {
+    data = stringToArrayBuffer(data);
+    return window.crypto.subtle.encrypt(
+    {
+        name: "RSA-OAEP",
+        //label: Uint8Array([...]) //optional
+    },
+    key, //from generateKey or importKey above
+    data //ArrayBuffer of data you want to encrypt
+);
+}
 
-        const privateKey = keyPair.privateKey;
-        const publicKey = keyPair.publicKey;
+function decryptDataWithPrivateKey(data, key) {
+    data = stringToArrayBuffer(data);
+    return window.crypto.subtle.decrypt(
+        {
+            name: "RSA-OAEP",
+            //label: Uint8Array([...]) //optional
+        },
+        key, //from generateKey or importKey above
+        data //ArrayBuffer of data you want to encrypt
+    );
+}
 
-        console.log("Private Key:", privateKey);
-        console.log("Public Key:", publicKey);
+let sharedData
 
-        // Export private and public keys
-        await exportCryptoKey(keyPair.publicKey);
+function uploadFile() {
+    const fileInput = document.getElementById('fileInput');
+    const file = fileInput.files[0];
 
-    } catch (error) {
-        console.error("Error generating key pair:", error);
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = async function (e) {
+            const outputDiv = document.getElementById('output');
+            const data = "example";
+            const public_key = e.target.result;
+
+            try {
+                const public_key_obj = await importPublicKey(public_key);
+                console.log(public_key_obj);
+                
+                encryptDataWithPublicKey(data, public_key_obj).then((result) => {
+                    const rdata = arrayBufferToString(result);
+                    outputDiv.innerHTML = '<p id="fun">' + rdata + '</p>';
+                    console.log(rdata);
+
+                    sharedData = rdata
+                });
+            } catch (error) {
+                console.error("Error importing public key:", error);
+            }
+        };
+
+        reader.readAsText(file);
+    } else {
+        console.error('Please select a file.');
     }
 }
 
-// function getMessageEncoding() {
-//     const messageBox = document.querySelector(".rsa-oaep #message");
-//     let message = messageBox.value;
-//     let enc = new TextEncoder();
-//     return enc.encode(message);
-// }
-  
-// function encryptMessage(publicKey) {
-//     let encoded = getMessageEncoding();
-//     return window.crypto.subtle.encrypt(
-//         {
-//         name: "RSA-OAEP",
-//         },
-//         publicKey,
-//         encoded,
-//     );
-// }
+function uploadFile2() {
+    const fileInput = document.getElementById('fileInput2');
+    const file = fileInput.files[0];
 
-// function decryptMessage(privateKey, ciphertext) {
-//     return window.crypto.subtle.decrypt(
-//       { name: "RSA-OAEP" },
-//       privateKey,
-//       ciphertext,
-//     );
-//   }
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = async function (e) {
+            const outputDiv = document.getElementById('output2');
+            const data = sharedData
+            const private_key = e.target.result;
+            console.log(private_key)
+
+            try {
+                const private_key_obj = await importPrivateKey(private_key);
+                console.log(private_key_obj);
+                
+                decryptDataWithPrivateKey(data, private_key_obj).then((result) => {
+                    const rdata = arrayBufferToString(result);
+                    outputDiv.innerHTML = '<p id="fun2">' + rdata + '</p>';
+                    console.log(rdata);
+                });
+            } catch (error) {
+                console.error("Error importing Private key:", error);
+            }
+        };
+
+        reader.readAsText(file);
+    } else {
+        console.error('Please select a file.');
+    }
+}
+
+async function importPublicKey(pem) {
+    // fetch the part of the PEM string between header and footer
+    const pemHeader = "-----BEGIN PUBLIC KEY-----";
+    const pemFooter = "-----END PUBLIC KEY-----";
+    const pemContents = pem.substring(
+      pemHeader.length,
+      pem.length - pemFooter.length - 1,
+    );
+    // base64 decode the string to get the binary data
+    const binaryDerString = window.atob(pemContents);
+    // convert from a binary string to an ArrayBuffer
+    const binaryDer = stringToArrayBuffer(binaryDerString);
   
+    return window.crypto.subtle.importKey(
+      "spki",
+      binaryDer,
+      {
+        name: "RSA-OAEP",
+        hash: "SHA-256",
+      },
+      true,
+      ["encrypt"],
+    );
+}
+
+async function importPrivateKey(pem) {
+    // fetch the part of the PEM string between header and footer
+    const pemHeader = "-----BEGIN PRIVATE KEY-----";
+    const pemFooter = "-----END PRIVATE KEY-----";
+    const pemContents = pem.substring(
+        pemHeader.length,
+        pem.length - pemFooter.length - 1,
+    );
+    // base64 decode the string to get the binary data
+    const binaryDerString = window.atob(pemContents);
+    // convert from a binary string to an ArrayBuffer
+    const binaryDer = stringToArrayBuffer(binaryDerString);
+
+    return window.crypto.subtle.importKey(
+        "pkcs8",
+        binaryDer,
+        {
+            name: "RSA-OAEP",
+            hash: "SHA-256",
+        },
+        true,
+        ["decrypt"]
+    );
+}

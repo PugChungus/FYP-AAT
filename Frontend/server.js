@@ -19,7 +19,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Set up a route to render your HTML file
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public/pages/', 'login.html'));
+    res.sendFile(path.join(__dirname, 'public/pages/', 'test.html'));
 });
 
 function generateSalt(length) {

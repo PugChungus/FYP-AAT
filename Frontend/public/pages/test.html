@@ -12,10 +12,23 @@
     <div class="social d-flex text-center">
         <button class="px-2 py-2 mr-md-1 rounded" onclick="keygen()"><span class="ion-logo-facebook mr-2"></span>Next</button>
     </div>
-    <div class="exported-key">
-    </div>
+    
+    <form id="fileUploadForm" enctype="multipart/form-data">
+        <input type="file" id="fileInput" name="file" accept=".txt, .pdf, .docx" />
+        <button type="button" onclick="uploadFile()">Upload</button>
+    </form>
+
+    <form id="fileUploadForm2" enctype="multipart/form-data">
+        <input type="file" id="fileInput2" name="file" accept=".txt, .pdf, .docx" />
+        <button type="button" onclick="uploadFile2()">Upload</button>
+    </form>
+
+    <div id="output"></div>
+    <div id="output2"></div>
+
     <script src="/js/bootstrap.min.js"></script>
     <script src="/js/jquery.min.js"></script>
+    <script src="/js/rsa_keygen.js"></script>
     <script src="/js/rsa.js"></script>
 </body>
 </html>
