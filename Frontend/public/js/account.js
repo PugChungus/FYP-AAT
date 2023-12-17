@@ -1,3 +1,6 @@
+import { keygen, exportPublicKey, exportPrivateKey } from './public/js/rsa_keygen.js';
+import { openIndexDB } from './public/js/IndexedDB.js';
+
 const emailRegex = /^[\w-]+(\.[\w-]+)*@[A-Za-z0-9]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$/;
 //add frontend regex???????????
 async function register() {
@@ -40,7 +43,7 @@ async function register() {
       alert('This email is already registered. Please use a different email.')
       return
     }
-    else{
+    else {
       const formData = new FormData();
       formData.append('username', username);
       formData.append('email', email);
@@ -54,8 +57,28 @@ async function register() {
         });
 
         if (response.ok) {
-          alert("Registeration Successful.")
-          window.location.href = 'http://localhost:3000/pages/login.html'
+          keypair = keygen()
+          public_key = keypair.publicKey
+          private_key = keypair.privateKey
+
+          pem_public = exportPublicKey(public_key)
+          jwk_private = exportPrivateKey(private_key)
+
+          formData.append('public_key', pem_public);
+          
+          const newResponse = await fetch('http://localhost:3000/create_pubkey', {
+            method: 'POST',
+            body: formData,
+          });
+          if (newResponse.ok) {
+            openIndexDB(jwk_private, email)
+
+            alert("Registeration Successful.")
+            window.location.href = 'http://localhost:3000/pages/login.html'
+          }
+          else{
+            alert("Registeration Failed.")
+          }
         }
 
       } catch (error) {
