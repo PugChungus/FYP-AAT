@@ -63,7 +63,6 @@ function uploadFile() {
                 encryptDataWithPublicKey(data, public_key_obj).then((result) => {
                     const rdata = arrayBufferToString(result);
                     outputDiv.innerHTML = '<p id="fun">' + rdata + '</p>';
-                    console.log(rdata);
 
                     sharedData = rdata
                 });
@@ -88,16 +87,15 @@ function uploadFile2() {
             const outputDiv = document.getElementById('output2');
             const data = sharedData
             const private_key = e.target.result;
-            console.log(private_key)
+            const private_key_obj = JSON.parse(private_key)
 
             try {
-                const private_key_obj = await importPrivateKey(private_key);
-                console.log(private_key_obj);
+                const private_key_obj2 = await importPrivateKeyFromJWK(private_key_obj);
+                console.log(private_key_obj2);
                 
-                decryptDataWithPrivateKey(data, private_key_obj).then((result) => {
+                decryptDataWithPrivateKey(data, private_key_obj2).then((result) => {
                     const rdata = arrayBufferToString(result);
                     outputDiv.innerHTML = '<p id="fun2">' + rdata + '</p>';
-                    console.log(rdata);
                 });
             } catch (error) {
                 console.error("Error importing Private key:", error);
@@ -135,27 +133,17 @@ async function importPublicKey(pem) {
     );
 }
 
-async function importPrivateKey(pem) {
-    // fetch the part of the PEM string between header and footer
-    const pemHeader = "-----BEGIN PRIVATE KEY-----";
-    const pemFooter = "-----END PRIVATE KEY-----";
-    const pemContents = pem.substring(
-        pemHeader.length,
-        pem.length - pemFooter.length - 1,
+async function importPrivateKeyFromJWK(jwk) {
+    const privateKey = await window.crypto.subtle.importKey(
+      'jwk',
+      jwk,
+      {
+        name: 'RSA-OAEP',
+        hash: { name: 'SHA-256' },
+      },
+      true,
+      ['decrypt']
     );
-    // base64 decode the string to get the binary data
-    const binaryDerString = window.atob(pemContents);
-    // convert from a binary string to an ArrayBuffer
-    const binaryDer = stringToArrayBuffer(binaryDerString);
-
-    return window.crypto.subtle.importKey(
-        "pkcs8",
-        binaryDer,
-        {
-            name: "RSA-OAEP",
-            hash: "SHA-256",
-        },
-        true,
-        ["decrypt"]
-    );
+  
+    return privateKey;
 }

@@ -1,3 +1,6 @@
+import { keygen, exportPublicKey, exportPrivateKey } from './public/js/rsa_keygen.js';
+import { openIndexDB } from './public/js/IndexedDB.js';
+
 const express = require('express');
 const multer = require('multer');
 const argon2 = require('argon2-browser');
@@ -19,7 +22,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Set up a route to render your HTML file
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public/pages/', 'test.html'));
+    res.sendFile(path.join(__dirname, 'public/pages/', 'login.html'));
 });
 
 function generateSalt(length) {
@@ -90,11 +93,20 @@ app.post('/create_account', async (req, res) => {
 
             const accountId = accountIdResult[0][0].account_id;
 
+            keypair = keygen()
+            public_key = keypair.publicKey
+            private_key = keypair.privateKey
+
+            pem_public = exportPublicKey(public_key)
+            jwk_private = exportPrivateKey(private_key)
+
             // Now, you have the account_id, and you can use it in the next INSERT statement
             const publicKeyResult = await pool.execute(
                 'INSERT INTO public_key (public_key, account_id, date_created) VALUES (?, ?, NOW())',
-                [yourPublicKeyValue, accountId]
+                [pem_public, accountId]
             );
+
+            openIndexDB(jwk_private, email)
 
             if (publicKeyResult && publicKeyResult.affectedRows > 0) {
                 return res.status(200).json({ message: 'Account and public key created successfully' });
