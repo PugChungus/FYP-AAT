@@ -1,6 +1,6 @@
 let db;
 
-export function openIndexDB(jwk_private, user_email) {
+function openIndexDB(jwk_private, user_email) {
     //open specific to user email
     const DBOpenRequest = window.indexedDB.open(`${user_email}_db`, 4);
     DBOpenRequest.onupgradeneeded = (event) => {
@@ -62,5 +62,6 @@ function getCurrentTime() {
     return currentTime;
 }
 
-
-  
+export default {
+  openIndexDB
+};

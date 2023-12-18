@@ -2,7 +2,7 @@ function ab2str(buf) {
     return String.fromCharCode.apply(null, new Uint8Array(buf));
 }
 
-export async function exportPublicKey(key) {
+async function exportPublicKey(key) {
     const exported = await window.crypto.subtle.exportKey("spki", key);
     const exportedAsString = ab2str(exported);
     const exportedAsBase64 = window.btoa(exportedAsString);
@@ -10,13 +10,13 @@ export async function exportPublicKey(key) {
     return pemExported
 }
 
-export async function exportPrivateKey(key) {
+async function exportPrivateKey(key) {
     const exported = await window.crypto.subtle.exportKey("jwk", key);
     const jwkString = JSON.stringify(exported, null, '  '); // Convert JWK to JSON string
     return jwkString
 }
 
-export async function keygen() {
+async function keygen() {
     try {
         const keyPair = await window.crypto.subtle.generateKey(
             {
@@ -44,6 +44,12 @@ export async function keygen() {
         console.error("Error generating key pair:", error);
     }
 }
+
+export default {
+    keygen,
+    exportPublicKey,
+    exportPrivateKey
+};
 
 // async function exportPublicKey(key) {
 //     const exported = await window.crypto.subtle.exportKey("spki", key);

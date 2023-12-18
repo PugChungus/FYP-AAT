@@ -1,11 +1,11 @@
-const express = require('express');
-const multer = require('multer');
-const argon2 = require('argon2-browser');
-const path = require('path');
-const crypto = require('crypto');
-const querystring = require("querystring") 
-const pool = require('./db-connection.js');
-const cors = require("cors")
+import express from 'express';
+import multer from 'multer';
+import argon2 from 'argon2-browser';
+import path from 'path';
+import crypto from 'crypto';
+import { pool } from './db-connection.js';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
 const app = express();
 const port = 3000;
@@ -13,6 +13,9 @@ const port = 3000;
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 app.use(upload.any());
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));

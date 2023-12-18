@@ -1,9 +1,11 @@
-import { keygen, exportPublicKey, exportPrivateKey } from './public/js/rsa_keygen.js';
-import { openIndexDB } from './public/js/IndexedDB.js';
+import IndexedDB from './IndexedDB.js';
+import rsaKeygen from './rsa_keygen.js';
 
 const emailRegex = /^[\w-]+(\.[\w-]+)*@[A-Za-z0-9]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$/;
 //add frontend regex???????????
 async function register() {
+  IndexedDB.openIndexDB
+  rsaKeygen.exportPrivateKey
   const username = document.getElementById('username-field').value;
   const email = document.getElementById('email-field').value;
   const password = document.getElementById('password-field').value;
@@ -57,12 +59,12 @@ async function register() {
         });
 
         if (response.ok) {
-          keypair = keygen()
+          keypair = rsaKeygen.keygen
           public_key = keypair.publicKey
           private_key = keypair.privateKey
 
-          pem_public = exportPublicKey(public_key)
-          jwk_private = exportPrivateKey(private_key)
+          pem_public = rsaKeygen.exportPublicKey(public_key)
+          jwk_private = rsaKeygen.exportPrivateKey(private_key)
 
           formData.append('public_key', pem_public);
           
@@ -71,7 +73,7 @@ async function register() {
             body: formData,
           });
           if (newResponse.ok) {
-            openIndexDB(jwk_private, email)
+            IndexedDB.openIndexDB(jwk_private, email)
 
             alert("Registeration Successful.")
             window.location.href = 'http://localhost:3000/pages/login.html'
