@@ -74,5 +74,6 @@ def upload():
         db.rollback()
         return jsonify({'error': str(e)})
 
+
 if __name__ == '__main__':
     app.run(debug=True)
