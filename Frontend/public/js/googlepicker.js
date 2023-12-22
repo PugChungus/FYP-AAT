@@ -48,7 +48,7 @@ document.getElementById('authorize_button').style.visibility = 'visible';
 
 function createPicker() {
 const view = new google.picker.View(google.picker.ViewId.DOCS);
-    
+
 const picker = new google.picker.PickerBuilder()
 .enableFeature(google.picker.Feature.NAV_HIDDEN)
 .enableFeature(google.picker.Feature.MULTISELECT_ENABLED)
@@ -81,6 +81,7 @@ tokenClient.callback = async (response) => {
     } else {
     // Skip display of account chooser and consent dialog for an existing session.
     tokenClient.requestAccessToken({prompt: ''});
+    
     gapi.load('picker', () => {
         const picker = new google.picker.PickerBuilder()
           .setOAuthToken(accessToken)
@@ -100,34 +101,61 @@ tokenClient.callback = async (response) => {
 
 async function pickerCallback(data) {
     if (data.action === google.picker.Action.PICKED) {
-        const files = data[google.picker.Response.DOCUMENTS];
-
-        // Process each picked file
-        for (const file of files) {
-            const fileId = file[google.picker.Document.ID];
-            const res = await gapi.client.drive.files.get({
-                'fileId': fileId,
-                'fields': '*',
-            });
-
+        const headers = {
+            Authorization: `Bearer ${accessToken}` // Include the access token in the Authorization header
+  
+          };
+        const document = data[google.picker.Response.DOCUMENTS][0];
+        const fileId = document[google.picker.Document.ID];
+        const mimeType = document[google.picker.Document.MIME_TYPE];
+        console.log(fileId)
+        try {
+    const response = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+        method: 'GET',
+        headers: headers,
+        'key': API_KEY
+        });
+        // Process  each picked file
+        console.log('response', response)
+        if (response.ok) {
+          const blobe = await response.blob();
+          console.log("heyy")
+          console.log(response)
+          //const base64 = `data:${mimeType};base64,${await this.blobToBase64(blob)}`;
+          // Now you have the file content as a base64-encoded string - proceed as desired
+          uploadFile(blobe , document)
+        } else {
+          console.error('Failed to fetch file:', response.status, response.statusText);
+        }
+        } catch (error) {
+          console.error('Error while fetching file:', error);
+        }
+        
+      }
             // Access the file data and pass it to the uploader
-            const fileData = {
-                id: fileId,
-                name: res.result.name,
-                size: res.result.size,
-                mimeType: res.result.mimeType,
-                // Add more necessary file details as needed
-            };
+            // const fileData = {
+            //     id: fileId,
+            //     name: res.result.name,
+            //     size: res.result.size,
+            //     mimeType: res.result.mimeType,
+            //     // Add more necessary file details as needed
+            // };
             
             // Pass fileData to the uploader function
-            uploadFile(fileData);
-        }
-    }
+            
+    
 }
 
 
 
-function uploadFile(fileData) {
+
+
+function uploadFile(fileData, name) {
+    console.log("Filedata")
+    console.log(fileData)
+    console.log("name")
+  
+    
     // Display file details in the file details container
     const fileDetailsContainer = document.getElementById('file-details-container');
 
@@ -137,7 +165,7 @@ function uploadFile(fileData) {
 
     // Display file name
     const fileName = document.createElement('div');
-    fileName.textContent = `File Name: ${fileData.name}`;
+    fileName.textContent = `File Name: ${name.name}`;
     fileContainer.appendChild(fileName);
 
     // Display file size
@@ -150,4 +178,94 @@ function uploadFile(fileData) {
 
     // You can perform other actions here using fileData if needed
     // For example, initiate an AJAX request to upload the file or perform other operations
+    
+    
+  updatefilearrays(fileData, name)
+
+
+
 }
+
+let fileArray = [];
+
+function updatefilearrays(fileData, name){
+  const blob = new Blob([fileData], { type: 'application/octet-stream' });
+      console.log('LOG BLOB',blob)
+      
+      // Create a File object from the Blob
+  const file = new File([blob], name[google.picker.Document.NAME]);
+      console.log(file)
+
+
+
+  fileArray.push(file)
+  console.log("Mista White  ")
+  console.log(fileArray)
+}
+
+
+
+function submitFiles() {
+  const fileInput = document.getElementById('file-input-key');
+  const selectedFiles = fileInput.files;
+
+  if (selectedFiles.length > 0) {
+      const file = selectedFiles[0]; // Assuming handling only the first selected file
+
+      const reader = new FileReader();
+      reader.onload = function(event) {
+          const content = event.target.result;
+          const fileName = file.name;
+
+          // Prepare the data to be sent
+          const formData = new FormData();
+          formData.append('key', content); // Assuming the content is the key
+          formData.append('file', file);
+
+          // Make a POST request to the Python route
+          fetch('/AESencryptFile', {
+              method: 'POST',
+              body: formData
+          })
+          .then(response => {
+              if (response.ok) {
+                  return response.json();
+              }
+              throw new Error('Network response was not ok.');
+          })
+          .then(data => {
+              // Handle the response data from the server if needed
+              console.log('Encryption successful:', data);
+          })
+          .catch(error => {
+              console.error('Error:', error);
+          });
+      };
+      reader.readAsText(file); // Read file content as text
+  } else {
+      console.error('No file selected');
+  }
+}
+
+
+
+
+
+const fileInput = document.getElementById('file-input-key');
+
+// Add an event listener for file selection change
+fileInput.addEventListener('change', function () {
+    const selectedFiles = fileInput.files;
+
+    if (selectedFiles.length > 0) {
+        // Assuming you only want to display the name of the first file if multiple files are selected
+        const fileName = selectedFiles[0].name;
+        document.getElementById('selected-file-name').textContent = `Selected file: ${fileName}`;
+
+
+
+    } else {
+        // If no file is selected, display a default message or clear the displayed file name
+        document.getElementById('selected-file-name').textContent = 'No file selected';
+    }
+});
