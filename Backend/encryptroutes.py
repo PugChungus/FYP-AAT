@@ -40,15 +40,16 @@ def format_size(size_in_bytes):
 def format_date():
     now = datetime.now()
 
-    # Format the date and time
+    # Format the date and time 
     formatted_date = now.strftime("%d:%m:%Y %I:%M:%S %p")
 
     return formatted_date
 
 @app.route("/AESencryptFile", methods=["POST"])
 @cross_origin()
-def aes_encrypt (data):
+def aes_encrypt ():
     try:
+        
         key = get_random_bytes(32)  # 32 bytes (256 bits) AES-256
         nonce = get_random_bytes(12) # GCM is most commonly used with 96-bit (12-byte) nonces, which is also the length recommended by NIST SP 800-38D.
 
