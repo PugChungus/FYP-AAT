@@ -1,18 +1,58 @@
 document.getElementById('file-input-decrypt').addEventListener('change', handleFileUpload);
 
-function handleFileUpload(event) {
+async function handleFileUpload(event) {
     const files = event.target.files;
 
-    // Clear previous file details
-    document.getElementById('file-details-container').innerHTML = '';
 
-    // Display file details
     for (const file of files) {
-        displayFileDetails(file);
+        await sendFileToBackend(file);
     }
 }
 
-function displayFileDetails(file) {
+async function sendFileToBackend(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const scanLoader = document.getElementById('scan-loader');
+    scanLoader.style.display = 'block'
+
+    try {
+        const scanResult = await performScan(formData);
+
+        if (scanResult.isValid) {
+            console.log(`Scan result for ${file.name}: Non-malicious. Proceeding with upload`)
+            displayFileDetails(file, formData)
+        }else {
+            console.warn(`Scan result for ${file.name}: Malicious. Upload denied`)
+            
+            setTimeout(() => {
+                alert(`File ${file.name} is malicious. Upload denied.`);
+            }, 500); 
+        }
+    } catch (error){
+        console.error(`Error during scan for ${file.name}:`, error)
+    } finally {
+        scanLoader.style.display = 'none'
+    }
+}
+
+async function performScan(formData) {
+    try {
+        const response = await fetch('http://localhost:5001/upload_file', {
+            method:'POST',
+            body: formData,
+        });
+
+        const data = await response.json()
+        console.log(data);
+        return data;
+    } catch (error) {
+        console.error('Error during scan:', error);
+        return {isValid:false, error: 'Error during scan'};
+    }
+}
+
+function displayFileDetails(file, formData) {
     const fileDetailsContainer = document.getElementById('file-details-container');
 
     // Create a div element for each file
@@ -31,7 +71,11 @@ function displayFileDetails(file) {
 
     // Append file container to the details container
     fileDetailsContainer.appendChild(fileContainer);
+
+    // Perform the scan after displaying file details
 }
+
+
 
 function formatFileSize(size) {
     const kilobyte = 1024;
