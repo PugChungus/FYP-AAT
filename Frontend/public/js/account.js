@@ -3,9 +3,9 @@ import rsaKeygen from './rsa_keygen.js';
 
 const emailRegex = /^[\w-]+(\.[\w-]+)*@[A-Za-z0-9]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$/;
 //add frontend regex???????????
-async function register() {
-  IndexedDB.openIndexDB
-  rsaKeygen.exportPrivateKey
+export async function register() {
+  IndexedDB.openIndexDB();
+  rsaKeygen.exportPrivateKey();
   const username = document.getElementById('username-field').value;
   const email = document.getElementById('email-field').value;
   const password = document.getElementById('password-field').value;
@@ -59,7 +59,7 @@ async function register() {
         });
 
         if (response.ok) {
-          keypair = rsaKeygen.keygen
+          keypair = rsaKeygen.keygen();
           public_key = keypair.publicKey
           private_key = keypair.privateKey
 
