@@ -97,3 +97,9 @@ export async function keygen() {
 //     // Remove the link from the document
 //     document.body.removeChild(link);
 // }
+
+export default {
+    keygen,
+    exportPublicKey,
+    exportPrivateKey
+}

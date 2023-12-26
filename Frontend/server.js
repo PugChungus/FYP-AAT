@@ -85,9 +85,11 @@ app.post('/create_account', async (req, res) => {
             'INSERT INTO user_account (username, password, email_address) VALUES (?, ?, ?)',
             [username, encodedHash, email]
         );
+
+        return res.status(200).json({ message: 'Account created successfully' });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Internal Server Error' });
+        return res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
@@ -106,8 +108,6 @@ app.post('/create_pubkey', async (req, res) => {
         'INSERT INTO public_key (public_key, account_id, date_created) VALUES (?, ?, NOW())',
         [public_key, accountId]
     );
-
-    openIndexDB(jwk_private, email)
 
     if (publicKeyResult && publicKeyResult.affectedRows > 0) {
         return res.status(200).json({ message: 'Account and public key created successfully' });
