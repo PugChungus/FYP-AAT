@@ -27,11 +27,20 @@ document.addEventListener('DOMContentLoaded', async function() {
     <p>Username: ${username}</p>
     
     <p><a href="/pages/edit-profile.html">Edit Profile</a></p>
-    <button type="button" class="btn btn-danger">Key Rotation</button>
+    <button type="button" class="btn btn-danger" id="rotationButton">Key Rotation</button>
   `;
 
   const imgElement = document.getElementById('profile-picture');
   imgElement.src = objectURL;
+
+  const rotationButton = document.getElementById('rotationButton');
+
+  // Add a click event listener to the button
+  rotationButton.addEventListener('click', function() {
+    // Your code to handle the button click goes here
+    alert("This will destroy all your old public and private keys and create new one. Old messages encrypted with you public key will not be retrievable. Do you wish to Proceed?"); // Example: Display an alert
+  });
+
 });
 
 
