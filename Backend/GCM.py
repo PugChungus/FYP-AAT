@@ -6,6 +6,7 @@ from datetime import datetime
 import os
 import json
 
+from flask import request
 def get_valid_file_path(prompt):
     while True:
         file_path = input(prompt)
@@ -40,6 +41,14 @@ def format_date():
 
 def encrypt_file(infile, outfile, keyfile):
     try:
+        key = request.files['key'].read()  # Assuming the key is sent as a file
+        uploaded_file = request.files['file']
+        
+        nonce = get_random_bytes(12)  
+
+
+
+
         key = get_random_bytes(32)  # 32 bytes (256 bits) AES-256
         nonce = get_random_bytes(12) # GCM is most commonly used with 96-bit (12-byte) nonces, which is also the length recommended by NIST SP 800-38D.
 
@@ -134,3 +143,7 @@ def decrypt():
 if __name__ == "__main__":
     encrypt()
     decrypt()
+
+
+
+    
