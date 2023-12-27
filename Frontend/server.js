@@ -121,6 +121,7 @@ app.post('/create_pubkey', async (req, res) => {
 app.post('/update_pubkey', async (req, res) => {
     try {
         const public_key = req.body.public_key;
+        const email = req.body.email;
         console.log(public_key)
 
         // Now, you have the account_id, and you can use it in the next INSERT statement

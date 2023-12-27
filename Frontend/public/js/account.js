@@ -69,7 +69,7 @@ function openIndexDB(jwk_private, user_email) {
         console.log("Object Store Initialize.");
       
         const objectStore = db.createObjectStore(`${user_email}__Object_Store`, {
-          keyPath: "count", // Use a valid keyPath, e.g., "privateKey"
+          keyPath: "name", // Use a valid keyPath, e.g., "privateKey"
         });
         
         // define what data items the objectStore will contain
@@ -192,7 +192,7 @@ async function register() {
             openIndexDB(jwk_private, email);
 
             alert("Registeration Successful.")
-            // window.location.href = 'http://localhost:3000/pages/login.html'
+            window.location.href = 'http://localhost:3000/pages/login.html'
           }
           else{
             alert("Registeration Failed.")
