@@ -118,6 +118,27 @@ app.post('/create_pubkey', async (req, res) => {
     }
 })
 
+app.post('/update_pubkey', async (req, res) => {
+    try {
+        const public_key = req.body.public_key;
+        console.log(public_key)
+
+        // Now, you have the account_id, and you can use it in the next INSERT statement
+        const publicKeyResult = await pool.execute(
+            'UPDATE public_key ' +
+            'INNER JOIN user_account ON public_key.account_id = user_account.account_id ' +
+            'SET public_key.public_key = ?, public_key.date_created = NOW() ' +
+            'WHERE user_account.email_address = ?',
+            [public_key, email]
+        );
+
+        return res.status(200).json({ message: 'Public Key created successfully' });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+})
+
 app.post('/check_account', async (req, res) => {
     const email = req.body.email;
     const emailRegex = /^[\w-]+(\.[\w-]+)*@[A-Za-z0-9]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$/;
