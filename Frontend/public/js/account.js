@@ -76,7 +76,7 @@ function openIndexDB(jwk_private, user_email) {
         objectStore.createIndex("privateKey", "privateKey", { unique: false });
         objectStore.createIndex("email", "email", { unique: false });
         objectStore.createIndex("dateCreated", "dateCreated", { unique: false });
-        objectStore.createIndex("count", "count", { unique: false });  
+        objectStore.createIndex("name", "name", { unique: false });  
       
         // Wait for the onsuccess event before adding data
         objectStore.transaction.oncomplete = (event) => {
@@ -100,7 +100,7 @@ function openIndexDB(jwk_private, user_email) {
       privateKey: jwk_private,
       email: user_email,
       dateCreated: getCurrentTime(),
-      count: 1
+      name: 'private_key'
     };
 
     const addRequest = objectStore.add(newItem);

@@ -132,7 +132,7 @@ app.post('/update_pubkey', async (req, res) => {
             [public_key, email]
         );
 
-        return res.status(200).json({ message: 'Public Key created successfully' });
+        return res.status(200).json({ message: 'Public Key updated successfully' });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ error: 'Internal Server Error' });
