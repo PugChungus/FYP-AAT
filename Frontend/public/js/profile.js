@@ -35,11 +35,39 @@ document.addEventListener('DOMContentLoaded', async function() {
 
   const rotationButton = document.getElementById('rotationButton');
 
-  // Add a click event listener to the button
   rotationButton.addEventListener('click', function() {
-    // Your code to handle the button click goes here
-    alert("This will destroy all your old public and private keys and create new one. Old messages encrypted with you public key will not be retrievable. Do you wish to Proceed?"); // Example: Display an alert
-  });
+    const cardDiv = document.createElement('div');
+    cardDiv.className = 'card';
+    cardDiv.innerHTML = `
+    <div class="card-body">
+      <h5 class="card-title">Key Rotation Warning</h5>
+      <p class="card-text">This will destroy all your old public and private keys and create new ones. Old messages encrypted with your public key will not be retrievable. Do you wish to proceed?</p>
+      <button type="button" class="btn btn-danger" id="denyRotation">Deny</button>
+      <button type="button" class="btn btn-success" id="confirmRotation">Confirm</button>
+    </div>`;
+
+    cardDiv.style.position = 'fixed';
+  cardDiv.style.top = '0';
+  cardDiv.style.left = '50%';
+  cardDiv.style.transform = 'translateX(-50%)';
+  cardDiv.style.width = '300px';
+  cardDiv.style.margin = '20px';
+  cardDiv.style.border = '1px solid #ccc';
+  cardDiv.style.borderRadius = '8px';
+  cardDiv.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
+
+    document.body.appendChild(cardDiv);
+
+    const denyRotationButton = document.getElementById('denyRotation');
+    denyRotationButton.addEventListener('click', function() {
+      cardDiv.style.display = 'none';
+    });
+
+    const confirmRotationButton = document.getElementById('confirmRotation')
+    confirmRotationButton.addEventListener('click', function() {
+      //add your confirm idk what here trev
+    })
+  })
 
 });
 

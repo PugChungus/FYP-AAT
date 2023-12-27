@@ -103,31 +103,6 @@ def virustotal_scan(hash_value):
     else:
         print(f"Error: {response.status_code}, {response.text}")
 
-@app.route('/upload_file', methods=['POST'])
-def upload_file():
-    try:
-        uploaded_file = request.files['file']
-        
-        with uploaded_file.stream as f:
-            filebinary = f.read()
-
-        hash_object = hashlib.sha256(filebinary)
-        hash_value = hash_object.hexdigest()
-
-        result = virustotal_scan(hash_value)
-
-        if result == 'malicious':
-            print(f"The file {uploaded_file.filename} is malicious. Upload denied.")
-            return {"isValid": False, "message": "Malicious file. Upload denied."}
-
-        print(f"Received file: {uploaded_file.filename}")
-
-        return {"isValid": True}
-
-    except Exception as e:
-        print("Error processing File:", str(e))
-        return {"isValid": False, "error": str(e)}
-
 
 def virustotal_scan(hash_value):
     API_KEY = '495d37149054ebae8de04fbf1e19b8f41987188a818d9df9ef7fa775c61ad4e8'
