@@ -57,22 +57,26 @@ async function keygen() {
 }
 
 async function updateData(user_email, newData) {
-  // Open a new transaction with readwrite access
-  const transaction = db.transaction([`${user_email}__Object_Store`], 'readwrite');
+  const DBOpenRequest = window.indexedDB.open(`${user_email}_db`, 4);
+  DBOpenRequest.onsuccess = (event) => {
+    db = event.target.result;
+    // Open a new transaction with readwrite access
+    const transaction = db.transaction([`${user_email}__Object_Store`], "readwrite");
 
-  // Access the object store
-  const objectStore = transaction.objectStore(`${user_email}__Object_Store`);
+    // Access the object store
+    const objectStore = transaction.objectStore(`${user_email}__Object_Store`);
 
-  // Perform the update operation
-  const request = objectStore.put(newData);
+    // Perform the update operation
+    const request = objectStore.put(newData);
 
-  // Handle the success or error of the update operation
-  request.onsuccess = function (event) {
-    console.log('Data updated successfully');
-  };
+    // Handle the success or error of the update operation
+    request.onsuccess = function (event) {
+      console.log('Data updated successfully');
+    };
 
-  request.onerror = function (event) {
-    console.error('Error updating data: ', event.target.error);
+    request.onerror = function (event) {
+      console.error('Error updating data: ', event.target.error);
+    };
   };
 }
 
