@@ -111,42 +111,65 @@ document.addEventListener('DOMContentLoaded', async function() {
   const imgElement = document.getElementById('profile-picture');
   imgElement.src = objectURL;
 
-  const rotationButton = document.getElementById('rotationButton');
+    const rotationButton = document.getElementById('rotationButton');
+    rotationButton.addEventListener('click', function() {
+      const cardDiv = document.createElement('div');
+      cardDiv.className = 'card';
+      cardDiv.innerHTML = `
+      <div class="card-body">
+        <h5 class="card-title">Key Rotation Warning</h5>
+        <p class="card-text">This will destroy all your old public and private keys and create new ones. Old messages encrypted with your public key will not be retrievable. Do you wish to proceed?</p>
+        <button type="button" class="btn btn-danger" id="denyRotation">Deny</button>
+        <button type="button" class="btn btn-success" id="confirmRotation">Confirm</button>
+      </div>`;
 
-  // Add a click event listener to the button
-  rotationButton.addEventListener('click', async function() {
-    // Your code to handle the button click goes here
-    alert("This will destroy all your old public and private keys and create new one. Old messages encrypted with you public key will not be retrievable. Do you wish to Proceed?");
+    cardDiv.style.position = 'fixed';
+    cardDiv.style.top = '0';
+    cardDiv.style.left = '50%';
+    cardDiv.style.transform = 'translateX(-50%)';
+    cardDiv.style.width = '300px';
+    cardDiv.style.margin = '20px';
+    cardDiv.style.border = '1px solid #ccc';
+    cardDiv.style.borderRadius = '8px';
+    cardDiv.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
 
-    keypair = await keygen();
-    public_key = keypair.publicKey
-    private_key = keypair.privateKey
+    document.body.appendChild(cardDiv);
 
-    pem_public = await exportPublicKey(public_key)
-    jwk_private = await exportPrivateKey(private_key)
-
-    const formData = new FormData();
-    formData.append('email', email);
-    formData.append('public_key', pem_public);
-
-    const response = await fetch('http://localhost:3000/update_pubkey', {
-      method: 'POST',
-      body: formData,
+    const denyRotationButton = document.getElementById('denyRotation');
+    denyRotationButton.addEventListener('click', function() {
+      cardDiv.style.display = 'none';
     });
 
-    if (response.ok){
-      const newData = {
-        privateKey: jwk_private,
-        email: email,
-        dateCreated: getCurrentTime(),
-        name: 'private_key'
-      };
-
-      // Call the updateData function to update the data in the object store
-      updateData(email, newData);
-    }
-    
-  });
-
+    const confirmRotationButton = document.getElementById('confirmRotation')
+    confirmRotationButton.addEventListener('click', async function() {
+      keypair = await keygen();
+      public_key = keypair.publicKey
+      private_key = keypair.privateKey
+  
+      pem_public = await exportPublicKey(public_key)
+      jwk_private = await exportPrivateKey(private_key)
+  
+      const formData = new FormData();
+      formData.append('email', email);
+      formData.append('public_key', pem_public);
+  
+      const response = await fetch('http://localhost:3000/update_pubkey', {
+        method: 'POST',
+        body: formData,
+      });
+  
+      if (response.ok){
+        const newData = {
+          privateKey: jwk_private,
+          email: email,
+          dateCreated: getCurrentTime(),
+          name: 'private_key'
+        };
+  
+        // Call the updateData function to update the data in the object store
+        updateData(email, newData);
+      }
+    })
+  })
 });
 
