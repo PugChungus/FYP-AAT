@@ -48,44 +48,34 @@ def format_date():
 @app.route("/AESencryptFile", methods=["POST"])
 @cross_origin()
 def aes_encrypt ():
-    try:
-        
-        key = get_random_bytes(32)  # 32 bytes (256 bits) AES-256
-        nonce = get_random_bytes(12) # GCM is most commonly used with 96-bit (12-byte) nonces, which is also the length recommended by NIST SP 800-38D.
 
-        formatted_size = format_size(os.path.getsize(infile))
-        header = f'{format_date()} {formatted_size}' #header doesnt need to be secret
-        header_bytes = header.encode('utf-8') #convert to bytes obj
+    key_file_content = request.form['keyFileContent']
+    files = request.files.getlist('file')
+    files_array = []
+    for file in files:
+        files_array.append(file.filename)
+    print(f'file array:{files_array}')
+    print(f"files : {files}")
+    print(files)
+    key = key_file_content.encode('utf-8')
+    encrypted_files = []
+    for file in files:
+        filename = secure_filename(file.filename)
+        file_content = file.read()
 
-        filename = os.path.basename(infile)
-        file_name, file_extension = os.path.splitext(filename)
-        file_extension_str = file_extension.encode('utf-8')
-        file_extension_padded = pad(file_extension_str, 16)
+        # Encrypt file content using AES-GCM
+        cipher = AES.new(key, AES.MODE_GCM)
+        #cipher.update(b"additional_data")  # Additional authenticated data if needed
 
-        with open(infile, 'rb') as infile_object:
-            file_data = infile_object.read()
-            file_data = file_extension_padded + file_data
+        ciphertext, tag = cipher.encrypt_and_digest(file_content)
 
-        aes_gcm = AES.new(key, AES.MODE_GCM, nonce=nonce)
-        aes_gcm.update(header_bytes)
-        ciphertext, tag = aes_gcm.encrypt_and_digest(file_data)
+        # Prepare encrypted file data
+        encrypted_data = b64encode(cipher.nonce + tag + ciphertext).decode('utf-8')
 
-        header_bytes_padded = pad(header_bytes, 48)
-        ciphertext_padded = pad(ciphertext, 16)
-        concat = header_bytes_padded + nonce + ciphertext_padded + tag
-        # Write the encrypted data to the output file
-        with open(outfile, 'wb') as outfile_object:
-            outfile_object.write(concat)
+        encrypted_files.append({'filename': filename, 'encrypted_data': encrypted_data})
 
-        # Write the encryption key to the key file
-        with open(keyfile, 'wb') as keyfile_object:
-            keyfile_object.write(key)
 
-        print(key, 'key')
-        print(header_bytes, 'header')
-        print(nonce, 'nonce')
-        print(ciphertext, 'ciphertext')
-        print(tag , 'tag')
+    return jsonify({'encrypted_files': encrypted_files})
 
-    except Exception as e:
-        print("An error occurred during encryption:", str(e))
+
+

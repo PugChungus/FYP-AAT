@@ -123,7 +123,9 @@ async function pickerCallback(data) {
           console.log(response)
           //const base64 = `data:${mimeType};base64,${await this.blobToBase64(blob)}`;
           // Now you have the file content as a base64-encoded string - proceed as desired
-          uploadFile(blobe , document)
+          const file = new File([blob], document[google.picker.Document.NAME]);
+          uploadFile(file)
+          
         } else {
           console.error('Failed to fetch file:', response.status, response.statusText);
         }
@@ -146,13 +148,26 @@ async function pickerCallback(data) {
     
 }
 
+document.getElementById('file-input-encrypt').addEventListener('change', handleFileUpload);
 
 
+function handleFileUpload(event) {
+    const files = event.target.files;
 
+    // Clear previous file details
+    document.getElementById('file-details-container').innerHTML = '';
 
-function uploadFile(fileData, name) {
+    // Display file details
+    for (const file of files) {
+        const fileName = file.name;
+        console.log(fileName)
+        uploadFile(file);
+    }
+}
+
+function uploadFile(file) {
     console.log("Filedata")
-    console.log(fileData)
+    
     console.log("name")
   
     
@@ -165,12 +180,12 @@ function uploadFile(fileData, name) {
 
     // Display file name
     const fileName = document.createElement('div');
-    fileName.textContent = `File Name: ${name.name}`;
+    fileName.textContent = `File Name: ${file.name}`;
     fileContainer.appendChild(fileName);
 
     // Display file size
     const fileSize = document.createElement('div');
-    fileSize.textContent = `File Size: ${formatFileSize(fileData.size)}`;
+    fileSize.textContent = `File Size: ${formatFileSize(file.size)}`;
     fileContainer.appendChild(fileSize);
 
     // Append file container to the details container
@@ -180,7 +195,7 @@ function uploadFile(fileData, name) {
     // For example, initiate an AJAX request to upload the file or perform other operations
     
     
-  updatefilearrays(fileData, name)
+  updatefilearrays(file)
 
 
 
@@ -188,13 +203,13 @@ function uploadFile(fileData, name) {
 
 let fileArray = [];
 
-function updatefilearrays(fileData, name){
-  const blob = new Blob([fileData], { type: 'application/octet-stream' });
-      console.log('LOG BLOB',blob)
+function updatefilearrays(file){
+  // const blob = new Blob([fileData], { type: 'application/octet-stream' });
+  //     console.log('LOG BLOB',blob)
       
-      // Create a File object from the Blob
-  const file = new File([blob], name[google.picker.Document.NAME]);
-      console.log(file)
+  //     // Create a File object from the Blob
+  // const file = new File([blob], name[google.picker.Document.NAME]);
+  //     console.log(file)
 
 
 
@@ -203,20 +218,86 @@ function updatefilearrays(fileData, name){
   console.log(fileArray)
 }
 
+function submit(){
+    const filekey = document.getElementById('file-input-key');
+    const uploadedFile = filekey.files[0];
+    const reader = new FileReader();
 
+    reader.onload = function(event) {
+        const fileContent = event.target.result;
+        console.log('File content:', fileContent);
+    
+        const formData = new FormData();
+    
+        // Append key file content to the FormData object
+        formData.append('keyFileContent', fileContent);
+        
+        // Append each file to the FormData object
+        fileArray.forEach((file, index) => {
+        
+          formData.append(`file${index}`, file);
+        });
+    
+        // Perform the fetch request inside the onload function
+        fetch('http://localhost:6969/AESencryptFile', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => {
+          if (response.ok) {
+            console.log('Data submitted successfully');
+            // Handle successful submission
+            return response.text()
+          } else {
+            console.error('Submission failed');
+            // Handle submission failure
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          // Handle errors
+        });
+      };
+    
+      // Read the file as text
+      reader.readAsText(uploadedFile);
+    }
+
+    
+
+
+
+
+
+    function formatFileSize(size) {
+        const kilobyte = 1024;
+        const megabyte = kilobyte * 1024;
+    
+        if (size < kilobyte) {
+            return `${size} B`;
+        } else if (size < megabyte) {
+            return `${(size / kilobyte).toFixed(2)} KB`;
+        } else {
+            return `${(size / megabyte).toFixed(2)} MB`;
+        }
+    }
+    
 
 function submitFiles() {
-  const fileInput = document.getElementById('file-input-key');
+  const files = fileArray
+
+
+  const filekey = document.getElementById('file-input-key');
   const selectedFiles = fileInput.files;
 
   if (selectedFiles.length > 0) {
       const file = selectedFiles[0]; // Assuming handling only the first selected file
+      const uploadedFile = fileInput.files[0];
 
       const reader = new FileReader();
       reader.onload = function(event) {
-          const content = event.target.result;
-          const fileName = file.name;
-
+          const key = event.target.result;
+          console.log(key)
           // Prepare the data to be sent
           const formData = new FormData();
           formData.append('key', content); // Assuming the content is the key
