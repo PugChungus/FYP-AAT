@@ -51,15 +51,6 @@ async function keygen() {
           ["encrypt", "decrypt"]
       );
 
-      // const privateKey = keyPair.privateKey;
-      // const publicKey = keyPair.publicKey;
-
-      // console.log("Private Key:", privateKey);
-      // console.log("Public Key:", publicKey);
-
-      // // Export private and public keys
-      // await exportPublicKey(keyPair.publicKey);
-      // await exportPrivateKey(keyPair.privateKey);
       return keyPair
 
   } catch (error) {
@@ -75,19 +66,33 @@ function openIndexDB(jwk_private, user_email) {
       db = event.target.result;
 
       if (!db.objectStoreNames.contains(`${user_email}__Object_Store`)) {
+        console.log("Object Store Initialize.");
+      
         const objectStore = db.createObjectStore(`${user_email}__Object_Store`, {
-          keyPath: "Private Key",
+          keyPath: "count", // Use a valid keyPath, e.g., "privateKey"
         });
-
-        // // define what data items the objectStore will contain
+        
+        // define what data items the objectStore will contain
         objectStore.createIndex("privateKey", "privateKey", { unique: false });
         objectStore.createIndex("email", "email", { unique: false });
         objectStore.createIndex("dateCreated", "dateCreated", { unique: false });
-        addData(jwk_private, user_email)
-      }
+        objectStore.createIndex("count", "count", { unique: false });  
+      
+        // Wait for the onsuccess event before adding data
+        objectStore.transaction.oncomplete = (event) => {
+          console.log("Transaction completed, Object Store created successfully.");
+          addData(jwk_private, user_email);
+        };
+      
+        objectStore.transaction.onerror = (event) => {
+          console.error("Error creating object store: ", event.target.error);
+        };
+      } else {
+        console.log("Object Store already exists.");
+      }      
   };
 
-  function addData(user_email) {
+  function addData(jwk_private, user_email) {
     const transaction = db.transaction([`${user_email}__Object_Store`], "readwrite");
     const objectStore = transaction.objectStore(`${user_email}__Object_Store`);
 
@@ -95,6 +100,7 @@ function openIndexDB(jwk_private, user_email) {
       privateKey: jwk_private,
       email: user_email,
       dateCreated: getCurrentTime(),
+      count: 1
     };
 
     const addRequest = objectStore.add(newItem);
@@ -173,6 +179,7 @@ async function register() {
           pem_public = await exportPublicKey(public_key)
           console.log(pem_public)
           jwk_private = await exportPrivateKey(private_key)
+          console.log(jwk_private)
 
           formData.append('public_key', pem_public);
           
@@ -185,7 +192,7 @@ async function register() {
             openIndexDB(jwk_private, email);
 
             alert("Registeration Successful.")
-            window.location.href = 'http://localhost:3000/pages/login.html'
+            // window.location.href = 'http://localhost:3000/pages/login.html'
           }
           else{
             alert("Registeration Failed.")

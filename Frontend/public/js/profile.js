@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     <p>Username: ${username}</p>
     
     <p><a href="/pages/edit-profile.html">Edit Profile</a></p>
+    <button type="button" class="btn btn-danger">Key Rotation</button>
   `;
 
   const imgElement = document.getElementById('profile-picture');

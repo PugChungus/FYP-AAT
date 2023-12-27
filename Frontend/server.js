@@ -40,6 +40,7 @@ async function hashPassword(password, salt) {
     }
 }
 
+let verificationResult;
 
 async function verifyPassword(password, pass_db) {
     try {
@@ -94,25 +95,26 @@ app.post('/create_account', async (req, res) => {
 });
 
 app.post('/create_pubkey', async (req, res) => {
-    const public_key = req.body.public_key;
-    console.log(public_key)
+    try {
+        const public_key = req.body.public_key;
+        console.log(public_key)
 
-    const accountIdResult = await pool.execute(
-        'SELECT LAST_INSERT_ID() as account_id'
-    );
+        const accountIdResult = await pool.execute(
+            'SELECT LAST_INSERT_ID() as account_id'
+        );
 
-    const accountId = accountIdResult[0][0].account_id;
+        const accountId = accountIdResult[0][0].account_id;
 
-    // Now, you have the account_id, and you can use it in the next INSERT statement
-    const publicKeyResult = await pool.execute(
-        'INSERT INTO public_key (public_key, account_id, date_created) VALUES (?, ?, NOW())',
-        [public_key, accountId]
-    );
+        // Now, you have the account_id, and you can use it in the next INSERT statement
+        const publicKeyResult = await pool.execute(
+            'INSERT INTO public_key (public_key, account_id, date_created) VALUES (?, ?, NOW())',
+            [public_key, accountId]
+        );
 
-    if (publicKeyResult && publicKeyResult.affectedRows > 0) {
-        return res.status(200).json({ message: 'Account and public key created successfully' });
-    } else {
-        return res.status(500).json({ error: 'Failed to create public key' });
+        return res.status(200).json({ message: 'Public Key created successfully' });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Internal Server Error' });
     }
 })
 
