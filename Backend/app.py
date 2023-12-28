@@ -158,6 +158,17 @@ def upload_file():
         print("Error processing File:", str(e))
         return {"isValid": False, "error": str(e)}
 
+@app.route('/encrypt', methods=['POST'])
+def encrypt_file():
+    try:
+        uploaded_files = request.files.getlist('files')  # Use 'files' instead of 'file'
+        print(uploaded_files, file=sys.stderr)
+        return jsonify({"isValid": True, "message": "Files uploaded successfully"})
+
+    except Exception as e:
+        print("Error processing File:", str(e))
+        return {"isValid": False, "error": str(e)}
+
 
 if __name__ == '__main__':
     app.run(debug=True,

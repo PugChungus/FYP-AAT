@@ -1,5 +1,7 @@
 document.getElementById('file-input-encrypt').addEventListener('change', handleFileUpload);
 
+const selectedFiles = [];
+
 function handleFileUpload(event) {
     const files = event.target.files;
 
@@ -9,6 +11,7 @@ function handleFileUpload(event) {
     // Display file details
     for (const file of files) {
         displayFileDetails(file);
+        selectedFiles.push(file); // Add the file to the list
     }
 }
 
@@ -32,6 +35,34 @@ function displayFileDetails(file) {
     // Append file container to the details container
     fileDetailsContainer.appendChild(fileContainer);
 }
+
+async function uploadFiles() {
+    // Check if there are files to upload
+    if (selectedFiles.length > 0) {
+        await sendFilesToBackend(selectedFiles);
+    } else {
+        console.log("No files selected to upload.");
+    }
+}
+
+async function sendFilesToBackend(files) {
+    const formData = new FormData();
+  
+    // Append each file to the FormData object
+    for (const file of files) {
+      formData.append('files', file);
+    }
+  
+    try {
+        const response = await fetch('http://localhost:5000/encrypt', {
+            method: 'POST',
+            body: formData,
+        });
+    }
+    catch (error) {
+        console.error("Error send file:", error);
+    }
+  }
 
 function formatFileSize(size) {
     const kilobyte = 1024;
