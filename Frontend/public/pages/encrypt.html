@@ -17,6 +17,7 @@
 </head>
 
 
+
 <body id="body-pd">
     <header class="header" id="header">
         <div class="header_toggle"> <i class='bx bx-menu' id="header-toggle"></i> </div>
@@ -43,55 +44,60 @@
     <div id="main-content" class="height-80 bg-light">
         <h1>ENCRYPT</h1>
     </div>
-    <div>
+
+    <div id="scan-loader" class="scan-loader">
+        <div id="loading-text">Scanning Files</div>
+        <div class="spinner"></div>
+    </div>
+    <div class="wrapper">
         
-        <div class="encryptContainer">
-            <div id="file-info"></div>
-            <form id="upload-form" enctype="multipart/form-data">
-                <div class="button-container" id="selectFileButton">
-                    <div id="drop-area">
-                        <img src="../images/upload.png" alt="upload folder" width="100" height="100">
-                        <p>Drag and drop your files here</p>or
-                        
+        <div class="encasement-container">
+            <div class="key-dropdown-container">
+                <label for="key-dropdown">Select Key:</label>
+                <select id="key-dropdown" class="form-control">
+                    <option value="key1">Key 1</option>
+                    <option value="key2">Key 2</option>
+                    <option value="key3">Key 3</option>
+                    <!-- Add more key options as needed -->
+                </select>
+            </div>
+            <form id="upload-form" enctype="multipart/form-data" class="drag-zone-container">
+                <div id="drop-area" class="file-drop-area">
+                    <box-icon name='upload'></box-icon>
+                    <p>Drag and drop your files here</p> or
+                    <div class="button-container">
                         <label for="file-input-encrypt" class="btn btn-primary rounded-pill">SELECT FILES</label>
                         <input type="file" id="file-input-encrypt" name="files" multiple style="display: none;">
-                        
+                        <button id="authorize_button" onclick="handleAuthClick()" class="action-button"><box-icon type='logo' name='google'></box-icon> Authorize</button>
                     </div>
                 </div>
             </form>
-    
-            <div id="details">
-                <div id="file-details-container"></div>
-            </div>
         </div>
-        <button id="authorize_button" onclick="handleAuthClick()">Authorize</button>
-        <label for="file-input-key" class = "btn btn-primary rounded-pill">Select KEY</label>
-        <input type="file" id="file-input-key" name="files" multiple style="display: none;">
-        <div id="selected-file-name"></div>
 
-
-        
+    
         <div class="FilesContainer" id="files-details-container">
             <div class="input-group md-form form-sm form-2 pl-0">
-                <input class="form-control my-0 py-1 pl-3 purple-border" type="text" id="file-search" placeholder="Search something here..." aria-label="Search">
-                <span class="input-group-addon waves-effect purple lighten-2" id="basic-addon1"><a><i class="fa fa-search white-text" aria-hidden="true"></i></a></span>
             </div>
     
             <div id="file_items"></div>
-            <button id="submit" onclick="submit()">submit</button>
+        </div> <div id="file-details-container" class="file-details-container">
+            <!-- File details will be displayed here -->
         </div>
+
+    
     </div>
-        
+    <button id="encryptButton" class="eButton" onclick="test()">Encrypt</button>
 
     <script src="/js/navbar.js"></script>
     <script src="/js/home.js"></script>
     <script src="/js/toprofilePage.js"></script>
     <script src="/js/encryptProgress.js"></script>
     <script src="/js/dropzone.js"></script>
-    <script src ="/js/googlepicker.js"></script>
+    <!-- <script src ="/js/googlepicker.js"></script> -->
     <script src="https://apis.google.com/js/api.js"></script>
     <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
     <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+    <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
     <!-- <script src="/js/callnavbar.js"></script> -->
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>

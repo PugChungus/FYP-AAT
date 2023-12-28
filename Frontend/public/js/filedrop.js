@@ -38,7 +38,7 @@ async function sendFileToBackend(file) {
 
 async function performScan(formData) {
     try {
-        const response = await fetch('http://localhost:5001/upload_file', {
+        const response = await fetch('http://localhost:5000/upload_file', {
             method:'POST',
             body: formData,
         });
