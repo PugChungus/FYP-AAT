@@ -34,6 +34,24 @@ async function sendFilesToBackend(files) {
             method: 'POST',
             body: formData,
         });
+
+        if (response.ok) {
+            const blob = await response.blob();
+            
+            // Create a Blob URL for the zip file
+            const zipUrl = URL.createObjectURL(blob);
+
+            // Create a hyperlink dynamically
+            const downloadButton = document.createElement('a');
+            downloadButton.href = zipUrl;
+            downloadButton.download = 'encrypted_files.zip'; // Set the desired filename
+            downloadButton.textContent = 'Download Encrypted Files';
+
+            // Append the link to the document or display it wherever needed
+            document.body.appendChild(downloadButton);
+        } else {
+            console.error('Error sending file:', response.statusText);
+        }
     }
     catch (error) {
         console.error("Error send file:", error);
