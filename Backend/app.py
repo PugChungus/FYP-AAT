@@ -162,6 +162,8 @@ def upload_file():
 def encrypt_file():
     try:
         uploaded_files = request.files.getlist('files')  # Use 'files' instead of 'file'
+        key = get_random_bytes(32)  # 32 bytes (256 bits) AES-256
+        nonce = get_random_bytes(12)
         print(uploaded_files, file=sys.stderr)
         return jsonify({"isValid": True, "message": "Files uploaded successfully"})
 
