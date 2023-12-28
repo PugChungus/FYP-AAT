@@ -121,6 +121,7 @@ app.post('/create_pubkey', async (req, res) => {
 app.post('/update_pubkey', async (req, res) => {
     try {
         const public_key = req.body.public_key;
+        const email = req.body.email;
         console.log(public_key)
 
         // Now, you have the account_id, and you can use it in the next INSERT statement
@@ -132,7 +133,7 @@ app.post('/update_pubkey', async (req, res) => {
             [public_key, email]
         );
 
-        return res.status(200).json({ message: 'Public Key created successfully' });
+        return res.status(200).json({ message: 'Public Key updated successfully' });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ error: 'Internal Server Error' });

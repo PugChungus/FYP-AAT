@@ -69,14 +69,14 @@ function openIndexDB(jwk_private, user_email) {
         console.log("Object Store Initialize.");
       
         const objectStore = db.createObjectStore(`${user_email}__Object_Store`, {
-          keyPath: "count", // Use a valid keyPath, e.g., "privateKey"
+          keyPath: "name", // Use a valid keyPath, e.g., "privateKey"
         });
         
         // define what data items the objectStore will contain
         objectStore.createIndex("privateKey", "privateKey", { unique: false });
         objectStore.createIndex("email", "email", { unique: false });
         objectStore.createIndex("dateCreated", "dateCreated", { unique: false });
-        objectStore.createIndex("count", "count", { unique: false });  
+        objectStore.createIndex("name", "name", { unique: false });  
       
         // Wait for the onsuccess event before adding data
         objectStore.transaction.oncomplete = (event) => {
@@ -100,7 +100,7 @@ function openIndexDB(jwk_private, user_email) {
       privateKey: jwk_private,
       email: user_email,
       dateCreated: getCurrentTime(),
-      count: 1
+      name: 'private_key'
     };
 
     const addRequest = objectStore.add(newItem);
@@ -192,7 +192,7 @@ async function register() {
             openIndexDB(jwk_private, email);
 
             alert("Registeration Successful.")
-            // window.location.href = 'http://localhost:3000/pages/login.html'
+            window.location.href = 'http://localhost:3000/pages/login.html'
           }
           else{
             alert("Registeration Failed.")
