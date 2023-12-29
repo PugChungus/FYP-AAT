@@ -159,6 +159,21 @@ def upload_file():
         return {"isValid": False, "error": str(e)}
 
 
+@app.route('/aes_keygen', methods=['POST'])
+def aes_keygen():
+    try:
+        data = request.json
+        key_name = data.get('keyName')
+
+        generated_key = get_random_bytes(32)
+        hex_key = generated_key.hex()
+
+        return jsonify({'key': hex_key})
+    except Exception as e:
+        print("Error generating key: ", str(e))
+        return jsonify({"error": str(e)}), 500
+
+
 if __name__ == '__main__':
     app.run(debug=True,
     port=5000)

@@ -44,9 +44,27 @@ function generateKey() {
         downloadLink.addEventListener('click', function (event) {
 
             event.preventDefault();
-
-            alert('Download functionality will be implemented here.');
+            fetch('http://localhost:5000/aes_keygen', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ keyName: keyName }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.key) {
+                    // Trigger the download with the fetched key
+                    downloadKey(data.key, keyName);
+                } else {
+                    console.error('Key not found in the response: ', data);
+                }
+            })
+            .catch(error => {
+                console.error('Error generating key: ', error);
+            });
         });
+            
         var downloadIcon = document.createElement('i');
         downloadIcon.className = 'bx bxs-download';
         downloadLink.appendChild(downloadIcon);
@@ -74,10 +92,51 @@ function generateKey() {
         newKeyEntry.appendChild(col4);
 
         keyEntriesContainer.appendChild(newKeyEntry);
+
+        fetch('http://localhost:5000/aes_keygen', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ keyName: keyName}),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.key) {
+                alert('Key generated successfully: ', data.key);
+            }else{
+                console.error('Key not found in the response: ', data)
+            }
+        })
+        .catch(error => {
+            console.error('Error generating key: ', error)
+        });
+
         closeKeyCard();
     } else {
         alert('Please enter a Key Name.');
     }
+}
+
+function downloadKey(key, keyName) {
+    var keyString = key.toString();
+
+    // Create a Blob with the key
+    var blob = new Blob([keyString], { type: 'application/octet-stream' });
+
+    // Create a download link
+    var downloadLink = document.createElement('a');
+    downloadLink.href = URL.createObjectURL(blob);
+    downloadLink.download = keyName + '.pkl';  // Change the file extension or name as needed
+
+    // Append the download link to the document body
+    document.body.appendChild(downloadLink);
+
+    // Trigger a click on the download link
+    downloadLink.click();
+
+    // Remove the download link from the document body
+    document.body.removeChild(downloadLink);
 }
 
 function getCurrentDateTime() {
