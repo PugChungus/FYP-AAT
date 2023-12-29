@@ -46,9 +46,6 @@ def encrypt_file(infile, outfile, keyfile):
         
         nonce = get_random_bytes(12)  
 
-
-
-
         key = get_random_bytes(32)  # 32 bytes (256 bits) AES-256
         nonce = get_random_bytes(12) # GCM is most commonly used with 96-bit (12-byte) nonces, which is also the length recommended by NIST SP 800-38D.
 
@@ -144,6 +141,3 @@ if __name__ == "__main__":
     encrypt()
     decrypt()
 
-
-
-    

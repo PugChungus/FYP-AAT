@@ -1,5 +1,11 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, Response
 from werkzeug.utils import secure_filename
+from flask_cors import cross_origin
+from Crypto.Cipher import AES
+from Crypto.Random import get_random_bytes
+from Crypto.Util.Padding import pad, unpad
+from base64 import b64encode, b64decode
+from datetime import datetime
 from PIL import Image
 from io import BytesIO
 from flask_cors import CORS
@@ -8,14 +14,8 @@ import io
 import base64
 import sys
 import requests
+import zipfile
 import hashlib
-from flask_cors import cross_origin
-
-from Crypto.Cipher import AES
-from Crypto.Random import get_random_bytes
-from Crypto.Util.Padding import pad, unpad
-from base64 import b64encode, b64decode
-from datetime import datetime
 import os
 import json
 
@@ -37,7 +37,46 @@ def is_valid_image(file_bytes):
         return True
     except Exception as e:
         return False
+
+def format_date():
+    now = datetime.now()
+
+    # Format the date and time
+    formatted_date = now.strftime("%d:%m:%Y %I:%M:%S %p")
+
+    return formatted_date
     
+def format_size(size_in_bytes):
+    size_in_bytes = float(size_in_bytes)
+    kilo = 1024
+    mega = kilo * kilo
+    giga = mega * kilo
+
+    if size_in_bytes >= giga:
+        size = '{:.2f} GB'.format(size_in_bytes / giga)
+    elif size_in_bytes >= mega:
+        size = '{:.2f} MB'.format(size_in_bytes / mega)
+    elif size_in_bytes >= kilo:
+        size = '{:.2f} KB'.format(size_in_bytes / kilo)
+    else:
+        size = '{:.2f} bytes'.format(size_in_bytes)
+
+    return size
+
+@app.route('/set_key', methods=['POST'])
+def set_key():
+    global key  
+    data = request.get_json()
+    qr_content = data.get('qrContent', '')
+    key = bytes.fromhex(qr_content) 
+
+    try:
+        if len(key) != 32:
+            raise ValueError("Key must be 32 bytes long")
+
+        return jsonify(message="Key Set Successfully")
+    except ValueError as e:
+        return jsonify(error='Invalid QR Code Content', message=str(e)), 400
 
 @app.route("/AESencryptFile", methods=["POST"])
 @cross_origin()
@@ -158,6 +197,56 @@ def upload_file():
         print("Error processing File:", str(e))
         return {"isValid": False, "error": str(e)}
 
+@app.route('/encrypt', methods=['POST'])
+def encrypt_files():
+    try:
+        uploaded_files = request.files.getlist('files')
+        
+        # Create a BytesIO object to store the ZIP file in memory
+        encrypted_zip = BytesIO()
+
+        with zipfile.ZipFile(encrypted_zip, 'a', zipfile.ZIP_DEFLATED, allowZip64=True) as zipf:
+            for uploaded_file in uploaded_files:
+                key = get_random_bytes(32)
+                nonce = get_random_bytes(12)
+
+                file_size_bytes = uploaded_file.content_length
+                formatted_size = format_size(file_size_bytes)
+                header = f'{format_date()} {formatted_size}'
+                header_bytes = header.encode('utf-8')
+
+                filename = uploaded_file.filename
+                file_name, file_extension = filename.rsplit('.', 1)
+                file_extension_str = file_extension.encode('utf-8')
+                file_extension_padded = pad(file_extension_str, 16)
+
+                file_data = uploaded_file.read()
+                file_data = file_extension_padded + file_data
+
+                aes_gcm = AES.new(key, AES.MODE_GCM, nonce=nonce)
+                aes_gcm.update(header_bytes)
+                ciphertext, tag = aes_gcm.encrypt_and_digest(file_data)
+
+                header_bytes_padded = pad(header_bytes, 48)
+                ciphertext_padded = pad(ciphertext, 16)
+
+                concat = header_bytes_padded + nonce + ciphertext_padded + tag
+
+                new_file_name = f'{file_name}.enc'
+
+                # Write the new file to the existing ZIP file
+                zipf.writestr(new_file_name, concat)
+
+        # Move the buffer position to the beginning before sending
+        encrypted_zip.seek(0)
+
+        response = Response(encrypted_zip.read(), content_type='application/zip')
+        response.headers['Content-Disposition'] = f'attachment; filename="encrypted_files.zip"'
+        return response
+
+    except Exception as e:
+        print("Error processing Files:", str(e))
+        return {"isValid": False, "error": str(e)}
 
 @app.route('/aes_keygen', methods=['POST'])
 def aes_keygen():
