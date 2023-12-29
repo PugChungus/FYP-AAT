@@ -139,6 +139,37 @@ function formatFileSize(size) {
     }
 }
 
+function getAllKeyNames() {
+    const keyNames = [];
+    for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        // Check if the key starts with 'key_' to identify your keys
+        if (key.startsWith('key_')) {
+            keyNames.push(key.substring(4)); // Extract the fileNameWithoutExtension part
+        }
+    }
+    return keyNames;
+}
+
+function createKeyDropdown() {
+    const keyDropdown = document.getElementById('key-dropdown');
+
+    // Clear existing options
+    keyDropdown.innerHTML = '';
+
+    // Get all key names from sessionStorage
+    const keyNames = getAllKeyNames();
+
+    // Add each key name as an option in the dropdown
+    keyNames.forEach((keyName, index) => {
+        const option = document.createElement('option');
+        option.value = `key_${keyName}`;
+        option.textContent = keyName;
+        keyDropdown.appendChild(option);
+    });
+}
+
+createKeyDropdown()
 
 
 

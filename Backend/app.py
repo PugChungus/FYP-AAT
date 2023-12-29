@@ -255,14 +255,34 @@ def aes_keygen():
         key_name = data.get('keyName')
 
         generated_key = get_random_bytes(32)
-        hex_key = generated_key.hex()
+        generated_key_base64 = base64.b64encode(generated_key).decode('utf-8')
 
-        return jsonify({'key': hex_key})
+        return jsonify({'key': generated_key_base64})
     except Exception as e:
         print("Error generating key: ", str(e))
         return jsonify({"error": str(e)}), 500
 
+@app.route('/check_key', methods=['POST'])
+def check_key():
+    try:
+        #secure file upload
+        uploaded_file = request.files['file']
+        file_content = uploaded_file.read()
+        file_size = len(file_content)
+        file_name = uploaded_file.filename
 
+        key_file_content = base64.b64encode(file_content).decode('utf-8')
+
+        # Check if the file size is exactly 32 bytes
+        if file_size == 32:
+            return jsonify({'fileName': file_name, 'keyContent': key_file_content})
+        else:
+            return jsonify({"error": "Invalid key size. The key must be 32 bytes."}), 400
+
+    except Exception as e:
+        print("Error generating key: ", str(e))
+        return jsonify({"error": str(e)}), 500
+    
 if __name__ == '__main__':
     app.run(debug=True,
     port=5000)

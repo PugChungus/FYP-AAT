@@ -46,7 +46,11 @@
                 <h2>AES Key Management</h2>
             </div>
             <div class="buttons">
-                <a href="#" class="importKey" data-label="Import Key"><i class='bx bx-import bx-sm' ></i></a>
+                <label for="fileInput" class="importKey" data-label="Import Key">
+                    <i class='bx bx-import bx-sm'></i>
+                </label>
+                <input type="file" id="fileInput" style="display: none;">  
+                <button id="uploadButton">Upload File</button>              
                 <a href="#" class="generateKey" data-label="Generate Key" id="generateKeyButton"><i class='bx bx-add-to-queue bx-sm'></i></a>
             </div>
         </div>
