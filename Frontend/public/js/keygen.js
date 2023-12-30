@@ -7,119 +7,50 @@ function closeKeyCard() {
 }
 
 function generateKey() {
-
     var keyName = document.getElementById('keyName').value;
 
     if (keyName.trim() !== '') {
-
-        var keyEntriesContainer = document.querySelector('.responsive-table');
-
-        var latestId = 1; 
-        var lastKeyEntry = keyEntriesContainer.querySelector('.table-row:last-child');
-        if (lastKeyEntry) {
-            latestId = parseInt(lastKeyEntry.querySelector('.col-1').textContent) + 1;
-        }
-
-        var newKeyEntry = document.createElement('li');
-        newKeyEntry.className = 'table-row';
-
-        var col1 = document.createElement('div');
-        col1.className = 'col col-1';
-        col1.textContent = latestId;
-
-        var col2 = document.createElement('div');
-        col2.className = 'col col-2';
-        col2.textContent = keyName;
-
-        var col3 = document.createElement('div');
-        col3.className = 'col col-3';
-        col3.textContent = getCurrentDateTime();
-
-        var col4 = document.createElement('div');
-        col4.className = 'col col-4 col-right';
-
-        // Create the download icon
-        var downloadLink = document.createElement('i');
-        downloadLink.href = '#';
-        downloadLink.addEventListener('click', function (event) {
-
-            event.preventDefault();
-            fetch('http://localhost:5000/aes_keygen', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ keyName: keyName }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.key) {
-                    const binaryString = atob(data.key);
-                
-                    // Convert the binary string to a Uint8Array
-                    const uint8Array = new Uint8Array(binaryString.length);
-                    for (let i = 0; i < binaryString.length; ++i) {
-                        uint8Array[i] = binaryString.charCodeAt(i);
-                    }
-
-                    sessionStorage.setItem(`key_${keyName}`, uint8Array);
-                
-                    // Trigger the download with the Uint8Array
-                    downloadKey(uint8Array, keyName);
-                } else {
-                    console.error('Key not found in the response: ', data);
-                }
-            })
-            .catch(error => {
-                console.error('Error generating key: ', error);
-            });
-        });
-            
-        var downloadIcon = document.createElement('i');
-        downloadIcon.className = 'bx bxs-download';
-        downloadLink.appendChild(downloadIcon);
-        col4.appendChild(downloadLink);
-
-        var spacer = document.createElement('span');
-        spacer.className = 'icon-spacer';
-        col4.appendChild(spacer);
-
-        // Create the delete icon
-        var deleteIcon = document.createElement('i');
-        deleteIcon.className = "bx bxs-x-circle"; 
-        deleteIcon.href = '#'; 
-        deleteIcon.addEventListener('click', function (event) {
-
-            event.preventDefault();
-
-            newKeyEntry.remove();
-        });
-        col4.appendChild(deleteIcon);
-
-        newKeyEntry.appendChild(col1);
-        newKeyEntry.appendChild(col2);
-        newKeyEntry.appendChild(col3);
-        newKeyEntry.appendChild(col4);
-
-        keyEntriesContainer.appendChild(newKeyEntry);
-
         fetch('http://localhost:5000/aes_keygen', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ keyName: keyName}),
+            body: JSON.stringify({ keyName: keyName }),
         })
         .then(response => response.json())
         .then(data => {
-            if(data.key) {
+            if (data.key) {
+                const binaryString = atob(data.key);
+
+                // Convert the binary string to a Uint8Array
+                const uint8Array = new Uint8Array(binaryString.length);
+                for (let i = 0; i < binaryString.length; ++i) {
+                    uint8Array[i] = binaryString.charCodeAt(i);
+                }
+
+                const existingKeyData = sessionStorage.getItem(`key_${keyName}`);
+                if (existingKeyData) {
+                    // Key with the same name already exists, handle the duplicate keyName
+                    alert('Duplicate key name. Please choose a different name.');
+                } else {
+                    // KeyName doesn't exist, proceed to add the new key
+                    sessionStorage.setItem(`key_${keyName}`, JSON.stringify({
+                        keyName: keyName,
+                        uploadTime: getCurrentDateTime(),
+                        keyValue: uint8Array,
+                    }));
+
+                    // Create the key entry using the new function
+                    createKeyEntry(keyName, getCurrentDateTime(), uint8Array);
+                }
+
                 alert('Key generated successfully: ', data.key);
-            }else{
-                console.error('Key not found in the response: ', data)
+            } else {
+                console.error('Key not found in the response: ', data);
             }
         })
         .catch(error => {
-            console.error('Error generating key: ', error)
+            console.error('Error generating key: ', error);
         });
 
         closeKeyCard();
@@ -174,9 +105,20 @@ async function importKey() {
 
             const fileNameWithoutExtension = responseData.fileName.split('.')[0];
 
-            sessionStorage.setItem(`key_${fileNameWithoutExtension}`, uint8Array);
+            const existingKeyData = sessionStorage.getItem(`key_${fileNameWithoutExtension}`);
 
-            createKeyEntry(fileNameWithoutExtension, getCurrentDateTime(), uint8Array);
+            if (existingKeyData) {
+                // Key with the same name already exists, handle the duplicate keyName
+                alert('Duplicate key name. Please choose a different name.');
+            } else {
+                sessionStorage.setItem(`key_${fileNameWithoutExtension}`, JSON.stringify({
+                    keyName: fileNameWithoutExtension,
+                    uploadTime: getCurrentDateTime(),
+                    keyValue: uint8Array,
+                }));
+
+                createKeyEntry(fileNameWithoutExtension, getCurrentDateTime(), uint8Array);
+            }
 
         } else {
             alert("Invalid Key");
@@ -184,6 +126,42 @@ async function importKey() {
     } else {
         alert("Please upload 1 key at a time.");
     }
+}
+
+function getAllKeyNames() {
+    const keyNames = [];
+    for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        // Check if the key starts with 'key_' to identify your keys
+        if (key.startsWith('key_')) {
+            keyNames.push(key.substring(4)); // Extract the fileNameWithoutExtension part
+        }
+    }
+    return keyNames;
+}
+
+function createKeyDropdown() {
+    // Get all key names from sessionStorage
+    const keyNames = getAllKeyNames();
+
+    // Sort keys by upload time
+    keyNames.sort((keyNameA, keyNameB) => {
+        const keyDataA = JSON.parse(sessionStorage.getItem(`key_${keyNameA}`));
+        const keyDataB = JSON.parse(sessionStorage.getItem(`key_${keyNameB}`));
+        
+        // Convert timestamp strings to Date objects for comparison
+        const timeA = new Date(keyDataA.uploadTime);
+        const timeB = new Date(keyDataB.uploadTime);
+
+        // Compare upload times for sorting
+        return timeA - timeB;
+    });
+
+    // Add each key name as an option in the dropdown
+    keyNames.forEach((keyName, index) => {
+        const keyData = JSON.parse(sessionStorage.getItem(`key_${keyName}`));
+        createKeyEntry(keyData.keyName, keyData.uploadTime, keyData.keyValue);
+    });
 }
 
 function createKeyEntry(keyName, dateTime, keyContent) {
@@ -231,6 +209,11 @@ function createKeyEntry(keyName, dateTime, keyContent) {
     deleteIcon.href = '#';
     deleteIcon.addEventListener('click', function (event) {
         event.preventDefault();
+
+        // Remove the key from sessionStorage
+        sessionStorage.removeItem(`key_${keyName}`);
+
+        // Remove the key entry from the UI
         newKeyEntry.remove();
     });
     col4.appendChild(deleteIcon);
@@ -250,10 +233,12 @@ function getCurrentDateTime() {
     var day = String(now.getDate()).padStart(2, '0');
     var hours = String(now.getHours()).padStart(2, '0');
     var minutes = String(now.getMinutes()).padStart(2, '0');
+    var seconds = String(now.getSeconds()).padStart(2, '0');
 
-    var formattedDateTime = `${year}-${day}-${month}-T${hours}${minutes}`;
+    var formattedDateTime = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
     return formattedDateTime;
 }
+
 
 document.getElementById('generateKeyButton').addEventListener('click', function (event) {
     event.preventDefault();
