@@ -18,8 +18,31 @@ async function uploadFiles() {
         await sendFilesToBackend(selectedFiles);
     } else {
         console.log("No files selected to upload.");
+        return;
     }
+    hideDropZoneAndFileDetails();
 }
+
+
+
+function hideDropZoneAndFileDetails() {
+    const dropZone = document.querySelector('.drag-zone-container');
+    const fileDetails = document.querySelector('.file-details-container');
+    const dropZoneEncasement = document.querySelector('.encasement-container')
+    const encryptButton = document.getElementById('encryptButton');
+    const downloadButton = document.createElement('button');
+    downloadButton.id = 'downloadButton';
+    downloadButton.textContent = 'Download Encrypted Files';
+  
+    // Append the download button to the document or display it wherever needed
+    document.body.appendChild(downloadButton);
+  
+    // Hide the drop zone, file details, and encrypt button
+    dropZone.style.display = 'none';
+    fileDetails.style.display = 'none';
+    encryptButton.style.display = 'none';
+    dropZoneEncasement.style.display = 'none';
+  }
 
 async function sendFilesToBackend(files) {
     const formData = new FormData();

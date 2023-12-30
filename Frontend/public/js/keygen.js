@@ -215,6 +215,8 @@ function createKeyEntry(keyName, dateTime, keyContent) {
 
         // Remove the key entry from the UI
         newKeyEntry.remove();
+
+        updateKeyEntryIds();
     });
     col4.appendChild(deleteIcon);
 
@@ -224,6 +226,13 @@ function createKeyEntry(keyName, dateTime, keyContent) {
     newKeyEntry.appendChild(col4);
 
     keyEntriesContainer.appendChild(newKeyEntry);
+}
+
+function updateKeyEntryIds() {
+    const keyEntries = document.querySelectorAll('.table-row');
+    keyEntries.forEach((entry, index) => {
+        entry.querySelector('.col-1').textContent = index + 1;
+    });
 }
 
 function getCurrentDateTime() {

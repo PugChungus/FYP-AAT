@@ -74,6 +74,7 @@
     border-radius: 5px;
     padding: 10px;
     margin-right: 20px; /* Add margin for spacing */
+    margin-top: 20px;
 }
 
 .file-entry-container {
@@ -144,4 +145,8 @@
     position: absolute;
     right: 80px;
     color: white;
+}
+
+#downloadButton {
+    display: none;
 }
