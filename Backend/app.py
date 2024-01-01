@@ -201,13 +201,14 @@ def upload_file():
 def encrypt_files():
     try:
         uploaded_files = request.files.getlist('files')
+        hex = request.form['hex']
+        key = bytes.fromhex(hex)
         
         # Create a BytesIO object to store the ZIP file in memory
         encrypted_zip = BytesIO()
 
         with zipfile.ZipFile(encrypted_zip, 'a', zipfile.ZIP_DEFLATED, allowZip64=True) as zipf:
             for uploaded_file in uploaded_files:
-                key = get_random_bytes(32)
                 nonce = get_random_bytes(12)
 
                 file_size_bytes = uploaded_file.content_length
@@ -251,13 +252,9 @@ def encrypt_files():
 @app.route('/aes_keygen', methods=['POST'])
 def aes_keygen():
     try:
-        data = request.json
-        key_name = data.get('keyName')
-
         generated_key = get_random_bytes(32)
-        generated_key_base64 = base64.b64encode(generated_key).decode('utf-8')
-
-        return jsonify({'key': generated_key_base64})
+        print(generated_key, file=sys.stderr)
+        return jsonify({'key': generated_key.hex()})
     except Exception as e:
         print("Error generating key: ", str(e))
         return jsonify({"error": str(e)}), 500
@@ -274,7 +271,7 @@ def check_key():
         key_file_content = base64.b64encode(file_content).decode('utf-8')
 
         # Check if the file size is exactly 32 bytes
-        if file_size == 32:
+        if file_size == 64:
             return jsonify({'fileName': file_name, 'keyContent': key_file_content})
         else:
             return jsonify({"error": "Invalid key size. The key must be 32 bytes."}), 400

@@ -3,7 +3,6 @@ document.getElementById('file-input-decrypt').addEventListener('change', handleF
 async function handleFileUpload(event) {
     const files = event.target.files;
 
-
     for (const file of files) {
         await sendFileToBackend(file);
     }
@@ -74,8 +73,6 @@ function displayFileDetails(file, formData) {
 
     // Perform the scan after displaying file details
 }
-
-
 
 function formatFileSize(size) {
     const kilobyte = 1024;

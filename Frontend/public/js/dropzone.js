@@ -1,6 +1,35 @@
-document.getElementById('file-input-encrypt').addEventListener('change', handleFileUpload);
-
 const selectedFiles = [];
+const keyDropdown = document.getElementById('key-dropdown');
+let selectedKey = keyDropdown.value;
+
+function createKeyDropdown() {
+    // Clear existing options
+    keyDropdown.innerHTML = '';
+
+    // Get all key data from sessionStorage
+    const keyData = getAllKeyData();
+
+    // Sort key data based on upload time (assuming uploadTime is in ISO format)
+    keyData.sort((a, b) => new Date(a.uploadTime) - new Date(b.uploadTime));
+
+    // Add each key name as an option in the dropdown
+    keyData.forEach((data, index) => {
+        const option = document.createElement('option');
+        option.value = `key_${data.keyName}`;
+        option.textContent = data.keyName;
+        keyDropdown.appendChild(option);
+    });
+
+    // Set the selected key to the value of the first option
+    selectedKey = keyDropdown.value;
+
+    // Trigger the change event manually
+    keyDropdown.dispatchEvent(new Event('change'));
+}
+
+createKeyDropdown()
+
+document.getElementById('file-input-encrypt').addEventListener('change', handleFileUpload);
 
 async function handleFileUpload(event) {
     const files = event.target.files;
@@ -12,18 +41,21 @@ async function handleFileUpload(event) {
     }
 }
 
+keyDropdown.addEventListener('change', function () {
+    // Update the selected key value
+    selectedKey = keyDropdown.value;
+});
+
 async function uploadFiles() {
     // Check if there are files to upload
     if (selectedFiles.length > 0) {
-        await sendFilesToBackend(selectedFiles);
+        await sendFilesToBackend(selectedFiles, selectedKey);
     } else {
         console.log("No files selected to upload.");
         return;
     }
     hideDropZoneAndFileDetails();
 }
-
-
 
 function hideDropZoneAndFileDetails() {
     const dropZone = document.querySelector('.drag-zone-container');
@@ -74,10 +106,66 @@ function hideDropZoneAndFileDetails() {
         // Append the download button to the document or display it wherever needed
         document.body.appendChild(downloadButton);
     }
-  }
+}
 
-async function sendFilesToBackend(files) {
+//send files to backend to perform a virus check
+async function sendFileToBackend(file) {
     const formData = new FormData();
+    formData.append('file', file);
+
+    const scanLoader = document.getElementById('scan-loader');
+    scanLoader.style.display = 'block'
+
+    try {
+        const scanResult = await performScan(formData);
+
+        if (scanResult.isValid) {
+            console.log(`Scan result for ${file.name}: Non-malicious. Proceeding with upload`)
+            displayFileDetails(file, formData)
+        } else {
+            console.warn(`Scan result for ${file.name}: Malicious. Upload denied`)
+            
+            setTimeout(() => {
+                alert(`File ${file.name} is malicious. Upload denied.`);
+            }, 500); 
+        }
+    } catch (error){
+        console.error(`Error during scan for ${file.name}:`, error)
+    } finally {
+        scanLoader.style.display = 'none'
+    }
+}
+
+async function performScan(formData) {
+    try {
+        const response = await fetch('http://localhost:5000/upload_file', {
+            method:'POST',
+            body: formData,
+        });
+
+        const data = await response.json()
+        console.log(data);
+        return data;
+    } catch (error) {
+        console.error('Error during scan:', error);
+        return {isValid:false, error: 'Error during scan'};
+    }
+}
+
+//send files to the backend to encrypt
+async function sendFilesToBackend(files, selectedKey) {
+    const formData = new FormData();
+
+    console.log(selectedKey, 'Key Value')
+
+    const jsonString = sessionStorage.getItem(selectedKey);
+
+    if (jsonString) {
+        const keyData = JSON.parse(jsonString);
+        const keyValue = keyData.keyValue;
+        console.log(keyValue)
+        formData.append('hex', keyValue);
+    }
   
     // Append each file to the FormData object
     for (const file of files) {
@@ -117,49 +205,6 @@ async function sendFilesToBackend(files) {
     catch (error) {
         console.error("Error send file:", error);
     }
-  }
-
-async function sendFileToBackend(file) {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const scanLoader = document.getElementById('scan-loader');
-    scanLoader.style.display = 'block'
-
-    try {
-        const scanResult = await performScan(formData);
-
-        if (scanResult.isValid) {
-            console.log(`Scan result for ${file.name}: Non-malicious. Proceeding with upload`)
-            displayFileDetails(file, formData)
-        }else {
-            console.warn(`Scan result for ${file.name}: Malicious. Upload denied`)
-            
-            setTimeout(() => {
-                alert(`File ${file.name} is malicious. Upload denied.`);
-            }, 500); 
-        }
-    } catch (error){
-        console.error(`Error during scan for ${file.name}:`, error)
-    } finally {
-        scanLoader.style.display = 'none'
-    }
-}
-
-async function performScan(formData) {
-    try {
-        const response = await fetch('http://localhost:5000/upload_file', {
-            method:'POST',
-            body: formData,
-        });
-
-        const data = await response.json()
-        console.log(data);
-        return data;
-    } catch (error) {
-        console.error('Error during scan:', error);
-        return {isValid:false, error: 'Error during scan'};
-    }
 }
 
 function displayFileDetails(file, formData) {
@@ -184,8 +229,6 @@ function displayFileDetails(file, formData) {
 
     // Perform the scan after displaying file details
 }
-
-
 
 function formatFileSize(size) {
     const kilobyte = 1024;
@@ -212,27 +255,6 @@ function getAllKeyData() {
         }
     }
     return keyData;
-}
-
-function createKeyDropdown() {
-    const keyDropdown = document.getElementById('key-dropdown');
-
-    // Clear existing options
-    keyDropdown.innerHTML = '';
-
-    // Get all key data from sessionStorage
-    const keyData = getAllKeyData();
-
-    // Sort key data based on upload time (assuming uploadTime is in ISO format)
-    keyData.sort((a, b) => new Date(a.uploadTime) - new Date(b.uploadTime));
-
-    // Add each key name as an option in the dropdown
-    keyData.forEach((data, index) => {
-        const option = document.createElement('option');
-        option.value = `key_${data.keyName}`;
-        option.textContent = data.keyName;
-        keyDropdown.appendChild(option);
-    });
 }
 
 function downloadEncryptedFiles() {
@@ -277,8 +299,6 @@ function getBlobUrlForFiles(files) {
 
     return URL.createObjectURL(blob);
 }
-
-createKeyDropdown()
 
 
 

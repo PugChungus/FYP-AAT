@@ -20,13 +20,7 @@ function generateKey() {
         .then(response => response.json())
         .then(data => {
             if (data.key) {
-                const binaryString = atob(data.key);
-
-                // Convert the binary string to a Uint8Array
-                const uint8Array = new Uint8Array(binaryString.length);
-                for (let i = 0; i < binaryString.length; ++i) {
-                    uint8Array[i] = binaryString.charCodeAt(i);
-                }
+                const hexKey = data.key;  
 
                 const existingKeyData = sessionStorage.getItem(`key_${keyName}`);
                 if (existingKeyData) {
@@ -37,11 +31,11 @@ function generateKey() {
                     sessionStorage.setItem(`key_${keyName}`, JSON.stringify({
                         keyName: keyName,
                         uploadTime: getCurrentDateTime(),
-                        keyValue: uint8Array,
+                        keyValue: hexKey,
                     }));
 
                     // Create the key entry using the new function
-                    createKeyEntry(keyName, getCurrentDateTime(), uint8Array);
+                    createKeyEntry(keyName, getCurrentDateTime(), hexKey);
                 }
 
                 alert('Key generated successfully: ', data.key);
@@ -95,13 +89,7 @@ async function importKey() {
 
         if (response.ok) {
             const responseData = await response.json();
-            const decodedKeyContent = atob(responseData.keyContent);
-
-            // Now, `decodedKeyContent` is a string of characters. Convert it to a Uint8Array.
-            const uint8Array = new Uint8Array(decodedKeyContent.length);
-            for (let i = 0; i < decodedKeyContent.length; ++i) {
-                uint8Array[i] = decodedKeyContent.charCodeAt(i);
-            }
+            const decodedKeyContentHex = atob(responseData.keyContent);
 
             const fileNameWithoutExtension = responseData.fileName.split('.')[0];
 
@@ -114,10 +102,10 @@ async function importKey() {
                 sessionStorage.setItem(`key_${fileNameWithoutExtension}`, JSON.stringify({
                     keyName: fileNameWithoutExtension,
                     uploadTime: getCurrentDateTime(),
-                    keyValue: uint8Array,
+                    keyValue: decodedKeyContentHex,
                 }));
 
-                createKeyEntry(fileNameWithoutExtension, getCurrentDateTime(), uint8Array);
+                createKeyEntry(fileNameWithoutExtension, getCurrentDateTime(), decodedKeyContentHex );
             }
 
         } else {
