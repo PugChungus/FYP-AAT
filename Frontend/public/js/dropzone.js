@@ -42,6 +42,38 @@ function hideDropZoneAndFileDetails() {
     fileDetails.style.display = 'none';
     encryptButton.style.display = 'none';
     dropZoneEncasement.style.display = 'none';
+    if (selectedFiles.length >= 2) {
+        // Create a card div for file download options
+        const cardDiv = document.createElement('div');
+        cardDiv.id = 'downloadCard';
+
+        // Create buttons for zip and individual file download
+        const zipButton = document.createElement('button');
+        zipButton.textContent = 'Download as Zip';
+        zipButton.addEventListener('click', downloadEncryptedFilesAsZip);
+
+        const individualButton = document.createElement('button');
+        individualButton.textContent = 'Download as Individual Files';
+        individualButton.addEventListener('click', downloadEncryptedFilesIndividual);
+
+        // Append buttons to the card div
+        cardDiv.appendChild(zipButton);
+        cardDiv.appendChild(individualButton);
+
+        // Append the card div to the document or display it wherever needed
+        document.body.appendChild(cardDiv);
+    } else {
+        // If there is only one file, create a simple download button
+        const downloadButton = document.createElement('button');
+        downloadButton.id = 'downloadButton';
+        downloadButton.textContent = 'Download Encrypted Files';
+
+        // Add click event listener to the download button
+        downloadButton.addEventListener('click', downloadEncryptedFiles);
+
+        // Append the download button to the document or display it wherever needed
+        document.body.appendChild(downloadButton);
+    }
   }
 
 async function sendFilesToBackend(files) {
@@ -64,14 +96,20 @@ async function sendFilesToBackend(files) {
             // Create a Blob URL for the zip file
             const zipUrl = URL.createObjectURL(blob);
 
-            // Create a hyperlink dynamically
-            const downloadButton = document.createElement('a');
-            downloadButton.href = zipUrl;
-            downloadButton.download = 'encrypted_files.zip'; // Set the desired filename
-            downloadButton.textContent = 'Download Encrypted Files';
+            if (selectedFiles.length < 2) {
+                // If there is only one file, create a simple download button
+                const downloadButton = document.createElement('button');
+                downloadButton.textContent = 'Download Encrypted Files';
 
-            // Append the link to the document or display it wherever needed
-            document.body.appendChild(downloadButton);
+                // Add click event listener to the download button
+                downloadButton.addEventListener('click', function () {
+                    window.location.href = zipUrl;
+                });
+
+                // Append the button to the document or display it wherever needed
+                document.body.appendChild(downloadButton);
+            }
+
         } else {
             console.error('Error sending file:', response.statusText);
         }
@@ -195,6 +233,49 @@ function createKeyDropdown() {
         option.textContent = data.keyName;
         keyDropdown.appendChild(option);
     });
+}
+
+function downloadEncryptedFiles() {
+    const blobUrl = getBlobUrlForFiles(selectedFiles);
+    window.location.href = blobUrl;
+}
+
+function downloadEncryptedFilesAsZip() {
+    const blobUrl = getBlobUrlForFiles(selectedFiles);
+    const downloadButton = document.createElement('a');
+    downloadButton.href = blobUrl;
+    downloadButton.download = 'encrypted_files.zip';
+    document.body.appendChild(downloadButton);
+    downloadButton.click();
+    document.body.removeChild(downloadButton);
+}
+
+function downloadEncryptedFilesIndividual() {
+    for (const file of selectedFiles) {
+        const blobUrl = URL.createObjectURL(file);
+        const downloadButton = document.createElement('a');
+        downloadButton.href = blobUrl;
+        downloadButton.download = file.name;
+        document.body.appendChild(downloadButton);
+        downloadButton.click();
+        document.body.removeChild(downloadButton);
+    }
+}
+
+function getBlobUrlForFiles(files) {
+    const formData = new FormData();
+
+    // Append each file to the FormData object
+    for (const file of files) {
+        formData.append('files', file);
+    }
+
+    const blob = fetch('http://localhost:5000/encrypt', {
+        method: 'POST',
+        body: formData,
+    }).then(response => response.blob());
+
+    return URL.createObjectURL(blob);
 }
 
 createKeyDropdown()
