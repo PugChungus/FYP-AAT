@@ -34,10 +34,8 @@ document.getElementById('file-input-encrypt').addEventListener('change', handleF
 async function handleFileUpload(event) {
     const files = event.target.files;
 
-
     for (const file of files) {
         await sendFileToBackend(file);
-        selectedFiles.push(file); // Add the file to the list
     }
 }
 
@@ -120,6 +118,7 @@ async function sendFileToBackend(file) {
         const scanResult = await performScan(formData);
 
         if (scanResult.isValid) {
+            selectedFiles.push(file); 
             console.log(`Scan result for ${file.name}: Non-malicious. Proceeding with upload`)
             displayFileDetails(file, formData)
         } else {

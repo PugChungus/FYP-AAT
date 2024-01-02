@@ -22,12 +22,46 @@ import json
 app = Flask(__name__)
 CORS(app)  
 
+encrypted_data_dict = {}
+decrypted_data_dict = {}
+
 # Connect to the MySQL database
 
 #db = pymysql.connect(host = 'localhost', port = 3306, user = 'root', password = 'password', database = 'major_project_db')
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'svg'}  # Define the allowed image file extensions
 
+@app.route('/aes_keygen', methods=['POST'])
+def aes_keygen():
+    try:
+        generated_key = get_random_bytes(32)
+        print(generated_key, file=sys.stderr)
+        return jsonify({'key': generated_key.hex()})
+    except Exception as e:
+        print("Error generating key: ", str(e))
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/check_key', methods=['POST'])
+def check_key():
+    try:
+        #secure file upload
+        uploaded_file = request.files['file']
+        file_content = uploaded_file.read()
+        file_size = len(file_content)
+        file_name = uploaded_file.filename
+
+        key_file_content = base64.b64encode(file_content).decode('utf-8')
+
+        # Check if the file size is exactly 32 bytes
+        if file_size == 64:
+            return jsonify({'fileName': file_name, 'keyContent': key_file_content})
+        else:
+            return jsonify({"error": "Invalid key size. The key must be 32 bytes."}), 400
+
+    except Exception as e:
+        print("Error generating key: ", str(e))
+        return jsonify({"error": str(e)}), 500
+    
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -63,21 +97,6 @@ def format_size(size_in_bytes):
 
     return size
 
-@app.route('/set_key', methods=['POST'])
-def set_key():
-    global key  
-    data = request.get_json()
-    qr_content = data.get('qrContent', '')
-    key = bytes.fromhex(qr_content) 
-
-    try:
-        if len(key) != 32:
-            raise ValueError("Key must be 32 bytes long")
-
-        return jsonify(message="Key Set Successfully")
-    except ValueError as e:
-        return jsonify(error='Invalid QR Code Content', message=str(e)), 400
-
 @app.route("/AESencryptFile", methods=["POST"])
 @cross_origin()
 def aes_encrypt ():
@@ -110,8 +129,6 @@ def aes_encrypt ():
     #print (jsonify({'encrypted_files': encrypted_files}))
 
     return jsonify({'encrypted_files': encrypted_files})
-
-
 
 def virustotal_scan(hash_value):
     API_KEY = '495d37149054ebae8de04fbf1e19b8f41987188a818d9df9ef7fa775c61ad4e8'
@@ -240,46 +257,62 @@ def encrypt_files():
 
         # Move the buffer position to the beginning before sending
         encrypted_zip.seek(0)
+        encrypted_zip_filename = 'encrypted_zip.zip'
+        encrypted_data_dict[encrypted_zip_filename] = encrypted_zip.getvalue()
 
-        response = Response(encrypted_zip.read(), content_type='application/zip')
-        response.headers['Content-Disposition'] = f'attachment; filename="encrypted_files.zip"'
-        return response
+        return "End of Encryption"
 
     except Exception as e:
         print("Error processing Files:", str(e))
         return {"isValid": False, "error": str(e)}
 
-@app.route('/aes_keygen', methods=['POST'])
-def aes_keygen():
-    try:
-        generated_key = get_random_bytes(32)
-        print(generated_key, file=sys.stderr)
-        return jsonify({'key': generated_key.hex()})
-    except Exception as e:
-        print("Error generating key: ", str(e))
-        return jsonify({"error": str(e)}), 500
+@app.route('/download_single_decrypted_file/<filename>', methods=['GET'])
+def download_single_decrypted_file(filename):
+    print(filename, file=sys.stderr)
+    for keys, value in decrypted_data_dict.items():
+        print(keys, file=sys.stderr)
+    decrypted_data = decrypted_data_dict.get(filename, None)
+    # print(encrypted_data, file=sys.stderr)
+    if decrypted_data is None:
+        return 'File not found', 404
+    WideFileName = filename.encode("utf-8").decode("latin-1")
+    # Set the Content-Disposition header to specify the filename
+    response = Response(decrypted_data, content_type='application/octet-stream')
+    response.headers['Content-Disposition'] = f'attachment; filename="{WideFileName}"'
+    return response
 
-@app.route('/check_key', methods=['POST'])
-def check_key():
-    try:
-        #secure file upload
-        uploaded_file = request.files['file']
-        file_content = uploaded_file.read()
-        file_size = len(file_content)
-        file_name = uploaded_file.filename
+@app.route('/download_zip/<filename>', methods=['GET'])
+def download_zip(filename):
+    print(filename, file=sys.stderr)
+    encrypted_zip_data = BytesIO()
 
-        key_file_content = base64.b64encode(file_content).decode('utf-8')
+    with zipfile.ZipFile(encrypted_zip_data, 'w', zipfile.ZIP_STORED, allowZip64=True) as zipf:
+        for encrypted_filename, encrypted_data in encrypted_data_dict.items():
+            # Add the encrypted data to the ZIP archive with the encrypted filename
+            print(encrypted_filename, file=sys.stderr)
+            zipf.writestr(encrypted_filename, encrypted_data)
 
-        # Check if the file size is exactly 32 bytes
-        if file_size == 64:
-            return jsonify({'fileName': file_name, 'keyContent': key_file_content})
-        else:
-            return jsonify({"error": "Invalid key size. The key must be 32 bytes."}), 400
+    zip_filename = f'encrypted_zip.zip'
 
-    except Exception as e:
-        print("Error generating key: ", str(e))
-        return jsonify({"error": str(e)}), 500
-    
+    encrypted_zip_data.seek(0)
+    encrypted_data_dict[zip_filename] = encrypted_zip_data.getvalue()
+    encrypted_zip_data.seek(0)
+    encrypted_zip_data.truncate(0)
+
+    for keys, value in encrypted_data_dict.items():
+        print(keys, file=sys.stderr)
+    encrypted_data = encrypted_data_dict.get(filename, None)
+
+    if encrypted_data is None:
+        return 'File not found', 404
+
+    WideFileName = filename.encode("utf-8").decode("latin-1")
+    # Set the Content-Disposition header to specify the filename
+    response = Response(encrypted_data, content_type='application/octet-stream')
+    response.headers['Content-Disposition'] = f'attachment; filename="{WideFileName}"'
+
+    return response
+
 if __name__ == '__main__':
     app.run(debug=True,
     port=5000)

@@ -6,10 +6,16 @@ function closeKeyCard() {
     document.getElementById('keyCard').style.display = 'none';
 }
 
+function isValidKeyName(keyName) {
+    // Use a regex pattern to match only alphanumeric characters and underscores
+    const pattern = /^[a-zA-Z0-9_]+$/;
+    return pattern.test(keyName);
+}
+
 function generateKey() {
     var keyName = document.getElementById('keyName').value;
 
-    if (keyName.trim() !== '') {
+    if (isValidKeyName(keyName)) {
         fetch('http://localhost:5000/aes_keygen', {
             method: 'POST',
             headers: {
@@ -49,7 +55,7 @@ function generateKey() {
 
         closeKeyCard();
     } else {
-        alert('Please enter a Key Name.');
+        alert('Invalid key name. Please use only alphanumeric characters and underscores.');
     }
 }
 
