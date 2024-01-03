@@ -70,6 +70,7 @@ async function uploadFiles() {
         console.log("No files selected to upload.");
         return;
     }
+
     hideDropZoneAndFileDetails();
 }
 
@@ -117,15 +118,14 @@ async function hideDropZoneAndFileDetails() {
         document.body.appendChild(cardDiv);
     } else {
         // If there is only one file, create a simple download button
-        const downloadButton = document.createElement('button');
-        downloadButton.id = 'downloadButton';
-        downloadButton.textContent = 'Download Encrypted Files';
-
+        downloadButton.style.display = 'block';
+        downloadButton.textContent = 'Download Encrypted Files';  // Reuse the existing variable
+        
         // Add click event listener to the download button
         downloadButton.addEventListener('click', async () => {
             downloadEncryptedFiles('individual');
         });
-
+        
         // Append the download button to the document or display it wherever needed
         document.body.appendChild(downloadButton);
     }
@@ -193,8 +193,6 @@ async function clearEncryptedFolder() {
 }
 
 async function encrypt(file) {
-    const file_to_encrypt = file
-
     const formData = new FormData();
 
     const jsonString = sessionStorage.getItem(selectedKey);
@@ -213,30 +211,6 @@ async function encrypt(file) {
             method: 'POST',
             body: formData,
         });
-
-        if (response.ok) {
-            const blob = await response.blob();
-            
-            // Create a Blob URL for the zip file
-            const zipUrl = URL.createObjectURL(blob);
-
-            if (selectedFiles.files.length < 2) {
-                // If there is only one file, create a simple download button
-                const downloadButton = document.createElement('button');
-                downloadButton.textContent = 'Download Encrypted Files';
-
-                // Add click event listener to the download button
-                downloadButton.addEventListener('click', function () {
-                    window.location.href = zipUrl;
-                });
-
-                // Append the button to the document or display it wherever needed
-                document.body.appendChild(downloadButton);
-            }
-
-        } else {
-            console.error('Error sending file:', response.statusText);
-        }
     }
     catch (error) {
         console.error("Error send file:", error);
