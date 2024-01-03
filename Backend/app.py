@@ -222,43 +222,34 @@ def encrypt_files():
         key = bytes.fromhex(hex)
         
         # Create a BytesIO object to store the ZIP file in memory
-        encrypted_zip = BytesIO()
+        for uploaded_file in uploaded_files:
+            nonce = get_random_bytes(12)
 
-        with zipfile.ZipFile(encrypted_zip, 'a', zipfile.ZIP_DEFLATED, allowZip64=True) as zipf:
-            for uploaded_file in uploaded_files:
-                nonce = get_random_bytes(12)
+            file_size_bytes = uploaded_file.content_length
+            formatted_size = format_size(file_size_bytes)
+            header = f'{format_date()} {formatted_size}'
+            header_bytes = header.encode('utf-8')
 
-                file_size_bytes = uploaded_file.content_length
-                formatted_size = format_size(file_size_bytes)
-                header = f'{format_date()} {formatted_size}'
-                header_bytes = header.encode('utf-8')
+            filename = uploaded_file.filename
+            file_name, file_extension = filename.rsplit('.', 1)
+            file_extension_str = file_extension.encode('utf-8')
+            file_extension_padded = pad(file_extension_str, 16)
 
-                filename = uploaded_file.filename
-                file_name, file_extension = filename.rsplit('.', 1)
-                file_extension_str = file_extension.encode('utf-8')
-                file_extension_padded = pad(file_extension_str, 16)
+            file_data = uploaded_file.read()
+            file_data = file_extension_padded + file_data
 
-                file_data = uploaded_file.read()
-                file_data = file_extension_padded + file_data
+            aes_gcm = AES.new(key, AES.MODE_GCM, nonce=nonce)
+            aes_gcm.update(header_bytes)
+            ciphertext, tag = aes_gcm.encrypt_and_digest(file_data)
 
-                aes_gcm = AES.new(key, AES.MODE_GCM, nonce=nonce)
-                aes_gcm.update(header_bytes)
-                ciphertext, tag = aes_gcm.encrypt_and_digest(file_data)
+            header_bytes_padded = pad(header_bytes, 48)
+            ciphertext_padded = pad(ciphertext, 16)
 
-                header_bytes_padded = pad(header_bytes, 48)
-                ciphertext_padded = pad(ciphertext, 16)
+            concat = header_bytes_padded + nonce + ciphertext_padded + tag
 
-                concat = header_bytes_padded + nonce + ciphertext_padded + tag
+            new_file_name = f'{file_name}.enc'
 
-                new_file_name = f'{file_name}.enc'
-
-                # Write the new file to the existing ZIP file
-                zipf.writestr(new_file_name, concat)
-
-        # Move the buffer position to the beginning before sending
-        encrypted_zip.seek(0)
-        encrypted_zip_filename = 'encrypted_zip.zip'
-        encrypted_data_dict[encrypted_zip_filename] = encrypted_zip.getvalue()
+            encrypted_data_dict[new_file_name] = concat
 
         return "End of Encryption"
 
@@ -266,18 +257,18 @@ def encrypt_files():
         print("Error processing Files:", str(e))
         return {"isValid": False, "error": str(e)}
 
-@app.route('/download_single_decrypted_file/<filename>', methods=['GET'])
-def download_single_decrypted_file(filename):
+@app.route('/download_single_encrypted_file/<filename>', methods=['GET'])
+def download_single_encrypted_file(filename):
     print(filename, file=sys.stderr)
-    for keys, value in decrypted_data_dict.items():
+    for keys, value in encrypted_data_dict.items():
         print(keys, file=sys.stderr)
-    decrypted_data = decrypted_data_dict.get(filename, None)
+    encrypted_data = encrypted_data_dict.get(filename, None)
     # print(encrypted_data, file=sys.stderr)
-    if decrypted_data is None:
+    if encrypted_data is None:
         return 'File not found', 404
     WideFileName = filename.encode("utf-8").decode("latin-1")
     # Set the Content-Disposition header to specify the filename
-    response = Response(decrypted_data, content_type='application/octet-stream')
+    response = Response(encrypted_data, content_type='application/octet-stream')
     response.headers['Content-Disposition'] = f'attachment; filename="{WideFileName}"'
     return response
 
@@ -312,6 +303,16 @@ def download_zip(filename):
     response.headers['Content-Disposition'] = f'attachment; filename="{WideFileName}"'
 
     return response
+
+@app.route('/clear_encrypted_folder', methods=['GET'])
+def clear_encrypted_folder():
+    encrypted_data_dict.clear()
+    return 'Encrypted folder cleared', 200
+
+@app.route('/clear_decrypted_folder', methods=['GET'])
+def clear_decrypted_folder():
+    decrypted_data_dict.clear()
+    return 'Decrypted folder cleared', 200
 
 if __name__ == '__main__':
     app.run(debug=True,
