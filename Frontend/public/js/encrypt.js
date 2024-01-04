@@ -2,6 +2,7 @@ const selectedFiles = {
     files: []
 };
 
+const seen = new Set();
 const keyDropdown = document.getElementById('key-dropdown');
 let selectedKey = keyDropdown.value;
 
@@ -135,6 +136,18 @@ async function hideDropZoneAndFileDetails() {
 async function sendFileToBackend(file) {
     const formData = new FormData();
     formData.append('file', file);
+
+    const fileNameParts = file.name.split('.');
+    const fileExtension = fileNameParts.length > 1 ? fileNameParts.pop() : '';
+    const fileNameWithoutExtension = fileNameParts.join('');
+    console.log(fileNameWithoutExtension)
+
+    if (seen.has(fileNameWithoutExtension)) {
+        alert('Duplicate file name')
+        return;
+    }
+    
+    seen.add(fileNameWithoutExtension);
 
     const scanLoader = document.getElementById('scan-loader');
     scanLoader.style.display = 'block'
