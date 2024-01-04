@@ -257,6 +257,42 @@ def encrypt_files():
         print("Error processing Files:", str(e))
         return {"isValid": False, "error": str(e)}
 
+@app.route('/decrypt', methods=['POST'])
+def decrypt_files():
+    try:
+        uploaded_files = request.files.getlist('files')
+        hex = request.form['hex']
+        key = bytes.fromhex(hex)
+
+        for uploaded_file in uploaded_files:
+            file_data = uploaded_file.read()
+            header_bytes_unpadded = unpad(file_data[:48], 48)
+            nonce = file_data[48:60]
+            ciphertext_unpadded = unpad(file_data[60:-16], 16)
+            tag = file_data[-16:]
+
+            aes_gcm = AES.new(key, AES.MODE_GCM, nonce=nonce)
+            aes_gcm.update(header_bytes_unpadded)
+            plaintext = aes_gcm.decrypt_and_verify(ciphertext_unpadded, tag)
+            extension = unpad(plaintext[:16], 16)
+            file_data = plaintext[16:]
+            print(extension)
+            print(file_data)
+
+            original_extension = extension.decode('utf-8')
+            filename = uploaded_file.filename
+            file_name, file_extension = filename.rsplit('.', 1)
+            file_with_original_extension = f'{file_name}.{original_extension}'
+
+            decrypted_data_dict[file_with_original_extension] = file_data
+            
+            return jsonify(decrypted_extension=original_extension)
+        
+        return "End of Decryption"
+    except Exception as e:
+        print("Error processing Files:", str(e))
+        return {"isValid": False, "error": str(e)}
+
 @app.route('/download_single_encrypted_file/<filename>', methods=['GET'])
 def download_single_encrypted_file(filename):
     print(filename, file=sys.stderr)
@@ -300,6 +336,53 @@ def download_zip(filename):
     WideFileName = filename.encode("utf-8").decode("latin-1")
     # Set the Content-Disposition header to specify the filename
     response = Response(encrypted_data, content_type='application/octet-stream')
+    response.headers['Content-Disposition'] = f'attachment; filename="{WideFileName}"'
+
+    return response
+
+@app.route('/download_single_decrypted_file/<filename>', methods=['GET'])
+def download_single_decrypted_file(filename):
+    print(filename, file=sys.stderr)
+    for keys, value in decrypted_data_dict.items():
+        print(keys, file=sys.stderr)
+    decrypted_data = decrypted_data_dict.get(filename, None)
+    # print(encrypted_data, file=sys.stderr)
+    if decrypted_data is None:
+        return 'File not found', 404
+    WideFileName = filename.encode("utf-8").decode("latin-1")
+    # Set the Content-Disposition header to specify the filename
+    response = Response(decrypted_data, content_type='application/octet-stream')
+    response.headers['Content-Disposition'] = f'attachment; filename="{WideFileName}"'
+    return response
+
+@app.route('/download_decrypted_zip/<filename>', methods=['GET'])
+def download_decrypted_zip(filename):
+    print(filename, file=sys.stderr)
+    for keys, value in decrypted_data_dict.items():
+        print(keys, file=sys.stderr)
+    decrypted_zip_data = BytesIO()
+
+    with zipfile.ZipFile(decrypted_zip_data, 'w', zipfile.ZIP_STORED, allowZip64=True) as zipf:
+        for decrypted_filename, decrypted_data in decrypted_data_dict.items():
+            # Add the encrypted data to the ZIP archive with the encrypted filename
+            print(decrypted_filename, file=sys.stderr)
+            zipf.writestr(decrypted_filename, decrypted_data)
+
+    zip_filename = f'decrypted_zip.zip'
+
+    decrypted_zip_data.seek(0)
+    encrypted_data_dict[zip_filename] = decrypted_zip_data.getvalue()
+    decrypted_zip_data.seek(0)
+    decrypted_zip_data.truncate(0)
+
+    decrypted_data = decrypted_data_dict.get(filename, None)
+
+    if decrypted_data is None:
+        return 'File not found', 404
+
+    WideFileName = filename.encode("utf-8").decode("latin-1")
+    # Set the Content-Disposition header to specify the filename
+    response = Response(decrypted_data, content_type='application/octet-stream')
     response.headers['Content-Disposition'] = f'attachment; filename="{WideFileName}"'
 
     return response

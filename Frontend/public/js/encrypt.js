@@ -105,7 +105,7 @@ async function hideDropZoneAndFileDetails() {
         });
 
         const individualButton = document.createElement('button');
-        individualButton.textContent = 'Download as Individual Files';
+        individualButton.textContent = 'Download Encrypted Files Individually';
         individualButton.addEventListener('click', async () => {
             downloadEncryptedFiles('individual');
         });
@@ -119,7 +119,7 @@ async function hideDropZoneAndFileDetails() {
     } else {
         // If there is only one file, create a simple download button
         downloadButton.style.display = 'block';
-        downloadButton.textContent = 'Download Encrypted Files';  // Reuse the existing variable
+        downloadButton.textContent = 'Download Encrypted File';  // Reuse the existing variable
         
         // Add click event listener to the download button
         downloadButton.addEventListener('click', async () => {

@@ -1,6 +1,24 @@
-const selectedFiles = [];
+const selectedFiles = {
+    files: []
+};
+
 const keyDropdown = document.getElementById('key-dropdown');
 let selectedKey = keyDropdown.value;
+let decryptedExtension;
+
+function getAllKeyData() {
+    const keyData = [];
+    for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        // Check if the key starts with 'key_' to identify your keys
+        if (key.startsWith('key_')) {
+            const keyName = key.substring(4); // Extract the fileNameWithoutExtension part
+            const data = JSON.parse(sessionStorage.getItem(key));
+            keyData.push({ keyName, uploadTime: data.uploadTime });
+        }
+    }
+    return keyData;
+}
 
 function createKeyDropdown() {
     // Clear existing options
@@ -46,33 +64,36 @@ keyDropdown.addEventListener('change', function () {
 
 async function uploadFiles() {
     // Check if there are files to upload
-    if (selectedFiles.length > 0) {
-        await sendFilesToBackend(selectedFiles, selectedKey);
+    if (selectedFiles.files.length > 0) {
+        await clearDecryptedFolder();
+        await sendFilesToBackend();
     } else {
         console.log("No files selected to upload.");
         return;
     }
+
     hideDropZoneAndFileDetails();
 }
 
-function hideDropZoneAndFileDetails() {
+async function hideDropZoneAndFileDetails() {
     const dropZone = document.querySelector('.drag-zone-container');
     const fileDetails = document.querySelector('.file-details-container');
-    const dropZoneEncasement = document.querySelector('.encasement-container')
+    const dropZoneEncasement = document.querySelector('.encasement-container');
     const decryptButton = document.getElementById('decryptButton');
     const downloadButton = document.createElement('button');
     downloadButton.id = 'downloadButton';
-    downloadButton.textContent = 'Download Decrypted Files';
-  
+    downloadButton.textContent = 'Download Encrypted Files';
+
     // Append the download button to the document or display it wherever needed
     document.body.appendChild(downloadButton);
-  
+
     // Hide the drop zone, file details, and encrypt button
     dropZone.style.display = 'none';
     fileDetails.style.display = 'none';
     decryptButton.style.display = 'none';
     dropZoneEncasement.style.display = 'none';
-    if (selectedFiles.length >= 2) {
+
+    if (selectedFiles.files.length >= 2) {
         // Create a card div for file download options
         const cardDiv = document.createElement('div');
         cardDiv.id = 'downloadCard';
@@ -80,11 +101,15 @@ function hideDropZoneAndFileDetails() {
         // Create buttons for zip and individual file download
         const zipButton = document.createElement('button');
         zipButton.textContent = 'Download as Zip';
-        zipButton.addEventListener('click', downloadDecryptedFilesAsZip);
+        zipButton.addEventListener('click', async () => {
+            downloadDecryptedFiles('zip');
+        });
 
         const individualButton = document.createElement('button');
-        individualButton.textContent = 'Download as Individual Files';
-        individualButton.addEventListener('click', downloadDecryptedFilesIndividual);
+        individualButton.textContent = 'Download Decrypted Files Individually';
+        individualButton.addEventListener('click', async () => {
+            downloadDecryptedFiles('individual', decryptedExtension);
+        });
 
         // Append buttons to the card div
         cardDiv.appendChild(zipButton);
@@ -94,19 +119,19 @@ function hideDropZoneAndFileDetails() {
         document.body.appendChild(cardDiv);
     } else {
         // If there is only one file, create a simple download button
-        const downloadButton = document.createElement('button');
-        downloadButton.id = 'downloadButton';
-        downloadButton.textContent = 'Download Decrypted Files';
-
+        downloadButton.style.display = 'block';
+        downloadButton.textContent = 'Download Decrypted File';  // Reuse the existing variable
+        
         // Add click event listener to the download button
-        downloadButton.addEventListener('click', downloadDecryptedFiles);
-
+        downloadButton.addEventListener('click', async () => {
+            downloadDecryptedFiles('individual', decryptedExtension);
+        });
+        
         // Append the download button to the document or display it wherever needed
         document.body.appendChild(downloadButton);
     }
 }
 
-//send files to backend to perform a virus check
 async function sendFileToBackend(file) {
     const formData = new FormData();
     formData.append('file', file);
@@ -118,7 +143,7 @@ async function sendFileToBackend(file) {
         const scanResult = await performScan(formData);
 
         if (scanResult.isValid) {
-            selectedFiles.push(file); 
+            selectedFiles.files.push(file); 
             console.log(`Scan result for ${file.name}: Non-malicious. Proceeding with upload`)
             displayFileDetails(file, formData)
         } else {
@@ -151,11 +176,24 @@ async function performScan(formData) {
     }
 }
 
-//send files to the backend to encrypt
-async function sendFilesToBackend(files, selectedKey) {
-    const formData = new FormData();
+async function clearDecryptedFolder() {
+    try {
+        const clearResponse = await fetch('http://localhost:5000/clear_decrypted_folder', {
+            method: 'GET',
+        });
 
-    console.log(selectedKey, 'Key Value')
+        if (clearResponse.ok) {
+            console.log('Decrypted folder cleared.');
+        } else {
+            console.error('Error clearing decrypted folder:', clearResponse.statusText);
+        }
+    } catch (clearError) {
+        console.error('Error clearing decrypted folder:', clearError);
+    }
+}
+
+async function decrypt(file) {
+    const formData = new FormData();
 
     const jsonString = sessionStorage.getItem(selectedKey);
 
@@ -166,43 +204,38 @@ async function sendFilesToBackend(files, selectedKey) {
         formData.append('hex', keyValue);
     }
   
-    // Append each file to the FormData object
-    for (const file of files) {
-      formData.append('files', file);
-    }
+    formData.append('files', file);
   
     try {
-        const response = await fetch('http://localhost:5000/encrypt', {
+        const response = await fetch('http://localhost:5000/decrypt', {
             method: 'POST',
             body: formData,
         });
-
+        
         if (response.ok) {
-            const blob = await response.blob();
-            
-            // Create a Blob URL for the zip file
-            const zipUrl = URL.createObjectURL(blob);
-
-            if (selectedFiles.length < 2) {
-                // If there is only one file, create a simple download button
-                const downloadButton = document.createElement('button');
-                downloadButton.textContent = 'Download Decrypted Files';
-
-                // Add click event listener to the download button
-                downloadButton.addEventListener('click', function () {
-                    window.location.href = zipUrl;
-                });
-
-                // Append the button to the document or display it wherever needed
-                document.body.appendChild(downloadButton);
-            }
-
-        } else {
-            console.error('Error sending file:', response.statusText);
+            const responseData = await response.json(); // Parse the JSON response
+            decryptedExtension = responseData.decrypted_extension;
         }
     }
     catch (error) {
         console.error("Error send file:", error);
+    }
+}
+
+//send files to the backend to encrypt
+async function sendFilesToBackend() {
+    const files = selectedFiles.files;
+    const totalFiles = files.length; // Get the total number of files
+
+    if (totalFiles == 1){
+        const file = files[0];
+        await decrypt(file)
+    }
+    else {
+        for (let i = 0; i < totalFiles; i++) {
+            const file = files[i];
+            await decrypt(file)
+        }
     }
 }
 
@@ -242,62 +275,48 @@ function formatFileSize(size) {
     }
 }
 
-function getAllKeyData() {
-    const keyData = [];
-    for (let i = 0; i < sessionStorage.length; i++) {
-        const key = sessionStorage.key(i);
-        // Check if the key starts with 'key_' to identify your keys
-        if (key.startsWith('key_')) {
-            const keyName = key.substring(4); // Extract the fileNameWithoutExtension part
-            const data = JSON.parse(sessionStorage.getItem(key));
-            keyData.push({ keyName, uploadTime: data.uploadTime });
+function downloadDecryptedFiles(type, decryptedExtension) {
+    if (type === 'individual') {
+        const files = selectedFiles.files;
+        const totalFiles = files.length;
+        
+        for (let i = 0; i < totalFiles; i++) {
+            const filename = files[i].name;
+            let fileNameWithoutExtension;
+
+            const numberOfDots = (filename.match(/\./g) || []).length;
+
+            if (numberOfDots === 1 || numberOfDots > 1) {
+                fileNameWithoutExtension = filename.split('.').slice(0, -1).join('.');
+            } else {
+                fileNameWithoutExtension = filename;
+            }
+
+            const fileNameWithEnc = `${fileNameWithoutExtension}.${decryptedExtension}`;
+
+            fetch(`http://localhost:5000/download_single_decrypted_file/${fileNameWithEnc}`)
+                .then(response => response.blob())
+                .then(blob => {
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = URL.createObjectURL(blob);
+                    downloadLink.download = fileNameWithEnc;
+                    document.body.appendChild(downloadLink);
+                    downloadLink.click();
+                    document.body.removeChild(downloadLink);
+                });
         }
-    }
-    return keyData;
-}
+    } else {
+        const filename = 'decrypted_zip.zip';
 
-function downloadDecryptedFiles() {
-    const blobUrl = getBlobUrlForFiles(selectedFiles);
-    window.location.href = blobUrl;
-}
-
-function downloadDecryptedFilesAsZip() {
-    const blobUrl = getBlobUrlForFiles(selectedFiles);
-    const downloadButton = document.createElement('a');
-    downloadButton.href = blobUrl;
-    downloadButton.download = 'decrypted_files.zip';
-    document.body.appendChild(downloadButton);
-    downloadButton.click();
-    document.body.removeChild(downloadButton);
-}
-
-function downloadDecryptedFilesIndividual() {
-    for (const file of selectedFiles) {
-        const blobUrl = URL.createObjectURL(file);
-        const downloadButton = document.createElement('a');
-        downloadButton.href = blobUrl;
-        downloadButton.download = file.name;
-        document.body.appendChild(downloadButton);
-        downloadButton.click();
-        document.body.removeChild(downloadButton);
+        fetch(`http://localhost:5000/download_decrypted_zip/${filename}`)
+            .then(response => response.blob())
+            .then(blob => {
+                const downloadLink = document.createElement('a');
+                downloadLink.href = URL.createObjectURL(blob);
+                downloadLink.download = filename;
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+            });
     }
 }
-
-function getBlobUrlForFiles(files) { 
-    const formData = new FormData();
-
-    // Append each file to the FormData object
-    for (const file of files) {
-        formData.append('files', file);
-    }
-
-    const blob = fetch('http://localhost:5000/encrypt', {
-        method: 'POST',
-        body: formData,
-    }).then(response => response.blob());
-
-    return URL.createObjectURL(blob);
-}
-
-
-
