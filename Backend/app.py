@@ -230,8 +230,8 @@ def encrypt_files():
             header = f'{format_date()} {formatted_size}'
             header_bytes = header.encode('utf-8')
 
-            filename = uploaded_file.filename
-            file_name, file_extension = filename.rsplit('.', 1)
+            filename = secure_filename(uploaded_file.filename)
+            file_name, file_extension = os.path.splitext(filename)
             file_extension_str = file_extension.encode('utf-8')
             file_extension_padded = pad(file_extension_str, 16)
 
@@ -261,34 +261,70 @@ def encrypt_files():
 def decrypt_files():
     try:
         uploaded_files = request.files.getlist('files')
-        hex = request.form['hex']
-        key = bytes.fromhex(hex)
+        hex_key = request.form['hex']
+        key = bytes.fromhex(hex_key)
+        decrypted_zip_data = BytesIO()
 
         for uploaded_file in uploaded_files:
-            file_data = uploaded_file.read()
-            header_bytes_unpadded = unpad(file_data[:48], 48)
-            nonce = file_data[48:60]
-            ciphertext_unpadded = unpad(file_data[60:-16], 16)
-            tag = file_data[-16:]
+            filename = secure_filename(uploaded_file.filename)
+            file_name, file_extension = os.path.splitext(filename)
 
-            aes_gcm = AES.new(key, AES.MODE_GCM, nonce=nonce)
-            aes_gcm.update(header_bytes_unpadded)
-            plaintext = aes_gcm.decrypt_and_verify(ciphertext_unpadded, tag)
-            extension = unpad(plaintext[:16], 16)
-            file_data = plaintext[16:]
-            print(extension)
-            print(file_data)
+            if file_extension.lower() == '.zip':
+                with zipfile.ZipFile(uploaded_file, 'r') as zip_ref:
+                    for zip_file_info in zip_ref.infolist():
+                        with zipfile.ZipFile(decrypted_zip_data, 'w', zipfile.ZIP_STORED, allowZip64=True) as zipf:
+                            zip_file_name = zip_file_info.filename
+                            file_name2, file_extension2 = os.path.splitext(zip_file_name)
 
-            original_extension = extension.decode('utf-8')
-            filename = uploaded_file.filename
-            file_name, file_extension = filename.rsplit('.', 1)
-            file_with_original_extension = f'{file_name}.{original_extension}'
+                            if zip_file_name.lower().endswith('.enc'):
+                                file_data = zip_ref.read(zip_file_name)
+                                header_bytes_unpadded = unpad(file_data[:48], 48)
+                                nonce = file_data[48:60]
+                                ciphertext_unpadded = unpad(file_data[60:-16], 16)
+                                tag = file_data[-16:]
 
-            decrypted_data_dict[file_with_original_extension] = file_data
-            
-            return jsonify(decrypted_extension=original_extension)
-        
-        return "End of Decryption"
+                                aes_gcm = AES.new(key, AES.MODE_GCM, nonce=nonce)
+                                aes_gcm.update(header_bytes_unpadded)
+                                plaintext = aes_gcm.decrypt_and_verify(ciphertext_unpadded, tag)
+                                extension = unpad(plaintext[:16], 16)
+                                file_data = plaintext[16:]
+
+                                original_extension = extension.decode('utf-8')
+                                file_with_original_extension = f'{file_name2}{original_extension}'
+                                print(file_with_original_extension)
+
+                                zipf.writestr(file_with_original_extension, file_data)
+                            else:
+                                continue
+
+                    decrypted_data_dict[uploaded_file.filename] = decrypted_zip_data.getvalue()
+
+                file_extension = file_extension.replace('.', '')
+                return jsonify(decrypted_extension=file_extension)
+            else:
+                file_data = uploaded_file.read()
+                header_bytes_unpadded = unpad(file_data[:48], 48)
+                nonce = file_data[48:60]
+                ciphertext_unpadded = unpad(file_data[60:-16], 16)
+                tag = file_data[-16:]
+
+                aes_gcm = AES.new(key, AES.MODE_GCM, nonce=nonce)
+                aes_gcm.update(header_bytes_unpadded)
+                plaintext = aes_gcm.decrypt_and_verify(ciphertext_unpadded, tag)
+                extension = unpad(plaintext[:16], 16)
+                file_data = plaintext[16:]
+                print(extension)
+                print(file_data)
+
+                original_extension = extension.decode('utf-8')
+                file_with_original_extension = f'{file_name}{original_extension}'
+
+                decrypted_data_dict[file_with_original_extension] = file_data
+
+                file_extension = original_extension.replace('.', '')
+
+                return jsonify(decrypted_extension=file_extension)
+
     except Exception as e:
         print("Error processing Files:", str(e))
         return {"isValid": False, "error": str(e)}
