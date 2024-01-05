@@ -28,6 +28,8 @@ CREATE TABLE `history` (
   `file_name` varchar(255) NOT NULL,
   `file_size` varchar(255) NOT NULL,
   `account_id` int NOT NULL,
+  `type` varchar(255) NOT NULL,
+  `key_name` varchar(255) NOT NULL,
   PRIMARY KEY (`history_id`),
   UNIQUE KEY `history` (`history_id`) /*!80000 INVISIBLE */,
   KEY `fkey_accountid_idx` (`account_id`),
@@ -35,7 +37,7 @@ CREATE TABLE `history` (
   KEY `account_id_idx` (`account_id`),
   KEY `fkey_account_id` (`account_id`),
   CONSTRAINT `fkey_account_id` FOREIGN KEY (`account_id`) REFERENCES `user_account` (`account_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -44,6 +46,7 @@ CREATE TABLE `history` (
 
 LOCK TABLES `history` WRITE;
 /*!40000 ALTER TABLE `history` DISABLE KEYS */;
+INSERT INTO `history` VALUES (6,'2024-01-05 08:52:35','PIQL_Software_Developer_Guide.docx','15.46 KB',56,'encryption','key');
 /*!40000 ALTER TABLE `history` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -56,4 +59,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-12-09 14:57:28
+-- Dump completed on 2024-01-05 16:54:29

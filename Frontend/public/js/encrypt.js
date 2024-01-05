@@ -210,8 +210,10 @@ async function encrypt(file) {
 
     const jsonString = sessionStorage.getItem(selectedKey);
 
+    let keyData;
+
     if (jsonString) {
-        const keyData = JSON.parse(jsonString);
+        keyData = JSON.parse(jsonString);
         const keyValue = keyData.keyValue;
         console.log(keyValue)
         formData.append('hex', keyValue);
@@ -225,10 +227,17 @@ async function encrypt(file) {
             body: formData,
         });
 
+        console.log('Response Status:', response.status); 
+
         if (response.ok) {
             const formData2 = new FormData();
+            const keyName = keyData.keyName;
+            console.log(keyName)
 
-            
+            formData2.append('files', file);
+            formData2.append('key_name', keyName);
+            formData2.append('type', 'encryption')
+            formData2.append('email', sessionStorage.getItem('email'))
 
             const response2 = await fetch('http://localhost:5000/add_to_encryption_history', {
                 method: 'POST',

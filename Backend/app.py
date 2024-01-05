@@ -109,6 +109,14 @@ def check_key():
     except Exception as e:
         print("Error generating key: ", str(e))
         return jsonify({"error": str(e)}), 500
+
+def get_account_id(email):
+    # Assuming you have a function to retrieve account_id based on email
+    with db.cursor() as cursor:
+        sql = "SELECT account_id FROM user_account WHERE email_address = %s;"
+        cursor.execute(sql, (email,))
+        result = cursor.fetchone()
+        return result[0] if result else None
     
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -299,7 +307,7 @@ def encrypt_files():
 
             encrypted_data_dict[new_file_name] = concat
 
-        return "End of Encryption"
+        return "End of Encryption", 200
 
     except Exception as e:
         print("Error processing Files:", str(e))
@@ -385,9 +393,32 @@ def decrypt_files():
         print("Error processing Files:", str(e))
         return {"isValid": False, "error": str(e)}
 
-@app.route('/add_to_encryption_history', methods=['GET'])
+@app.route('/add_to_encryption_history', methods=['POST'])
 def encrypt_history():
-    return "fund"
+    try:
+        uploaded_file = request.files['files']
+        file_name = uploaded_file.filename
+        file_data = uploaded_file.read()
+        file_size = format_size(len(file_data))
+        email = request.form['email']  # Use request.form for form data
+        # Assuming you have a function to retrieve account_id based on email
+        account_id = get_account_id(email)
+        key_name = request.form['key_name']
+        type_of_encryption = request.form['type']  # Use request.form for form data
+
+        # Proceed with the database update for username only
+        sql = "INSERT INTO history (time, file_name, file_size, account_id, type, key_name) VALUES (%s, %s, %s, %s, %s, %s);"
+        
+        with db.cursor() as cursor:
+            cursor.execute(sql, (datetime.now(), file_name, file_size, account_id, type_of_encryption, key_name))
+        
+        db.commit()
+        
+        return jsonify({'message': 'Data inserted successfully'})
+    
+    except Exception as e:
+        db.rollback()
+        return jsonify({'error': str(e)})
 
 @app.route('/download_single_encrypted_file/<filename>', methods=['GET'])
 def download_single_encrypted_file(filename):
