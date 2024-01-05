@@ -224,6 +224,17 @@ async function encrypt(file) {
             method: 'POST',
             body: formData,
         });
+
+        if (response.ok) {
+            const formData2 = new FormData();
+
+            
+
+            const response2 = await fetch('http://localhost:5000/add_to_encryption_history', {
+                method: 'POST',
+                body: formData2,
+            });
+        }
     }
     catch (error) {
         console.error("Error send file:", error);

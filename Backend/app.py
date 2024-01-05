@@ -27,9 +27,57 @@ decrypted_data_dict = {}
 
 # Connect to the MySQL database
 
-#db = pymysql.connect(host = 'localhost', port = 3306, user = 'root', password = 'password', database = 'major_project_db')
+db = pymysql.connect(host = 'localhost', port = 3306, user = 'root', password = 'password', database = 'major_project_db')
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'svg'}  # Define the allowed image file extensions
+
+@app.route('/upload', methods=['POST'])
+def upload():
+    username = request.form.get('name')
+    uploaded_file = request.files.get('profile-picture')
+    email = request.form.get('email')
+
+    print(uploaded_file, username)
+
+    if uploaded_file is None and username is not None:
+        try:
+            # Proceed with the database update for username only
+            sql = "UPDATE user_account SET username = %s WHERE email_address = %s"
+            with db.cursor() as cursor:
+                cursor.execute(sql, (username, email))
+            db.commit()
+            return jsonify({'message': 'Username updated successfully'})
+        except Exception as e:
+            db.rollback()
+            return jsonify({'error': str(e)})
+
+    print("hello")
+    if uploaded_file is None:
+        return jsonify({'message': 'No changes'})
+
+    if uploaded_file.filename == '':
+        return jsonify({'error': 'No selected file'})
+
+    if not allowed_file(uploaded_file.filename):
+        return jsonify({'error': 'Invalid file type. Only image files are allowed.'})
+
+    # Read the contents of the file as bytes
+    file_bytes = uploaded_file.read()
+
+    # Check if the file is a valid image
+    if not is_valid_image(file_bytes):
+        return jsonify({'error': 'Invalid image file'})
+
+    try:
+        # Proceed with the database update for both username and profile picture
+        sql = "UPDATE user_account SET username = %s, profile_picture = %s WHERE email_address = %s"
+        with db.cursor() as cursor:
+            cursor.execute(sql, (username, file_bytes, email))
+        db.commit()
+        return jsonify({'message': 'File uploaded successfully'})
+    except Exception as e:
+        db.rollback()
+        return jsonify({'error': str(e)})
 
 @app.route('/aes_keygen', methods=['POST'])
 def aes_keygen():
@@ -263,44 +311,52 @@ def decrypt_files():
         uploaded_files = request.files.getlist('files')
         hex_key = request.form['hex']
         key = bytes.fromhex(hex_key)
-        decrypted_zip_data = BytesIO()
 
         for uploaded_file in uploaded_files:
             filename = secure_filename(uploaded_file.filename)
             file_name, file_extension = os.path.splitext(filename)
 
             if file_extension.lower() == '.zip':
+                decrypted_zip_data = BytesIO()
+
                 with zipfile.ZipFile(uploaded_file, 'r') as zip_ref:
                     for zip_file_info in zip_ref.infolist():
-                        with zipfile.ZipFile(decrypted_zip_data, 'w', zipfile.ZIP_STORED, allowZip64=True) as zipf:
-                            zip_file_name = zip_file_info.filename
-                            file_name2, file_extension2 = os.path.splitext(zip_file_name)
+                        zip_file_name = zip_file_info.filename
+                        file_name2, file_extension2 = os.path.splitext(zip_file_name)
 
-                            if zip_file_name.lower().endswith('.enc'):
-                                file_data = zip_ref.read(zip_file_name)
-                                header_bytes_unpadded = unpad(file_data[:48], 48)
-                                nonce = file_data[48:60]
-                                ciphertext_unpadded = unpad(file_data[60:-16], 16)
-                                tag = file_data[-16:]
+                        if zip_file_name.lower().endswith('.enc'):
+                            file_data = zip_ref.read(zip_file_name)
+                            header_bytes_unpadded = unpad(file_data[:48], 48)
+                            nonce = file_data[48:60]
+                            ciphertext_unpadded = unpad(file_data[60:-16], 16)
+                            tag = file_data[-16:]
 
-                                aes_gcm = AES.new(key, AES.MODE_GCM, nonce=nonce)
-                                aes_gcm.update(header_bytes_unpadded)
-                                plaintext = aes_gcm.decrypt_and_verify(ciphertext_unpadded, tag)
-                                extension = unpad(plaintext[:16], 16)
-                                file_data = plaintext[16:]
+                            aes_gcm = AES.new(key, AES.MODE_GCM, nonce=nonce)
+                            aes_gcm.update(header_bytes_unpadded)
+                            plaintext = aes_gcm.decrypt_and_verify(ciphertext_unpadded, tag)
+                            extension = unpad(plaintext[:16], 16)
+                            file_data = plaintext[16:]
 
-                                original_extension = extension.decode('utf-8')
-                                file_with_original_extension = f'{file_name2}{original_extension}'
-                                print(file_with_original_extension)
+                            original_extension = extension.decode('utf-8')
+                            file_with_original_extension = f'{file_name2}{original_extension}'
+                            print(file_with_original_extension)
 
+                            with zipfile.ZipFile(decrypted_zip_data, 'a', zipfile.ZIP_STORED, allowZip64=True) as zipf:
                                 zipf.writestr(file_with_original_extension, file_data)
-                            else:
-                                continue
 
+                    decrypted_zip_data.seek(0)
                     decrypted_data_dict[uploaded_file.filename] = decrypted_zip_data.getvalue()
+
+                    for keys, value in decrypted_data_dict.items():
+                        print(keys, 'key')
+
+                    # Print the number of files within decrypted_zip_data
+                    num_files_in_zip = len(zipfile.ZipFile(decrypted_zip_data).infolist())
+                    print(f"Number of files in decrypted_zip_data: {num_files_in_zip}")
 
                 file_extension = file_extension.replace('.', '')
                 return jsonify(decrypted_extension=file_extension)
+            
             else:
                 file_data = uploaded_file.read()
                 header_bytes_unpadded = unpad(file_data[:48], 48)
@@ -328,6 +384,10 @@ def decrypt_files():
     except Exception as e:
         print("Error processing Files:", str(e))
         return {"isValid": False, "error": str(e)}
+
+@app.route('/add_to_encryption_history', methods=['GET'])
+def encrypt_history():
+    return "fund"
 
 @app.route('/download_single_encrypted_file/<filename>', methods=['GET'])
 def download_single_encrypted_file(filename):
@@ -378,9 +438,9 @@ def download_zip(filename):
 
 @app.route('/download_single_decrypted_file/<filename>', methods=['GET'])
 def download_single_decrypted_file(filename):
-    print(filename, file=sys.stderr)
+    print(filename, 'file')
     for keys, value in decrypted_data_dict.items():
-        print(keys, file=sys.stderr)
+        print(keys, 'key')
     decrypted_data = decrypted_data_dict.get(filename, None)
     # print(encrypted_data, file=sys.stderr)
     if decrypted_data is None:

@@ -282,6 +282,7 @@ function downloadDecryptedFiles(type, decryptedExtension) {
         
         for (let i = 0; i < totalFiles; i++) {
             const filename = files[i].name;
+            console.log(filename)
             let fileNameWithoutExtension;
 
             const numberOfDots = (filename.match(/\./g) || []).length;
@@ -299,6 +300,11 @@ function downloadDecryptedFiles(type, decryptedExtension) {
                 .then(blob => {
                     const downloadLink = document.createElement('a');
                     downloadLink.href = URL.createObjectURL(blob);
+                    if (filename.startsWith('encrypted_')){
+                        console.log("working")
+                        fileNameWithEnc = 'decrypted_zip.zip'
+                    }
+                    console.log(fileNameWithEnc)
                     downloadLink.download = fileNameWithEnc;
                     document.body.appendChild(downloadLink);
                     downloadLink.click();
