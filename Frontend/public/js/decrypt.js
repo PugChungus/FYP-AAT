@@ -293,7 +293,7 @@ function downloadDecryptedFiles(type, decryptedExtension) {
                 fileNameWithoutExtension = filename;
             }
 
-            const fileNameWithEnc = `${fileNameWithoutExtension}.${decryptedExtension}`;
+            let fileNameWithEnc = `${fileNameWithoutExtension}.${decryptedExtension}`;
 
             fetch(`http://localhost:5000/download_single_decrypted_file/${fileNameWithEnc}`)
                 .then(response => response.blob())
@@ -304,7 +304,6 @@ function downloadDecryptedFiles(type, decryptedExtension) {
                         console.log("working")
                         fileNameWithEnc = 'decrypted_zip.zip'
                     }
-                    console.log(fileNameWithEnc)
                     downloadLink.download = fileNameWithEnc;
                     document.body.appendChild(downloadLink);
                     downloadLink.click();
