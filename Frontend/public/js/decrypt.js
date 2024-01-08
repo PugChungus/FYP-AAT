@@ -5,6 +5,7 @@ const selectedFiles = {
 const keyDropdown = document.getElementById('key-dropdown');
 let selectedKey = keyDropdown.value;
 let decryptedExtension;
+let decryptedExtensionList = [];
 
 function getAllKeyData() {
     const keyData = [];
@@ -215,6 +216,7 @@ async function decrypt(file) {
         if (response.ok) {
             const responseData = await response.json(); // Parse the JSON response
             decryptedExtension = responseData.decrypted_extension;
+            decryptedExtensionList.push(decryptedExtension)
         }
     }
     catch (error) {
@@ -275,7 +277,7 @@ function formatFileSize(size) {
     }
 }
 
-function downloadDecryptedFiles(type, decryptedExtension) {
+function downloadDecryptedFiles(type) {
     if (type === 'individual') {
         const files = selectedFiles.files;
         const totalFiles = files.length;
@@ -292,6 +294,8 @@ function downloadDecryptedFiles(type, decryptedExtension) {
             } else {
                 fileNameWithoutExtension = filename;
             }
+
+            const decryptedExtension = decryptedExtensionList[i % decryptedExtensionList.length];
 
             let fileNameWithEnc = `${fileNameWithoutExtension}.${decryptedExtension}`;
 

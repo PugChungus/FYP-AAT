@@ -286,8 +286,8 @@ def encrypt_files():
             header = f'{format_date()} {formatted_size}'
             header_bytes = header.encode('utf-8')
 
-            filename = secure_filename(uploaded_file.filename)
-            file_name, file_extension = os.path.splitext(filename)
+            # filename = secure_filename(uploaded_file.filename)
+            file_name, file_extension = os.path.splitext(uploaded_file.filename)
             file_extension_str = file_extension.encode('utf-8')
             file_extension_padded = pad(file_extension_str, 16)
 
@@ -321,8 +321,8 @@ def decrypt_files():
         key = bytes.fromhex(hex_key)
 
         for uploaded_file in uploaded_files:
-            filename = secure_filename(uploaded_file.filename)
-            file_name, file_extension = os.path.splitext(filename)
+            # filename = secure_filename(uploaded_file.filename)
+            file_name, file_extension = os.path.splitext(uploaded_file.filename)
 
             if file_extension.lower() == '.zip':
                 decrypted_zip_data = BytesIO()
@@ -498,7 +498,7 @@ def download_decrypted_zip(filename):
     zip_filename = f'decrypted_zip.zip'
 
     decrypted_zip_data.seek(0)
-    encrypted_data_dict[zip_filename] = decrypted_zip_data.getvalue()
+    decrypted_data_dict[zip_filename] = decrypted_zip_data.getvalue()
     decrypted_zip_data.seek(0)
     decrypted_zip_data.truncate(0)
 
