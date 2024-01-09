@@ -71,8 +71,6 @@ async function uploadFiles() {
         console.log("No files selected to upload.");
         return;
     }
-
-    hideDropZoneAndFileDetails();
 }
 
 async function hideDropZoneAndFileDetails() {
@@ -208,6 +206,11 @@ async function clearEncryptedFolder() {
 async function encrypt(file) {
     const formData = new FormData();
 
+    if (selectedKey.length === 0) {
+        alert('No Key Selected')
+        return false;
+    }
+
     const jsonString = sessionStorage.getItem(selectedKey);
 
     let keyData;
@@ -243,27 +246,45 @@ async function encrypt(file) {
                 method: 'POST',
                 body: formData2,
             });
+
+            return true;
+        }
+
+        else {
+            return false;
         }
     }
     catch (error) {
         console.error("Error send file:", error);
+        return false;
     }
 }
 
 //send files to the backend to encrypt
 async function sendFilesToBackend() {
     const files = selectedFiles.files;
-    const totalFiles = files.length; // Get the total number of files
+    const totalFiles = files.length;
 
-    if (totalFiles == 1){
+    if (totalFiles == 1) {
         const file = files[0];
-        await encrypt(file)
-    }
-    else {
+        const decryptionSuccessful = await encrypt(file);
+
+        if (decryptionSuccessful) {
+            hideDropZoneAndFileDetails();
+        }
+    } else {
         for (let i = 0; i < totalFiles; i++) {
             const file = files[i];
-            await encrypt(file)
+            const decryptionSuccessful = await encrypt(file);
+
+            if (!decryptionSuccessful) {
+                // If decryption fails for any file, stop processing the rest
+                return;
+            }
         }
+
+        // If all files are successfully decrypted, hide the drop zone
+        hideDropZoneAndFileDetails();
     }
 }
 

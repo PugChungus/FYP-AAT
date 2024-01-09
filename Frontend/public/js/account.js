@@ -247,7 +247,7 @@ async function login(event) {
       const data = await response.json();
       if (data.result) {
         
-        document.cookie = `jwtToken=${data.JWTtoken}; SameSite=Strict; Secure`;
+        // document.cookie = `jwtToken=${data.JWTtoken}; SameSite=Strict; Secure`;
         const count = data.result[0]['count(*)'];
       
         if (count === 1) {
@@ -264,7 +264,7 @@ async function login(event) {
           sessionStorage.setItem('username', username);
           sessionStorage.setItem('email', email_addr);
           sessionStorage.setItem('profile_picture', pfp);
-          document.cookie = `jwtToken=${token}; SameSite=Strict; Secure`;
+          // document.cookie = `jwtToken=${token}; SameSite=Strict; Secure`;
 
           window.location.href = 'http://localhost:3000/pages/home.html';
         } else {

@@ -324,6 +324,10 @@ def decrypt_files():
             # filename = secure_filename(uploaded_file.filename)
             file_name, file_extension = os.path.splitext(uploaded_file.filename)
 
+            if file_name.startswith("encrypted_"):
+                file_name = file_name.replace("encrypted_", "decrypted_")
+                print(file_name, 'changed')
+
             if file_extension.lower() == '.zip':
                 decrypted_zip_data = BytesIO()
 
@@ -353,7 +357,8 @@ def decrypt_files():
                                 zipf.writestr(file_with_original_extension, file_data)
 
                     decrypted_zip_data.seek(0)
-                    decrypted_data_dict[uploaded_file.filename] = decrypted_zip_data.getvalue()
+                    join_file_name = f'{file_name}{file_extension}'
+                    decrypted_data_dict[join_file_name] = decrypted_zip_data.getvalue()
 
                     for keys, value in decrypted_data_dict.items():
                         print(keys, 'key')
@@ -377,9 +382,7 @@ def decrypt_files():
                 plaintext = aes_gcm.decrypt_and_verify(ciphertext_unpadded, tag)
                 extension = unpad(plaintext[:16], 16)
                 file_data = plaintext[16:]
-                print(extension)
-                print(file_data)
-
+            
                 original_extension = extension.decode('utf-8')
                 file_with_original_extension = f'{file_name}{original_extension}'
 
@@ -392,6 +395,28 @@ def decrypt_files():
     except Exception as e:
         print("Error processing Files:", str(e))
         return {"isValid": False, "error": str(e)}
+    
+@app.route('/display_history', methods=['POST'])
+def display_history():
+    try:
+        email = request.form['email']
+        sql = "SELECT * FROM history " \
+                "INNER JOIN user_account ON history.account_id = user_account.account_id " \
+                "WHERE user_account.email_address = %s;"
+
+        with db.cursor() as cursor:
+            cursor.execute(sql, (email))
+            result = cursor.fetchall()
+
+        db.commit()
+
+        # Convert the result to a list of dictionaries for JSON response
+        history_data = [dict(zip(cursor.column_names, row)) for row in result]
+        return jsonify(history_data)
+
+    except Exception as e:
+        db.rollback()
+        return jsonify({'error': str(e)})
 
 @app.route('/add_to_encryption_history', methods=['POST'])
 def encrypt_history():
@@ -495,7 +520,7 @@ def download_decrypted_zip(filename):
             print(decrypted_filename, file=sys.stderr)
             zipf.writestr(decrypted_filename, decrypted_data)
 
-    zip_filename = f'decrypted_zip.zip'
+    zip_filename = f'unencrypted.zip'
 
     decrypted_zip_data.seek(0)
     decrypted_data_dict[zip_filename] = decrypted_zip_data.getvalue()

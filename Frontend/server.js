@@ -212,7 +212,7 @@ app.post('/login', async (req, res) => {
 
             if (result[0]['count(*)'] == 1) {
                 
-                const JWTtoken = jwt.sign({ email }, secretJwtKeyKey, { expiresIn: '1h' });
+                const JWTtoken = jwt.sign({ email }, secretJwtKey, { expiresIn: '1h' });
                 res.cookie('jwtToken', JWTtoken, {
                     httpOnly: true, // Ensure the cookie is accessible only by the server
                     sameSite: 'Lax', // or 'Lax' or 'None' based on your requirements
