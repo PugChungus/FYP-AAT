@@ -324,6 +324,9 @@ def decrypt_files():
             # filename = secure_filename(uploaded_file.filename)
             file_name, file_extension = os.path.splitext(uploaded_file.filename)
 
+            if file_extension.lower() not in {'.enc', '.zip'}:
+                return jsonify("error"), 500
+
             if file_name.startswith("encrypted_"):
                 file_name = file_name.replace("encrypted_", "decrypted_")
                 print(file_name, 'changed')
@@ -400,19 +403,21 @@ def decrypt_files():
 def display_history():
     try:
         email = request.form['email']
-        sql = "SELECT * FROM history " \
-                "INNER JOIN user_account ON history.account_id = user_account.account_id " \
-                "WHERE user_account.email_address = %s;"
+
+        sql = "SELECT history.time, history.file_name, history.file_size, history.type, history.key_name " \
+            "FROM history " \
+            "INNER JOIN user_account ON history.account_id = user_account.account_id " \
+            "WHERE user_account.email_address = %s;"
 
         with db.cursor() as cursor:
             cursor.execute(sql, (email))
-            result = cursor.fetchall()
+            rows = cursor.fetchall()
+            print(rows)
+            
+        column_names = [desc[0] for desc in cursor.description]
+        result = [dict(zip(column_names, row)) for row in rows]
 
-        db.commit()
-
-        # Convert the result to a list of dictionaries for JSON response
-        history_data = [dict(zip(cursor.column_names, row)) for row in result]
-        return jsonify(history_data)
+        return jsonify(result)
 
     except Exception as e:
         db.rollback()
@@ -420,6 +425,33 @@ def display_history():
 
 @app.route('/add_to_encryption_history', methods=['POST'])
 def encrypt_history():
+    try:
+        uploaded_file = request.files['files']
+        file_name = uploaded_file.filename
+        file_data = uploaded_file.read()
+        file_size = format_size(len(file_data))
+        email = request.form['email']  # Use request.form for form data
+        # Assuming you have a function to retrieve account_id based on email
+        account_id = get_account_id(email)
+        key_name = request.form['key_name']
+        type_of_encryption = request.form['type']  # Use request.form for form data
+
+        # Proceed with the database update for username only
+        sql = "INSERT INTO history (time, file_name, file_size, account_id, type, key_name) VALUES (%s, %s, %s, %s, %s, %s);"
+        
+        with db.cursor() as cursor:
+            cursor.execute(sql, (datetime.now(), file_name, file_size, account_id, type_of_encryption, key_name))
+        
+        db.commit()
+        
+        return jsonify({'message': 'Data inserted successfully'})
+    
+    except Exception as e:
+        db.rollback()
+        return jsonify({'error': str(e)})
+
+@app.route('/add_to_decryption_history', methods=['POST'])
+def decrypt_history():
     try:
         uploaded_file = request.files['files']
         file_name = uploaded_file.filename

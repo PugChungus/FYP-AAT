@@ -132,7 +132,7 @@ async function hideDropZoneAndFileDetails() {
 }
 
 function isValidFileExtension(file) {
-    const allowedExtension = ".enc";
+    const allowedExtension = "enc";
     const fileName = file.name.toLowerCase();
     const fileExtension = fileName.slice((fileName.lastIndexOf(".") - 1 >>> 0) + 2);
 
@@ -220,8 +220,10 @@ async function decrypt(file) {
 
     const jsonString = sessionStorage.getItem(selectedKey);
 
+    let keyData;
+
     if (jsonString) {
-        const keyData = JSON.parse(jsonString);
+        keyData = JSON.parse(jsonString);
         const keyValue = keyData.keyValue;
         console.log(keyValue)
         formData.append('hex', keyValue);
@@ -239,8 +241,23 @@ async function decrypt(file) {
             const responseData = await response.json();
             decryptedExtension = responseData.decrypted_extension;
             decryptedExtensionList.push(decryptedExtension);
+            const formData2 = new FormData();
+            const keyName = keyData.keyName;
+            console.log(keyName)
+
+            formData2.append('files', file);
+            formData2.append('key_name', keyName);
+            formData2.append('type', 'decryption')
+            formData2.append('email', sessionStorage.getItem('email'))
+
+            const response2 = await fetch('http://localhost:5000/add_to_decryption_history', {
+                method: 'POST',
+                body: formData2,
+            });
+
             return true; // Return true indicating decryption success
         } else {
+            alert('Invalid File Extension')
             return false; // Return false indicating decryption failure
         }
     } catch (error) {
