@@ -177,11 +177,16 @@ app.post('/login', async (req, res) => {
 
     try {
         const [tables] = await pool.execute(
-            'SELECT password FROM user_account WHERE email_address = ?;',
+            'SELECT password, is_2fa_enabled FROM user_account WHERE email_address = ?;',
             [email]
         );
 
         console.log("Tables:", tables)
+        if (tables["is_2fa_enabled"] === 1) {
+            console.log("2FA_enabled: True")
+        } else {
+            console.log("2FA_enabled: False")
+        }
 
         const pass_db = tables[0]['password'];
         console.log(password);
@@ -233,6 +238,59 @@ app.post('/get_account', async (req, res) => {
         console.error(error);
         return res.status(500).json({ error: 'Internal Server Error' });
     }
+});
+
+app.post('/enable2fa', async (req, res) => {
+    try {
+      const { email } = req.body;
+  
+      const sql = 'UPDATE user_account SET is_2fa_enabled = 1 WHERE email_address = ?';
+      const values = [email];
+  
+      await pool.query(sql, values);
+  
+      res.json({ message: '2FA Enabled' });
+    } catch (error) {
+      console.error('Error enabling 2FA:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+
+  app.post('/disable2fa', async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        const sql = 'UPDATE user_account SET is_2fa_enabled = 0 WHERE email_address = ?'
+        const values = [email];
+        await pool.query(sql, values);
+        res.json({ message: '2FA Disabled'});
+    } catch (error) {
+        console.error('Error Disabling 2FA:', error)
+        res.status(500).json({error: 'Internal Server Error'})
+    }
+  })
+
+app.post('/get2faStatus', async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        const sql = 'SELECT is_2fa_enabled FROM user_account WHERE email_address =?';
+        const values = [email];
+
+        const result = await pool.query(sql, values);
+        console.log("Result: ", result)
+
+        if (result.length > 0) {
+            const is2FAEnabled = result[0][0].is_2fa_enabled;
+            console.log('is_2fa_enabled:', is2FAEnabled);
+            res.json({ is_2fa_enabled: is2FAEnabled });
+        } else {
+            res.status(404).json({ error: 'User not found '});
+        }
+    } catch (error) {
+        console.error('Error getting 2FA status: ', error);
+        res.status(500).json({ error: 'Internal Server Error'});
+    };
 });
 
 

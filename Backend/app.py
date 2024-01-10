@@ -18,6 +18,8 @@ import zipfile
 import hashlib
 import os
 import json
+import pyotp
+import qrcode
 
 app = Flask(__name__)
 CORS(app)  
@@ -523,6 +525,22 @@ def clear_encrypted_folder():
 def clear_decrypted_folder():
     decrypted_data_dict.clear()
     return 'Decrypted folder cleared', 200
+
+@app.route('/generate_2fa_qr_code', methods=['POST'])
+def generate_2fa_qr_code():
+    try:
+        email = request.form.get('email')
+        totp = pyotp.TOTP(pyotp.random_base32())
+        print("Key:",  totp.secret)
+        otp = totp.now()
+        print("Generated OTP:", otp)
+        qr_code_url = totp.provisioning_uri(email, issuer_name="JTR Encryption")
+        print("URL:", qr_code_url)
+        return jsonify({'qr_code_url': qr_code_url, 'otp':otp})
+    except Exception as e:
+        print("Error:", e)
+        return jsonify({'error': str(e)})
+
 
 if __name__ == '__main__':
     app.run(debug=True,

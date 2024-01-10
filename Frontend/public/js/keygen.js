@@ -78,7 +78,9 @@ function downloadKey(key, keyName) {
     document.body.removeChild(downloadLink);
 }
 
-document.getElementById('uploadButton').addEventListener('click', importKey);
+function triggerFileInputClick() {
+    document.getElementById('fileInput').click()
+}
 
 async function importKey() {
     const fileInput = document.getElementById('fileInput');
@@ -121,6 +123,14 @@ async function importKey() {
         alert("Please upload 1 key at a time.");
     }
 }
+
+document.getElementById('importKey').addEventListener('click', function (event) {
+    event.preventDefault();
+    triggerFileInputClick();
+});
+
+// Update the event listener for the file input to call importKey
+document.getElementById('fileInput').addEventListener('change', importKey);
 
 function getAllKeyNames() {
     const keyNames = [];

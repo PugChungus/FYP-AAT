@@ -229,7 +229,9 @@ async function login(event) {
       body: formData,
     });
 
-    const data = await response.json();
+    const responseData = await response.text()
+    console.log("Response Data: ", responseData)
+    const data = JSON.parse(responseData)
     count = data.result[0]['count(*)']
     console.log("Count:", count)
 

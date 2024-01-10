@@ -130,7 +130,7 @@ a.generateKey:hover {
 /* Adjust the line-height based on the height of your icons */
 a.importKey i,
 a.generateKey i {
-    line-height: 1;
+    /* line-height: 1; */
 
 }
 
@@ -140,9 +140,10 @@ a.importKey {
     align-items: center;
 }
 
-a.importKey i {
-    margin-bottom: 2px; /* Adjusted margin to move the icon up */
+label {
+  margin-bottom: 0;
 }
+
 
 #keyCard {
     display: none;

@@ -1,81 +1,178 @@
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    margin: 0;
-    padding: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  margin: 0;
+  padding: 0;
 }
 
 header {
-    background-color: #333;
-    color: white;
-    text-align: center;
-    padding: 1em;
+  background-color: #333;
+  color: white;
+  text-align: center;
+  padding: 1em;
 }
 
 section {
-    margin: 20px;
+  margin: 20px;
 }
 
 h1 {
-    color: white;
+  color: white;
 }
 
 p {
-    color: #555;
+  color: #555;
 }
 
 a {
-    color: #007BFF;
-    text-decoration: none;
+  color: #007BFF;
+  text-decoration: none;
 }
 
 a:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 .card {
-    width: 300px;
-    margin: 20px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    top: 0;
-    position: fixed;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 999;
-  }
-  
-  .card-body {
-    padding: 16px;
-  }
-  
-  .card-title {
-    font-size: 1.2em;
-    margin-bottom: 10px;
-  }
-  
-  .card-text {
-    color: #555;
-    margin-bottom: 20px;
-  }
-  
-  .btn {
-    cursor: pointer;
-    padding: 8px 16px;
-    margin-right: 10px;
-    border-radius: 4px;
-    font-size: 0.9em;
-  }
-  
-  .btn-danger {
-    background-color: #d9534f;
-    color: #fff;
-    border: none;
-  }
-  
-  .btn-success {
-    background-color: #5cb85c;
-    color: #fff;
-    border: none;
-  }
+  width: 300px;
+  margin: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  top: 0;
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999;
+}
+
+.card-body {
+  padding: 16px;
+}
+
+.card-title {
+  font-size: 1.2em;
+  margin-bottom: 10px;
+}
+
+.card-text {
+  color: #555;
+  margin-bottom: 20px;
+}
+
+.btn {
+  cursor: pointer;
+  padding: 8px 16px;
+  margin-right: 10px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.btn-danger {
+  background-color: #d9534f;
+  color: #fff;
+  border: none;
+}
+
+.btn-success {
+  background-color: #5cb85c;
+  color: #fff;
+  border: none;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.switch input {
+  display: none;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #2196F3;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+/* Optional: Add some additional styles to make it look better */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+#2fa-section {
+  margin-top: 10px;
+}
+
+.card2fa {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  margin: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: #fff; /* Set background color as needed */
+  z-index: 9999; /* Set a high z-index to ensure it appears above other elements */
+}
+
+.card-header {
+  background-color: #f8f9fa; /* Set header background color as needed */
+  padding: 10px;
+}
+
+.card-body {
+  padding: 20px;
+}
+
+/* Style for the close button */
+.close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 1.5em;
+  cursor: pointer;
+  color: #000; /* Set close button color as needed */
+}
+
+
