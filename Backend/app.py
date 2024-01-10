@@ -504,8 +504,8 @@ def download_zip(filename):
             # Add the encrypted data to the ZIP archive with the encrypted filename
             print(encrypted_filename, file=sys.stderr)
             zipf.writestr(encrypted_filename, encrypted_data)
-
-    zip_filename = f'encrypted_zip.zip'
+            
+    zip_filename = f'encrypted.zip'
 
     encrypted_zip_data.seek(0)
     encrypted_data_dict[zip_filename] = encrypted_zip_data.getvalue()

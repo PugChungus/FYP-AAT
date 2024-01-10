@@ -100,7 +100,10 @@ async function hideDropZoneAndFileDetails() {
         const zipButton = document.createElement('button');
         zipButton.textContent = 'Download as Zip';
         zipButton.addEventListener('click', async () => {
-            downloadEncryptedFiles('zip');
+            const zipFolderName = window.prompt('Enter the name for the zip folder (without extension)');
+            if (zipFolderName) {
+                downloadEncryptedFiles('zip', zipFolderName);
+            }
         });
 
         const individualButton = document.createElement('button');
@@ -324,7 +327,7 @@ function formatFileSize(size) {
     }
 }
 
-function downloadEncryptedFiles(type) {
+function downloadEncryptedFiles(type, name) {
     if (type === 'individual') {
         const files = selectedFiles.files;
         const totalFiles = files.length;
@@ -355,14 +358,16 @@ function downloadEncryptedFiles(type) {
                 });
         }
     } else {
-        const filename = 'encrypted_zip.zip';
+        const filename = 'encrypted.zip';
+
+        const outfilename = `${name}.zip`
 
         fetch(`http://localhost:5000/download_zip/${filename}`)
             .then(response => response.blob())
             .then(blob => {
                 const downloadLink = document.createElement('a');
                 downloadLink.href = URL.createObjectURL(blob);
-                downloadLink.download = filename;
+                downloadLink.download = outfilename;
                 document.body.appendChild(downloadLink);
                 downloadLink.click();
                 document.body.removeChild(downloadLink);
