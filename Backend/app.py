@@ -288,8 +288,8 @@ def encrypt_files():
             header = f'{format_date()} {formatted_size}'
             header_bytes = header.encode('utf-8')
 
-            filename = secure_filename(uploaded_file.filename)
-            file_name, file_extension = os.path.splitext(filename)
+            # filename = secure_filename(uploaded_file.filename)
+            file_name, file_extension = os.path.splitext(uploaded_file.filename)
             file_extension_str = file_extension.encode('utf-8')
             file_extension_padded = pad(file_extension_str, 16)
 
@@ -323,8 +323,15 @@ def decrypt_files():
         key = bytes.fromhex(hex_key)
 
         for uploaded_file in uploaded_files:
-            filename = secure_filename(uploaded_file.filename)
-            file_name, file_extension = os.path.splitext(filename)
+            # filename = secure_filename(uploaded_file.filename)
+            file_name, file_extension = os.path.splitext(uploaded_file.filename)
+
+            if file_extension.lower() not in {'.enc', '.zip'}:
+                return jsonify("error"), 500
+
+            if file_name.startswith("encrypted_"):
+                file_name = file_name.replace("encrypted_", "decrypted_")
+                print(file_name, 'changed')
 
             if file_extension.lower() == '.zip':
                 decrypted_zip_data = BytesIO()
@@ -355,7 +362,8 @@ def decrypt_files():
                                 zipf.writestr(file_with_original_extension, file_data)
 
                     decrypted_zip_data.seek(0)
-                    decrypted_data_dict[uploaded_file.filename] = decrypted_zip_data.getvalue()
+                    join_file_name = f'{file_name}{file_extension}'
+                    decrypted_data_dict[join_file_name] = decrypted_zip_data.getvalue()
 
                     for keys, value in decrypted_data_dict.items():
                         print(keys, 'key')
@@ -379,9 +387,7 @@ def decrypt_files():
                 plaintext = aes_gcm.decrypt_and_verify(ciphertext_unpadded, tag)
                 extension = unpad(plaintext[:16], 16)
                 file_data = plaintext[16:]
-                print(extension)
-                print(file_data)
-
+            
                 original_extension = extension.decode('utf-8')
                 file_with_original_extension = f'{file_name}{original_extension}'
 
@@ -394,9 +400,60 @@ def decrypt_files():
     except Exception as e:
         print("Error processing Files:", str(e))
         return {"isValid": False, "error": str(e)}
+    
+@app.route('/display_history', methods=['POST'])
+def display_history():
+    try:
+        email = request.form['email']
+
+        sql = "SELECT history.time, history.file_name, history.file_size, history.type, history.key_name " \
+            "FROM history " \
+            "INNER JOIN user_account ON history.account_id = user_account.account_id " \
+            "WHERE user_account.email_address = %s;"
+
+        with db.cursor() as cursor:
+            cursor.execute(sql, (email))
+            rows = cursor.fetchall()
+            print(rows)
+            
+        column_names = [desc[0] for desc in cursor.description]
+        result = [dict(zip(column_names, row)) for row in rows]
+
+        return jsonify(result)
+
+    except Exception as e:
+        db.rollback()
+        return jsonify({'error': str(e)})
 
 @app.route('/add_to_encryption_history', methods=['POST'])
 def encrypt_history():
+    try:
+        uploaded_file = request.files['files']
+        file_name = uploaded_file.filename
+        file_data = uploaded_file.read()
+        file_size = format_size(len(file_data))
+        email = request.form['email']  # Use request.form for form data
+        # Assuming you have a function to retrieve account_id based on email
+        account_id = get_account_id(email)
+        key_name = request.form['key_name']
+        type_of_encryption = request.form['type']  # Use request.form for form data
+
+        # Proceed with the database update for username only
+        sql = "INSERT INTO history (time, file_name, file_size, account_id, type, key_name) VALUES (%s, %s, %s, %s, %s, %s);"
+        
+        with db.cursor() as cursor:
+            cursor.execute(sql, (datetime.now(), file_name, file_size, account_id, type_of_encryption, key_name))
+        
+        db.commit()
+        
+        return jsonify({'message': 'Data inserted successfully'})
+    
+    except Exception as e:
+        db.rollback()
+        return jsonify({'error': str(e)})
+
+@app.route('/add_to_decryption_history', methods=['POST'])
+def decrypt_history():
     try:
         uploaded_file = request.files['files']
         file_name = uploaded_file.filename
@@ -497,10 +554,10 @@ def download_decrypted_zip(filename):
             print(decrypted_filename, file=sys.stderr)
             zipf.writestr(decrypted_filename, decrypted_data)
 
-    zip_filename = f'decrypted_zip.zip'
+    zip_filename = f'unencrypted.zip'
 
     decrypted_zip_data.seek(0)
-    encrypted_data_dict[zip_filename] = decrypted_zip_data.getvalue()
+    decrypted_data_dict[zip_filename] = decrypted_zip_data.getvalue()
     decrypted_zip_data.seek(0)
     decrypted_zip_data.truncate(0)
 

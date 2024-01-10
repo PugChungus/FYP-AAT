@@ -5,6 +5,7 @@ const selectedFiles = {
 const keyDropdown = document.getElementById('key-dropdown');
 let selectedKey = keyDropdown.value;
 let decryptedExtension;
+let decryptedExtensionList = [];
 
 function getAllKeyData() {
     const keyData = [];
@@ -71,8 +72,6 @@ async function uploadFiles() {
         console.log("No files selected to upload.");
         return;
     }
-
-    hideDropZoneAndFileDetails();
 }
 
 async function hideDropZoneAndFileDetails() {
@@ -132,9 +131,28 @@ async function hideDropZoneAndFileDetails() {
     }
 }
 
+function isValidFileExtension(file) {
+    const allowedExtension = "enc";
+    const fileName = file.name.toLowerCase();
+    const fileExtension = fileName.slice((fileName.lastIndexOf(".") - 1 >>> 0) + 2);
+
+    if (fileExtension === allowedExtension) {
+        return true; // Valid extension
+    } else {
+        alert(`Please upload files with ${allowedExtension} or .zip extension`);
+        return false; // Invalid extension
+    }
+}
+
 async function sendFileToBackend(file) {
     const formData = new FormData();
     formData.append('file', file);
+
+    const isValid = isValidFileExtension(file);
+    
+    if (!isValid) {
+        return
+    }
 
     const scanLoader = document.getElementById('scan-loader');
     scanLoader.style.display = 'block'
@@ -195,47 +213,84 @@ async function clearDecryptedFolder() {
 async function decrypt(file) {
     const formData = new FormData();
 
+    if (selectedKey.length === 0) {
+        alert('No Key Selected')
+        return false; // Return false indicating decryption failure
+    }
+
     const jsonString = sessionStorage.getItem(selectedKey);
 
+    let keyData;
+
     if (jsonString) {
-        const keyData = JSON.parse(jsonString);
+        keyData = JSON.parse(jsonString);
         const keyValue = keyData.keyValue;
         console.log(keyValue)
         formData.append('hex', keyValue);
     }
-  
+
     formData.append('files', file);
-  
+
     try {
         const response = await fetch('http://localhost:5000/decrypt', {
             method: 'POST',
             body: formData,
         });
-        
+
         if (response.ok) {
-            const responseData = await response.json(); // Parse the JSON response
+            const responseData = await response.json();
             decryptedExtension = responseData.decrypted_extension;
+            decryptedExtensionList.push(decryptedExtension);
+            const formData2 = new FormData();
+            const keyName = keyData.keyName;
+            console.log(keyName)
+
+            formData2.append('files', file);
+            formData2.append('key_name', keyName);
+            formData2.append('type', 'decryption')
+            formData2.append('email', sessionStorage.getItem('email'))
+
+            const response2 = await fetch('http://localhost:5000/add_to_decryption_history', {
+                method: 'POST',
+                body: formData2,
+            });
+
+            return true; // Return true indicating decryption success
+        } else {
+            alert('Invalid File Extension')
+            return false; // Return false indicating decryption failure
         }
-    }
-    catch (error) {
+    } catch (error) {
         console.error("Error send file:", error);
+        return false; // Return false indicating decryption failure
     }
 }
 
 //send files to the backend to encrypt
 async function sendFilesToBackend() {
     const files = selectedFiles.files;
-    const totalFiles = files.length; // Get the total number of files
+    const totalFiles = files.length;
 
-    if (totalFiles == 1){
+    if (totalFiles == 1) {
         const file = files[0];
-        await decrypt(file)
-    }
-    else {
+        const decryptionSuccessful = await decrypt(file);
+
+        if (decryptionSuccessful) {
+            hideDropZoneAndFileDetails();
+        }
+    } else {
         for (let i = 0; i < totalFiles; i++) {
             const file = files[i];
-            await decrypt(file)
+            const decryptionSuccessful = await decrypt(file);
+
+            if (!decryptionSuccessful) {
+                // If decryption fails for any file, stop processing the rest
+                return;
+            }
         }
+
+        // If all files are successfully decrypted, hide the drop zone
+        hideDropZoneAndFileDetails();
     }
 }
 
@@ -275,7 +330,7 @@ function formatFileSize(size) {
     }
 }
 
-function downloadDecryptedFiles(type, decryptedExtension) {
+function downloadDecryptedFiles(type) {
     if (type === 'individual') {
         const files = selectedFiles.files;
         const totalFiles = files.length;
@@ -293,7 +348,13 @@ function downloadDecryptedFiles(type, decryptedExtension) {
                 fileNameWithoutExtension = filename;
             }
 
-            const fileNameWithEnc = `${fileNameWithoutExtension}.${decryptedExtension}`;
+            if (fileNameWithoutExtension.startsWith("encrypted_")) {
+                fileNameWithoutExtension = fileNameWithoutExtension.replace('encrypted_', 'decrypted_');
+            }
+            
+            const decryptedExtension = decryptedExtensionList[i % decryptedExtensionList.length];
+
+            let fileNameWithEnc = `${fileNameWithoutExtension}.${decryptedExtension}`;
 
             fetch(`http://localhost:5000/download_single_decrypted_file/${fileNameWithEnc}`)
                 .then(response => response.blob())
@@ -304,7 +365,6 @@ function downloadDecryptedFiles(type, decryptedExtension) {
                         console.log("working")
                         fileNameWithEnc = 'decrypted_zip.zip'
                     }
-                    console.log(fileNameWithEnc)
                     downloadLink.download = fileNameWithEnc;
                     document.body.appendChild(downloadLink);
                     downloadLink.click();
@@ -312,7 +372,7 @@ function downloadDecryptedFiles(type, decryptedExtension) {
                 });
         }
     } else {
-        const filename = 'decrypted_zip.zip';
+        const filename = 'unencrypted.zip';
 
         fetch(`http://localhost:5000/download_decrypted_zip/${filename}`)
             .then(response => response.blob())

@@ -1,3 +1,5 @@
+
+
 const SCOPES = 'https://www.googleapis.com/auth/drive';
 //const CLIENT_ID = '984198711838-2uekpq9dj3nkbe4igf9jl3h78lsvse9p.apps.googleusercontent.com';
 //const API_KEY = 'AIzaSyB90VRo8ldzFuNyJNk1nmmgUgUUOn90IVs';
@@ -10,7 +12,7 @@ let accessToken = null;
 let pickerInited = false;
 let gisInited = false;
 
-
+var global_data = ''
 
  document.getElementById('authorize_button');
 
@@ -62,13 +64,48 @@ const picker = new google.picker.PickerBuilder()
 picker.setVisible(true);
 }
 
+function auth(){
+    const width = 600;
+    const height = 600;
+    const left = window.screenX + (window.outerWidth - width) / 2;
+    const top = window.screenY + (window.outerHeight - height) / 2;
+    const url = '/get-access-token'; // Endpoint to start authentication
+
+    window.open(url, 'Google Auth', `width=${width},height=${height},left=${left},top=${top}`);
+  }
+
+
+async function sendAccessTokenToServer(accessToken) {
+  try {
+    const response = await fetch('/store-access-token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ accessToken }),
+    });
+
+    if (response.ok) {
+      console.log('Access token sent to server successfully');
+      // Handle any further actions after sending the token
+    } else {
+      throw new Error('Failed to send access token to server');
+    }
+  } catch (error) {
+    console.error('Error sending access token to server:', error);
+  }
+}
+
 function handleAuthClick() {
     console.log(tokenClient)
-tokenClient.callback = async (response) => {
+    tokenClient.callback = async (response) => {
     if (response.error !== undefined) {
         throw (response);
         }
+    
+    
     accessToken = response.access_token;
+    
 
     document.getElementById('authorize_button').innerText = 'Refresh';
     await createPicker();
@@ -155,7 +192,7 @@ function handleFileUpload(event) {
     const files = event.target.files;
 
     // Clear previous file details
-    document.getElementById('file-details-container').innerHTML = '';
+    document.getElementById(  'file-details-container').innerHTML = '';
 
     // Display file details
     for (const file of files) {
@@ -218,6 +255,16 @@ function updatefilearrays(file){
   console.log(fileArray)
 }
 
+function submitbutton(){
+  const button = document.getElementById('submit'); // Replace 'myButton' with the ID of your button
+          button.addEventListener('click', function() {
+            submit()
+           window.location.href = 'download.html'; // Replace 'anotherPage.html' with the desired page URL
+           createFileList(global_data)
+          });
+}
+
+
 function submit(){
     const filekey = document.getElementById('file-input-key');
     const uploadedFile = filekey.files[0];
@@ -239,7 +286,7 @@ function submit(){
         });
     
         // Perform the fetch request inside the onload function
-        fetch('http://localhost:6969/AESencryptFile', {
+        fetch('http://127.0.0.1:5000/AESencryptFile', {
           method: 'POST',
           body: formData
         })
@@ -248,10 +295,19 @@ function submit(){
             console.log('Data submitted successfully');
             // Handle successful submission
             return response.text()
+
+            
+
           } else {
             console.error('Submission failed');
             // Handle submission failure
           }
+        })
+        .then((data) => {
+          global_data = data; // Store the fetched data in the variable
+          // You can perform additional operations or call other functions using encryptedData here
+          console.log(global_data) // Call a function and pass the fetched data
+          
         })
         .catch(error => {
           console.error('Error:', error);
@@ -350,3 +406,34 @@ fileInput.addEventListener('change', function () {
         document.getElementById('selected-file-name').textContent = 'No file selected';
     }
 });
+
+
+//download.html \/
+function loaddata() {
+  console.log(global_data)
+}
+
+
+
+function createFileList(global_data) {
+  encrypted_data = global_data
+  console.log(global_data)
+  console.log(encrypted_data)
+  // Assuming encrypted_data is an array of objects
+  // For example: encrypted_data = [{ "encrypted_data": "...", "filename": "file1.txt" }, { "encrypted_data": "...", "filename": "file2.txt" }];
+  
+  const tableBody = document.querySelector('#fileTable tbody');
+
+  // Clear existing table rows
+  tableBody.innerHTML = '';
+
+  // Loop through the encrypted_data array and populate the table
+  encrypted_data.forEach(dataItem => {
+    const row = tableBody.insertRow();
+    const filenameCell = row.insertCell(0);
+    const encryptedCell = row.insertCell(1);
+
+    filenameCell.textContent = dataItem.filename;
+    encryptedCell.textContent = dataItem.encrypted_data;
+  });
+}
