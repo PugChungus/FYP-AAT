@@ -400,6 +400,26 @@ def decrypt_files():
     except Exception as e:
         print("Error processing Files:", str(e))
         return {"isValid": False, "error": str(e)}
+
+@app.route('/clear_history', methods=['POST'])
+def clear_history():
+    try:
+        email = request.form['email']
+
+        sql = "DELETE FROM history " \
+              "WHERE account_id IN (SELECT account_id FROM user_account WHERE email_address = %s);"
+
+        with db.cursor() as cursor:
+            cursor.execute(sql, (email,))
+
+        db.commit()  # Make sure to commit the changes after executing the query
+
+        return 'History Cleared.'
+
+    except Exception as e:
+        db.rollback()
+        return jsonify({'error': str(e)})
+
     
 @app.route('/display_history', methods=['POST'])
 def display_history():
@@ -557,7 +577,10 @@ def download_decrypted_zip(filename):
     zip_filename = f'unencrypted.zip'
 
     decrypted_zip_data.seek(0)
-    decrypted_data_dict[zip_filename] = decrypted_zip_data.getvalue()
+    if zip_filename in decrypted_data_dict.keys():
+        pass
+    else:
+        decrypted_data_dict[zip_filename] = decrypted_zip_data.getvalue()
     decrypted_zip_data.seek(0)
     decrypted_zip_data.truncate(0)
 

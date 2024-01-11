@@ -88,6 +88,29 @@ async function renderHistory() {
     }
 }
 
+async function clear_history() {
+  const email = sessionStorage.getItem('email');
+  
+  const formData = new FormData();
+  formData.append('email', email);
+
+  try {
+    const response = await fetch('http://localhost:5000/clear_history', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (response.ok) {
+      window.location.reload();
+      alert('History Cleared.')
+    }
+  }
+
+  catch (error) {
+    console.error('Error fetching history:', error);
+  }
+}
+
   // Ensure the script is executed after the HTML has been fully loaded
 document.addEventListener('DOMContentLoaded', function () {
     renderHistory();

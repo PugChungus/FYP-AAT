@@ -135,14 +135,15 @@ async function hideDropZoneAndFileDetails() {
 }
 
 function isValidFileExtension(file) {
-    const allowedExtension = "enc";
+    const allowedExtensions = ["enc", "zip"];
     const fileName = file.name.toLowerCase();
     const fileExtension = fileName.slice((fileName.lastIndexOf(".") - 1 >>> 0) + 2);
+    console.log(fileExtension)
 
-    if (fileExtension === allowedExtension) {
+    if (allowedExtensions.includes(fileExtension)) {
         return true; // Valid extension
     } else {
-        alert(`Please upload files with ${allowedExtension} or .zip extension`);
+        alert(`Please upload files with ${allowedExtensions.join(' or ')} extension`);
         return false; // Invalid extension
     }
 }
