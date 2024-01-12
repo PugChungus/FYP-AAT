@@ -101,7 +101,10 @@ async function hideDropZoneAndFileDetails() {
         const zipButton = document.createElement('button');
         zipButton.textContent = 'Download as Zip';
         zipButton.addEventListener('click', async () => {
-            downloadDecryptedFiles('zip');
+            const zipFolderName = window.prompt('Enter the name for the zip folder (without extension)');
+            if (zipFolderName) {
+                downloadDecryptedFiles('zip', zipFolderName);
+            }
         });
 
         const individualButton = document.createElement('button');
@@ -132,14 +135,15 @@ async function hideDropZoneAndFileDetails() {
 }
 
 function isValidFileExtension(file) {
-    const allowedExtension = "enc";
+    const allowedExtensions = ["enc", "zip"];
     const fileName = file.name.toLowerCase();
     const fileExtension = fileName.slice((fileName.lastIndexOf(".") - 1 >>> 0) + 2);
+    console.log(fileExtension)
 
-    if (fileExtension === allowedExtension) {
+    if (allowedExtensions.includes(fileExtension)) {
         return true; // Valid extension
     } else {
-        alert(`Please upload files with ${allowedExtension} or .zip extension`);
+        alert(`Please upload files with ${allowedExtensions.join(' or ')} extension`);
         return false; // Invalid extension
     }
 }
@@ -330,7 +334,7 @@ function formatFileSize(size) {
     }
 }
 
-function downloadDecryptedFiles(type) {
+function downloadDecryptedFiles(type, name) {
     if (type === 'individual') {
         const files = selectedFiles.files;
         const totalFiles = files.length;
@@ -374,12 +378,14 @@ function downloadDecryptedFiles(type) {
     } else {
         const filename = 'unencrypted.zip';
 
+        const outfilename = `${name}.zip`
+
         fetch(`http://localhost:5000/download_decrypted_zip/${filename}`)
             .then(response => response.blob())
             .then(blob => {
                 const downloadLink = document.createElement('a');
                 downloadLink.href = URL.createObjectURL(blob);
-                downloadLink.download = filename;
+                downloadLink.download = outfilename;
                 document.body.appendChild(downloadLink);
                 downloadLink.click();
                 document.body.removeChild(downloadLink);
