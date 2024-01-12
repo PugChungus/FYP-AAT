@@ -62,6 +62,31 @@ async function updateData(user_email, newData) {
   };
 }
 
+async function verifyOTP(email, otp) {
+  try {
+    const formData = new FormData();
+    formData.append('email', email);
+    formData.append('otp', otp);
+
+    const response = await fetch('http://localhost:5000/verify_otp', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      return data.is_valid === 1;
+    } else {
+      console.error('Error verifying OTP:', response.statusText);
+      return false;
+    }
+  } catch (error) {
+    console.error('Error making request:', error);
+    return false;
+  }
+}
+
+
 document.addEventListener('DOMContentLoaded', async function () {
   const email = sessionStorage.getItem('email');
   const formData = new FormData();
@@ -179,7 +204,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             <p class="card-text">Scan the QR code using the Google Authenticator app.</p>
             <div id="qrcode"></div>
             <label for="otpInput">Enter OTP:</label>
-            <input type="text" id="otpInput" name="otpInput">
+            <input type="text" autocomplete="off" id="otpInput" name="otpInput">
             <button type="button" class="btn btn-secondary" id="cancelButton">Cancel</button>
             <button type="button" class="btn btn-primary" id="submitOTP">Submit OTP</button>
           </div>`;
@@ -204,12 +229,20 @@ document.addEventListener('DOMContentLoaded', async function () {
             })
 
             const submitOTPButton = qrCodeCardDiv.querySelector('#submitOTP')
-            submitOTPButton.addEventListener('click', function() {
+            submitOTPButton.addEventListener('click', async function() {
               const enteredOTP = qrCodeCardDiv.querySelector('#otpInput').value;
 
-              if (enteredOTP.length === 6 && /^[0-9]+$/.test(enteredOTP)) {
+              if (/^\d{6}$/.test(enteredOTP)) {
                 console.log('Submitted OTP:', enteredOTP);
+                const isValidOTP = await verifyOTP(email, enteredOTP);
+
+                if (isValidOTP) {
+                  console.log('OTP is valid. Proceed with enabling 2FA.');
                 qrCodeCardDiv.style.display = 'none'
+
+                } else{
+                  alert('Invalid OTP. Please enter a valid 6-digit numeric OTP.');
+                }
               } else {
                 alert('Invalid OTP. Please enter a valid 6-digit numeric OTP.')
               }

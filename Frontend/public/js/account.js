@@ -38,6 +38,10 @@ async function exportPrivateKey(key) {
   return jwkString
 }
 
+
+
+
+
 async function keygen() {
   try {
       const keyPair = await window.crypto.subtle.generateKey(
@@ -208,6 +212,9 @@ async function register() {
   }
 }
 
+
+
+
 async function login(event) {
   event.preventDefault(); // Prevent the form from submitting normally
 
@@ -229,31 +236,29 @@ async function login(event) {
       body: formData,
     });
 
-    const responseData = await response.text()
-    console.log("Response Data: ", responseData)
-    const data = JSON.parse(responseData)
-    count = data.result[0]['count(*)']
-    console.log("Count:", count)
+    const responseData = await response.text();
+    console.log("Response Data: ", responseData);
+    const data = JSON.parse(responseData);
+    const count = data.result[0]['count(*)'];
+    console.log("Count:", count);
 
-    if (count == 1) {
+    if (count === 1) {
       formData.append('password', password);
-      console.log("Hello")
-      // account lockout after a number of tries?
-      //mfa???
-      const response = await fetch('http://localhost:3000/login', {
+
+      // Check if 2FA is required
+      const loginResponse = await fetch('http://localhost:3000/login', {
         method: 'POST',
         body: formData,
       });
 
-      console.log("hello")
-      const data = await response.json();
-      if (data.result) {
-        
-        // document.cookie = `jwtToken=${data.JWTtoken}; SameSite=Strict; Secure`;
-        const count = data.result[0]['count(*)'];
-      
+      const loginData = await loginResponse.json();
+
+      if (loginData.result) {
+        const count = loginData.result[0]['count(*)'];
+
         if (count === 1) {
-          const response = await fetch('http://localhost:3000/get_account', {
+          // Check if 2FA is required
+          const get2FAResponse = await fetch('http://localhost:3000/get2faStatus', {
             method: 'POST',
             body: formData,
           });
@@ -268,28 +273,50 @@ async function login(event) {
           var email_addr = data["tables"][0]["email_address"]
           var pfp = data["tables"][0]["profile_picture"]
 
-          sessionStorage.setItem('username', username);
-          sessionStorage.setItem('email', email_addr);
-          sessionStorage.setItem('profile_picture', pfp);
-          // document.cookie = `jwtToken=${token}; SameSite=Strict; Secure`;
+          const get2FAData = await get2FAResponse.json();
+          console.log("2fa Data:", get2FAData);
+          const is2FAEnabled = get2FAData.is_2fa_enabled === 1;
+          const secret = get2FAData.secret;
 
-          window.location.href = 'http://localhost:3000/pages/home.html';
+          console.log('Is 2FA Enabled: ', is2FAEnabled);
+          console.log('Secret Key: ', secret);
+
+          if (is2FAEnabled) {
+            // Redirect to 2FA verification page
+            window.location.href = `http://localhost:3000/pages/2fa.html?email=${email}&secret=${secret}`;
+          } else {
+            // Continue with regular login process
+            await continueRegularLogin(formData);
+          }
         } else {
           alert("Login Failed");
         }
       } else {
         alert("Login Failed");
       }
+    } else {
+      alert('You do not have an email registered with us.');
     }
-    else {
-      alert('You do not have an email registered with us.')
-    }
-
   } catch (error) {
     console.error('Error during fetch:', error);
   }
+}
 
-  // Now you can use the 'email' and 'password' variables as needed (e.g., send them using fetch)
-  console.log('Email:', email);
-  console.log('Password:', password);
+async function continueRegularLogin(formData) {
+  // Perform additional steps for regular login if needed
+  const response = await fetch('http://localhost:3000/get_account', {
+    method: 'POST',
+    body: formData,
+  });
+
+  const data = await response.json();
+  var username = data["tables"][0]["username"];
+  var email_addr = data["tables"][0]["email_address"];
+  var pfp = data["tables"][0]["profile_picture"];
+
+  sessionStorage.setItem('username', username);
+  sessionStorage.setItem('email', email_addr);
+  sessionStorage.setItem('profile_picture', pfp);
+
+  window.location.href = 'http://localhost:3000/pages/home.html';
 }

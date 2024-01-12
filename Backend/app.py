@@ -160,6 +160,17 @@ def format_date():
 
     return formatted_date
     
+
+def store_secret(email, secret):
+    try:
+        with db.cursor() as cursor:
+            sql = "UPDATE user_account SET tfa_secret = %s WHERE email_address = %s"
+            cursor.execute(sql, (secret, email))
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        print("Error storing secret: ", str(e))
+
 def format_size(size_in_bytes):
     size_in_bytes = float(size_in_bytes)
     kilo = 1024
@@ -636,21 +647,49 @@ def clear_decrypted_folder():
     decrypted_data_dict.clear()
     return 'Decrypted folder cleared', 200
 
+user_secrets = {}
+
 @app.route('/generate_2fa_qr_code', methods=['POST'])
 def generate_2fa_qr_code():
     try:
         email = request.form.get('email')
-        totp = pyotp.TOTP(pyotp.random_base32())
-        print("Key:",  totp.secret)
+
+        # Generate a new secret for the user
+        secret = pyotp.random_base32()
+
+        # Store the secret securely
+        user_secrets[email] = secret
+
+        totp = pyotp.TOTP(secret)
         otp = totp.now()
-        print("Generated OTP:", otp)
         qr_code_url = totp.provisioning_uri(email, issuer_name="JTR Encryption")
-        print("URL:", qr_code_url)
-        return jsonify({'qr_code_url': qr_code_url, 'otp':otp})
+
+        return jsonify({'qr_code_url': qr_code_url, 'otp': otp, 'secret': secret})
     except Exception as e:
-        print("Error:", e)
         return jsonify({'error': str(e)})
 
+@app.route('/verify_2fa', methods=['POST'])
+def verify_2fa():
+    try:
+        email = request.form.get('email')
+        user_input_otp = request.form.get('otp')
+
+        # Retrieve the secret associated with the user
+        secret = user_secrets.get(email)
+
+        if secret is None:
+            raise ValueError('Secret key not found for the specified email.')
+
+        # Verify the OTP
+        totp = pyotp.TOTP(secret)
+        is_valid = totp.verify(user_input_otp)
+
+        if is_valid:
+            return jsonify({'message': 'OTP is valid'})
+        else:
+            return jsonify({'error': 'Invalid OTP'})
+    except Exception as e:
+        return jsonify({'error': str(e)})                                   
 
 if __name__ == '__main__':
     app.run(debug=True,
