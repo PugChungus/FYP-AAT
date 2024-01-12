@@ -298,16 +298,19 @@ app.post('/get2faStatus', async (req, res) => {
     try {
         const { email } = req.body;
 
-        const sql = 'SELECT is_2fa_enabled FROM user_account WHERE email_address =?';
+        const sql = 'SELECT is_2fa_enabled, tfa_secret FROM user_account WHERE email_address =?';
         const values = [email];
 
         const result = await pool.query(sql, values);
         console.log("Result: ", result)
 
-        if (result.length > 0) {
+        if (result.length > 0 && result[0].length) {
             const is2FAEnabled = result[0][0].is_2fa_enabled;
+            const tfasecret = result[0][0].tfa_secret;
+
             console.log('is_2fa_enabled:', is2FAEnabled);
-            res.json({ is_2fa_enabled: is2FAEnabled });
+            console.log("TFASecret:", tfasecret)
+            res.json({ is_2fa_enabled: is2FAEnabled, secret: tfasecret });
         } else {
             res.status(404).json({ error: 'User not found '});
         }
@@ -316,6 +319,8 @@ app.post('/get2faStatus', async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error'});
     };
 });
+
+
 
 app.get('/get-access-token', async (req, res) => {
     try {
