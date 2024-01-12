@@ -263,6 +263,16 @@ async function login(event) {
             body: formData,
           });
 
+          const response2 = await fetch('http://localhost:5000/create_user_dict', {
+            method: 'POST',
+            body: formData,
+          });
+
+          const data = await response.json();
+          var username = data["tables"][0]["username"]
+          var email_addr = data["tables"][0]["email_address"]
+          var pfp = data["tables"][0]["profile_picture"]
+
           const get2FAData = await get2FAResponse.json();
           console.log("2fa Data:", get2FAData);
           const is2FAEnabled = get2FAData.is_2fa_enabled === 1;

@@ -31,6 +31,33 @@ user_secrets = {}
 
 db = pymysql.connect(host = 'localhost', port = 3306, user = 'root', password = 'password', database = 'major_project_db')
 
+user_dicts = {}  # Dictionary to store user-specific dictionaries
+
+@app.route('/create_user_dict', methods=['POST'])
+def create_user_dict():
+    try:
+        email = request.form['email']
+
+        global user_dicts
+        global encrypted_data_dict
+        global decrypted_data_dict
+
+        # Check if user dictionary already exists for the email
+        if email not in user_dicts:
+            # If not, create user-specific dictionaries
+            user_dicts[email] = {
+                'encrypted_data_dict': {},
+                'decrypted_data_dict': {}
+            }
+        
+        encrypted_data_dict = user_dicts[email]["encrypted_data_dict"]
+        decrypted_data_dict = user_dicts[email]["decrypted_data_dict"]
+
+        return jsonify("User dictionary created.")
+    except Exception as e:
+        print("Error:", e)
+        return jsonify({'error': str(e)})
+
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'svg'}  # Define the allowed image file extensions
 
 @app.route('/upload', methods=['POST'])
@@ -287,9 +314,13 @@ def upload_file():
 def encrypt_files():
     try:
         uploaded_files = request.files.getlist('files')
+        clear_dict = request.form['clear']
         hex = request.form['hex']
         key = bytes.fromhex(hex)
         
+        if clear_dict == '0':
+            encrypted_data_dict.clear()
+
         # Create a BytesIO object to store the ZIP file in memory
         for uploaded_file in uploaded_files:
             nonce = get_random_bytes(12)
@@ -330,8 +361,12 @@ def encrypt_files():
 def decrypt_files():
     try:
         uploaded_files = request.files.getlist('files')
+        clear_dict = request.form['clear']
         hex_key = request.form['hex']
         key = bytes.fromhex(hex_key)
+
+        if clear_dict == '0':
+            decrypted_data_dict.clear()
 
         for uploaded_file in uploaded_files:
             # filename = secure_filename(uploaded_file.filename)
