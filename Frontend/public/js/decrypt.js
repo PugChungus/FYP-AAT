@@ -340,7 +340,7 @@ async function downloadDecryptedFiles(type, name) {
     if (type === 'individual') {
         const files = selectedFiles.files;
         const totalFiles = files.length;
-        
+
         for (let i = 0; i < totalFiles; i++) {
             const filename = files[i].name;
             console.log(filename)
@@ -357,45 +357,42 @@ async function downloadDecryptedFiles(type, name) {
             if (fileNameWithoutExtension.startsWith("encrypted_")) {
                 fileNameWithoutExtension = fileNameWithoutExtension.replace('encrypted_', 'decrypted_');
             }
-            
+
             const decryptedExtension = decryptedExtensionList[i % decryptedExtensionList.length];
 
             let fileNameWithEnc = `${fileNameWithoutExtension}.${decryptedExtension}`;
 
-            fetch(`http://localhost:5000/download_single_decrypted_file/${fileNameWithEnc}`)
-                .then(response => response.blob())
-                .then(blob => {
-                    const downloadLink = document.createElement('a');
-                    downloadLink.href = URL.createObjectURL(blob);
-                    if (filename.startsWith('encrypted_')){
-                        console.log("working")
-                        fileNameWithEnc = 'decrypted_zip.zip'
-                    }
-                    downloadLink.download = fileNameWithEnc;
-                    document.body.appendChild(downloadLink);
-                    downloadLink.click();
-                    document.body.removeChild(downloadLink);
-                });
+            const response = await fetch(`http://localhost:5000/download_single_decrypted_file/${fileNameWithEnc}`);
+            const blob = await response.blob();
+
+            const downloadLink = document.createElement('a');
+            downloadLink.href = URL.createObjectURL(blob);
+            if (filename.startsWith('encrypted_')) {
+                console.log("working")
+                fileNameWithEnc = 'decrypted_zip.zip';
+            }
+            downloadLink.download = fileNameWithEnc;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
         }
 
-        await clearDecryptedFolder()
+        await clearDecryptedFolder();
 
     } else {
         const filename = 'unencrypted.zip';
+        const outfilename = `${name}.zip`;
 
-        const outfilename = `${name}.zip`
+        const response = await fetch(`http://localhost:5000/download_decrypted_zip/${filename}`);
+        const blob = await response.blob();
 
-        fetch(`http://localhost:5000/download_decrypted_zip/${filename}`)
-            .then(response => response.blob())
-            .then(blob => {
-                const downloadLink = document.createElement('a');
-                downloadLink.href = URL.createObjectURL(blob);
-                downloadLink.download = outfilename;
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                document.body.removeChild(downloadLink);
-            });
-        
-        await clearDecryptedFolder()
+        const downloadLink = document.createElement('a');
+        downloadLink.href = URL.createObjectURL(blob);
+        downloadLink.download = outfilename;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+
+        await clearDecryptedFolder();
     }
 }

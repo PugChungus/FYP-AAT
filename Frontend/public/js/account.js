@@ -212,9 +212,6 @@ async function register() {
   }
 }
 
-
-
-
 async function login(event) {
   event.preventDefault(); // Prevent the form from submitting normally
 
@@ -259,6 +256,11 @@ async function login(event) {
         if (count === 1) {
           // Check if 2FA is required
           const get2FAResponse = await fetch('http://localhost:3000/get2faStatus', {
+            method: 'POST',
+            body: formData,
+          });
+
+          const response = await fetch('http://localhost:3000/get_account', { 
             method: 'POST',
             body: formData,
           });

@@ -98,18 +98,38 @@ async function hideDropZoneAndFileDetails() {
 
         // Create buttons for zip and individual file download
         const zipButton = document.createElement('button');
+        const individualButton = document.createElement('button');
         zipButton.textContent = 'Download as Zip';
         zipButton.addEventListener('click', async () => {
             const zipFolderName = window.prompt('Enter the name for the zip folder (without extension)');
             if (zipFolderName) {
                 downloadEncryptedFiles('zip', zipFolderName);
+                dropZone.style.display = 'block';
+                fileDetails.style.display = 'block';
+                encryptButton.style.display = 'block';
+                dropZoneEncasement.style.display = 'block';
+                zipButton.style.display = 'none';
+                individualButton.style.display = 'none';
+                selectedFiles.files = []
+                var div = document.getElementById("file-details-container");
+                div.innerHTML = "";
+                seen.clear();
             }
         });
 
-        const individualButton = document.createElement('button');
         individualButton.textContent = 'Download Encrypted Files Individually';
         individualButton.addEventListener('click', async () => {
             downloadEncryptedFiles('individual');
+            dropZone.style.display = 'block';
+            fileDetails.style.display = 'block';
+            encryptButton.style.display = 'block';
+            dropZoneEncasement.style.display = 'block';
+            zipButton.style.display = 'none';
+            individualButton.style.display = 'none';
+            selectedFiles.files = []
+            var div = document.getElementById("file-details-container");
+            div.innerHTML = "";
+            seen.clear();
         });
 
         // Append buttons to the card div
@@ -126,6 +146,15 @@ async function hideDropZoneAndFileDetails() {
         // Add click event listener to the download button
         downloadButton.addEventListener('click', async () => {
             downloadEncryptedFiles('individual');
+            dropZone.style.display = 'block';
+            fileDetails.style.display = 'block';
+            encryptButton.style.display = 'block';
+            dropZoneEncasement.style.display = 'block';
+            downloadButton.style.display = 'none';
+            selectedFiles.files = []
+            var div = document.getElementById("file-details-container");
+            div.innerHTML = "";
+            seen.clear();
         });
         
         // Append the download button to the document or display it wherever needed
@@ -333,7 +362,7 @@ async function downloadEncryptedFiles(type, name) {
     if (type === 'individual') {
         const files = selectedFiles.files;
         const totalFiles = files.length;
-        
+
         for (let i = 0; i < totalFiles; i++) {
             const filename = files[i].name;
             let fileNameWithoutExtension;
@@ -348,36 +377,33 @@ async function downloadEncryptedFiles(type, name) {
 
             const fileNameWithEnc = `${fileNameWithoutExtension}.enc`;
 
-            fetch(`http://localhost:5000/download_single_encrypted_file/${fileNameWithEnc}`)
-                .then(response => response.blob())
-                .then(blob => {
-                    const downloadLink = document.createElement('a');
-                    downloadLink.href = URL.createObjectURL(blob);
-                    downloadLink.download = fileNameWithEnc;
-                    document.body.appendChild(downloadLink);
-                    downloadLink.click();
-                    document.body.removeChild(downloadLink);
-                });
+            const response = await fetch(`http://localhost:5000/download_single_encrypted_file/${fileNameWithEnc}`);
+            const blob = await response.blob();
+
+            const downloadLink = document.createElement('a');
+            downloadLink.href = URL.createObjectURL(blob);
+            downloadLink.download = fileNameWithEnc;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
         }
 
-        await clearEncryptedFolder()
+        await clearEncryptedFolder();
 
     } else {
         const filename = 'encrypted.zip';
+        const outfilename = `${name}.zip`;
 
-        const outfilename = `${name}.zip`
+        const response = await fetch(`http://localhost:5000/download_zip/${filename}`);
+        const blob = await response.blob();
 
-        fetch(`http://localhost:5000/download_zip/${filename}`)
-            .then(response => response.blob())
-            .then(blob => {
-                const downloadLink = document.createElement('a');
-                downloadLink.href = URL.createObjectURL(blob);
-                downloadLink.download = outfilename;
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                document.body.removeChild(downloadLink);
-            });
-        
-        await clearEncryptedFolder()
+        const downloadLink = document.createElement('a');
+        downloadLink.href = URL.createObjectURL(blob);
+        downloadLink.download = outfilename;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+
+        await clearEncryptedFolder();
     }
 }
