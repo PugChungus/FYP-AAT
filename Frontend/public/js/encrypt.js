@@ -206,7 +206,7 @@ async function clearEncryptedFolder() {
     }
 }
 
-async function encrypt(file) {
+async function encrypt(file, i) {
     const formData = new FormData();
 
     if (selectedKey.length === 0) {
@@ -226,6 +226,7 @@ async function encrypt(file) {
     }
   
     formData.append('files', file);
+    formData.append('clear', i)
   
     try {
         const response = await fetch('http://localhost:5000/encrypt', {
@@ -270,7 +271,8 @@ async function sendFilesToBackend() {
 
     if (totalFiles == 1) {
         const file = files[0];
-        const decryptionSuccessful = await encrypt(file);
+        const i = 0
+        const decryptionSuccessful = await encrypt(file, i);
 
         if (decryptionSuccessful) {
             hideDropZoneAndFileDetails();
@@ -278,7 +280,7 @@ async function sendFilesToBackend() {
     } else {
         for (let i = 0; i < totalFiles; i++) {
             const file = files[i];
-            const decryptionSuccessful = await encrypt(file);
+            const decryptionSuccessful = await encrypt(file, i);
 
             if (!decryptionSuccessful) {
                 // If decryption fails for any file, stop processing the rest
@@ -327,7 +329,7 @@ function formatFileSize(size) {
     }
 }
 
-function downloadEncryptedFiles(type, name) {
+async function downloadEncryptedFiles(type, name) {
     if (type === 'individual') {
         const files = selectedFiles.files;
         const totalFiles = files.length;
@@ -357,6 +359,9 @@ function downloadEncryptedFiles(type, name) {
                     document.body.removeChild(downloadLink);
                 });
         }
+
+        await clearEncryptedFolder()
+
     } else {
         const filename = 'encrypted.zip';
 
@@ -372,5 +377,7 @@ function downloadEncryptedFiles(type, name) {
                 downloadLink.click();
                 document.body.removeChild(downloadLink);
             });
+        
+        await clearEncryptedFolder()
     }
 }
