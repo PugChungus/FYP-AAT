@@ -272,8 +272,19 @@ async function login(event) {
           console.log('Secret Key: ', secret);
 
           if (is2FAEnabled) {
-            // Redirect to 2FA verification page
-            window.location.href = `http://localhost:3000/pages/2fa.html?email=${email}&secret=${secret}`;
+            const sendSecretResponse = await fetch('http://localhost:5000/send_secret', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                secret: secret,
+              }),
+            })
+
+            const sendSecretData = await sendSecretResponse.json();
+            console.log('Secret sent to server:', sendSecretData);
+            window.location.href = 'http://localhost:3000/pages/2fa.html';
           } else {
             // Continue with regular login process
             await continueRegularLogin(formData);
@@ -310,3 +321,50 @@ async function continueRegularLogin(formData) {
 
   window.location.href = 'http://localhost:3000/pages/home.html';
 }
+
+function verifyTOTP(event) {
+  event.preventDefault();
+
+  // Get the OTP value from the input field
+  var otpValue = document.getElementById('otp-field').value;
+
+  var emailValue = sessionStorage.getItem('verificationEmail');
+  console.log("EMAILZ", emailValue)
+  const formData = new FormData();
+  formData.append('email', emailValue);
+  // Get the email value (you may need to adapt this based on how your email is stored in the frontend)
+
+  if (!emailValue) {
+    // Handle the case where the email is not found in sessionStorage
+    console.error('Email not found in sessionStorage');
+    return;
+  }
+  // Prepare the data to be sent in the POST request
+  var data = {
+    otp: otpValue
+  };
+
+  // Make an HTTP POST request to your backend endpoint
+  fetch('http://localhost:5000/verify_2fa', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+  })
+  .then(response => response.json())
+  .then(data => {
+      // Handle the response from the backend
+      console.log(data);
+      if (data.message === 'OTP is valid') {
+        continueRegularLogin(formData)
+        
+      } else {
+        alert('Invalid OTP. Please try again.')
+      }
+  })
+  .catch((error) => {
+      console.error('Error:', error);
+  });
+}
+

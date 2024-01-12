@@ -26,7 +26,7 @@ CORS(app)
 
 encrypted_data_dict = {}
 decrypted_data_dict = {}
-
+user_secrets = {}
 # Connect to the MySQL database
 
 db = pymysql.connect(host = 'localhost', port = 3306, user = 'root', password = 'password', database = 'major_project_db')
@@ -632,34 +632,91 @@ def generate_2fa_qr_code():
 
         totp = pyotp.TOTP(secret)
         otp = totp.now()
-        qr_code_url = totp.provisioning_uri(email, issuer_name="JTR Encryption")
+        qr_code_url = totp.provisioning_uri(email, issuer_name="YourApp")
 
         return jsonify({'qr_code_url': qr_code_url, 'otp': otp, 'secret': secret})
     except Exception as e:
         return jsonify({'error': str(e)})
 
-@app.route('/verify_2fa', methods=['POST'])
-def verify_2fa():
+@app.route('/verify_otp', methods=['POST'])
+def verify_otp():
     try:
         email = request.form.get('email')
-        user_input_otp = request.form.get('otp')
+        otp_value = request.form.get('otp')
 
         # Retrieve the secret associated with the user
         secret = user_secrets.get(email)
 
         if secret is None:
-            raise ValueError('Secret key not found for the specified email.')
+            raise ValueError('Secret key not found for the specified user.')
 
         # Verify the OTP
         totp = pyotp.TOTP(secret)
+        is_valid = totp.verify(otp_value)
+
+        if is_valid:
+            # Insert the secret into the database upon successful OTP validation
+            insert_secret_into_db(email, secret)
+            return jsonify({"is_valid": 1, "message": "OTP is valid"})
+        else:
+            return jsonify({"is_valid": 0, "message": "Invalid OTP"})
+    except Exception as e:
+        return jsonify({"is_valid": 0, "message": f"Error: {str(e)}"})
+
+@app.route('/verify_2fa', methods=['POST'])
+def verify_2fa():
+    try:
+        data = request.get_json()
+        user_input_otp = data.get('otp')
+        email = data.get('email')
+
+        print("OTPPPP???:", user_input_otp)
+        print("emaillll:", email)
+        # Retrieve the secret associated with the user
+        secret = user_secrets.get(email)
+        print("Secret", secret)
+
+        if secret is None:
+            raise ValueError('Secret key not found for the specified user.')
+
+        # Verify the OTP
+        totp = pyotp.TOTP(secret)
+        print("totp: ", totp)
         is_valid = totp.verify(user_input_otp)
+        print("IsitValid: ", is_valid)
 
         if is_valid:
             return jsonify({'message': 'OTP is valid'})
         else:
             return jsonify({'error': 'Invalid OTP'})
     except Exception as e:
-        return jsonify({'error': str(e)})                                   
+        return jsonify({'error': str(e)})
+
+
+@app.route('/send_secret', methods=['POST'])
+def send_secret():
+    try:
+        data = request.json
+        user_key = data.get('email')
+        secret = data.get('secret')
+
+        # Store the secret in user_secrets dictionary
+        user_secrets[user_key] = secret
+
+        return jsonify({'message': 'Secret received and stored successfully'})
+    except Exception as e:
+        return jsonify({'error': str(e)})                         
+
+
+def insert_secret_into_db(email, secret):
+    try:
+        with db.cursor() as cursor:
+            sql = "UPDATE user_account SET tfa_secret = %s WHERE email_address = %s"
+            cursor.execute(sql, (secret, email))
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        print("Error inserting secret into the database: ", str(e))
 
 if __name__ == '__main__':
     app.run(debug=True,
