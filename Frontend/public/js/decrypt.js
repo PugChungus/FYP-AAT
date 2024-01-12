@@ -104,6 +104,17 @@ async function hideDropZoneAndFileDetails() {
             const zipFolderName = window.prompt('Enter the name for the zip folder (without extension)');
             if (zipFolderName) {
                 downloadDecryptedFiles('zip', zipFolderName);
+                dropZone.style.display = 'block';
+                fileDetails.style.display = 'block';
+                decryptButton.style.display = 'block';
+                dropZoneEncasement.style.display = 'block';
+                zipButton.style.display = 'none';
+                individualButton.style.display = 'none';
+                cardDiv.style.display = 'none';
+                selectedFiles.files = []
+                var div = document.getElementById("file-details-container");
+                div.innerHTML = "";
+                seen.clear();
             }
         });
 
@@ -111,6 +122,17 @@ async function hideDropZoneAndFileDetails() {
         individualButton.textContent = 'Download Decrypted Files Individually';
         individualButton.addEventListener('click', async () => {
             downloadDecryptedFiles('individual', decryptedExtension);
+            dropZone.style.display = 'block';
+            fileDetails.style.display = 'block';
+            decryptButton.style.display = 'block';
+            dropZoneEncasement.style.display = 'block';
+            zipButton.style.display = 'none';
+            individualButton.style.display = 'none';
+            cardDiv.style.display = 'none';
+            selectedFiles.files = []
+            var div = document.getElementById("file-details-container");
+            div.innerHTML = "";
+            seen.clear();
         });
 
         // Append buttons to the card div
@@ -127,6 +149,15 @@ async function hideDropZoneAndFileDetails() {
         // Add click event listener to the download button
         downloadButton.addEventListener('click', async () => {
             downloadDecryptedFiles('individual', decryptedExtension);
+            dropZone.style.display = 'block';
+            fileDetails.style.display = 'block';
+            decryptButton.style.display = 'block';
+            dropZoneEncasement.style.display = 'block';
+            downloadButton.style.display = 'none';
+            selectedFiles.files = []
+            var div = document.getElementById("file-details-container");
+            div.innerHTML = "";
+            seen.clear();
         });
         
         // Append the download button to the document or display it wherever needed

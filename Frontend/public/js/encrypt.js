@@ -110,6 +110,7 @@ async function hideDropZoneAndFileDetails() {
                 dropZoneEncasement.style.display = 'block';
                 zipButton.style.display = 'none';
                 individualButton.style.display = 'none';
+                cardDiv.style.display = 'none';
                 selectedFiles.files = []
                 var div = document.getElementById("file-details-container");
                 div.innerHTML = "";
@@ -126,6 +127,7 @@ async function hideDropZoneAndFileDetails() {
             dropZoneEncasement.style.display = 'block';
             zipButton.style.display = 'none';
             individualButton.style.display = 'none';
+            cardDiv.style.display = 'none';
             selectedFiles.files = []
             var div = document.getElementById("file-details-container");
             div.innerHTML = "";
