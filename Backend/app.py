@@ -24,8 +24,6 @@ import qrcode
 app = Flask(__name__)
 CORS(app)  
 
-encrypted_data_dict = {}
-decrypted_data_dict = {}
 user_secrets = {}
 # Connect to the MySQL database
 
