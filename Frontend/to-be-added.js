@@ -1,31 +1,5 @@
-//store user data in jwt token
-const sampleUser = {
-    id: 123,
-    username: 'john_doe',
-    role: 'user',
-  };
-  
 
-app.get('/login', (req, res) => {
-    // Assume you have authenticated the user and obtained their email
-    const email = 'user@example.com';
-  
-    // Create a JWT token
-    const JWTtoken = jwt.sign({ sampleUser }, secretJwtKey, { expiresIn: '1h' });
-  
-    // Set the cookie with JWT token
-    res.cookie('jwtToken', JWTtoken, {
-      httpOnly: true,
-      sameSite: 'Lax',
-      secure: true,
-      maxAge: 3600000,
-    });
-  
-    // Redirect or respond as needed
-    res.redirect('/dashboard');
-  });
-
-  function authorizeRoles() { //check for user otherwise redirect back to login page
+function authorizeRoles() { //check for user otherwise redirect back to login page
     return (req, res, next) => {
       const userRoles = req.user.roles || [];
       const allowedRoles = 'user';

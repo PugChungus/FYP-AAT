@@ -9,9 +9,7 @@ import { dirname } from 'path';
 import { OAuth2Client } from "google-auth-library";
 import jwt from 'jsonwebtoken';
 
-                                                        
-
-const secretJwtKey = "ACB725326D68397E743DFC9F3FB64DA50CE7FB135721794C355B0DB219C449B3"
+const secretJwtKey = "ACB725326D68397E743DFC9F3FB64DA50CE7FB135721794C355B0DB219C449B3" //key rotation?
 const app = express();
 const port = 3000;
 
@@ -24,7 +22,6 @@ const __dirname = dirname(__filename);
 
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
-
 
 // Set up a route to render your HTML file
 app.get('/', (req, res) => {
@@ -160,7 +157,7 @@ app.post('/check_account', async (req, res) => {
         [email]
         )
 
-        if (result[0].count > 0) {
+        if (result[0]['count(*)'] == 1) {
             return res.status(200).json({ message: 'Email Exists', result });
         } else {
             return res.status(200).json({ message: 'Email Does Not Exist', result });
@@ -187,7 +184,6 @@ app.post('/login', async (req, res) => {
             [email]
         );
 
-        console.log("Tables:", tables)
         if (tables["is_2fa_enabled"] === 1) {
             console.log("2FA_enabled: True")
         } else {
@@ -195,33 +191,44 @@ app.post('/login', async (req, res) => {
         }
 
         const pass_db = tables[0]['password'];
-        console.log(password);
-        console.log(pass_db);
 
         verificationResult = await verifyPassword(password, pass_db)
-        console.log("check:", verificationResult)
         //Generation of JWT token
-        
 
         if (verificationResult == true) {
-            console.log("ok")
             
             const [result] = await pool.execute(
                 'SELECT count(*) FROM user_account WHERE email_address = ? AND password = ?;',
                 [email, pass_db]
 
             );
-            
 
             if (result[0]['count(*)'] == 1) {
+
+                const [tables_accountData] = await pool.execute(
+                    'SELECT * FROM user_account WHERE email_address = ?;',
+                    [email]
+                );
                 
-                const JWTtoken = jwt.sign({ email }, secretJwtKey, { expiresIn: '1h' });
-                res.cookie('jwtToken', JWTtoken, {
-                  httpOnly: true,
-                  sameSite: 'Strict',
-                  secure: true,
-                  maxAge: 3600000,
-                });
+                const account_email_addr = tables_accountData[0]['email_address']
+                const account_username = tables_accountData[0]['username']
+                const account_profile_picture = tables_accountData[0]['profile_picture']
+
+                const userData = {
+                    email: account_email_addr,
+                    username: account_username,
+                    profile_picture: account_profile_picture,
+                    role: 'user',
+                };
+
+                // const JWTtoken = jwt.sign({ userData }, secretJwtKey, { algorithm: 'HS256', expiresIn: '1h' });
+
+                // res.cookie('jwtToken', JWTtoken, {
+                //   httpOnly: true,
+                //   sameSite: 'Strict',
+                //   secure: true,
+                //   maxAge: 3600000,
+                // });
             
                 return res.status(200).json({ message: 'Account Login Success', result });
             } else {
@@ -251,7 +258,7 @@ app.post('/get_account', async (req, res) => {
             'SELECT * FROM user_account WHERE email_address = ?;',
             [email]
         );
-        console.log(tables)
+
         return res.status(200).json({ message: 'Account Data', tables });
        
     } catch (error) {
@@ -277,7 +284,7 @@ app.post('/enable2fa', async (req, res) => {
     }
   });
 
-  app.post('/disable2fa', async (req, res) => {
+app.post('/disable2fa', async (req, res) => {
     try {
         const { email } = req.body;
 
@@ -289,7 +296,7 @@ app.post('/enable2fa', async (req, res) => {
         console.error('Error Disabling 2FA:', error)
         res.status(500).json({error: 'Internal Server Error'})
     }
-  })
+})
 
 app.post('/get2faStatus', async (req, res) => {
     try {
@@ -316,8 +323,6 @@ app.post('/get2faStatus', async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error'});
     };
 });
-
-
 
 app.get('/get-access-token', async (req, res) => {
     try {

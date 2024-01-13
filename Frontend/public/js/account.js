@@ -38,10 +38,6 @@ async function exportPrivateKey(key) {
   return jwkString
 }
 
-
-
-
-
 async function keygen() {
   try {
       const keyPair = await window.crypto.subtle.generateKey(
@@ -241,7 +237,6 @@ async function login(event) {
 
     if (count === 1) {
       formData.append('password', password);
-
       // Check if 2FA is required
       const loginResponse = await fetch('http://localhost:3000/login', {
         method: 'POST',
@@ -275,6 +270,10 @@ async function login(event) {
           var email_addr = data["tables"][0]["email_address"]
           var pfp = data["tables"][0]["profile_picture"]
 
+          sessionStorage.setItem('username', username);
+          sessionStorage.setItem('email', email_addr);
+          sessionStorage.setItem('profile_picture', pfp);
+
           const get2FAData = await get2FAResponse.json();
           console.log("2fa Data:", get2FAData);
           const is2FAEnabled = get2FAData.is_2fa_enabled === 1;
@@ -301,6 +300,7 @@ async function login(event) {
             // Continue with regular login process
             await continueRegularLogin(formData);
           }
+          
         } else {
           alert("Login Failed");
         }
