@@ -6,9 +6,7 @@ import crypto from 'crypto';
 import { pool } from './db-connection.js';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-
 import { OAuth2Client } from "google-auth-library";
-
 import jwt from 'jsonwebtoken';
 
                                                         
@@ -219,11 +217,10 @@ app.post('/login', async (req, res) => {
                 
                 const JWTtoken = jwt.sign({ email }, secretJwtKey, { expiresIn: '1h' });
                 res.cookie('jwtToken', JWTtoken, {
-                    httpOnly: true, // Ensure the cookie is accessible only by the server
-                    sameSite: 'Lax', // or 'Lax' or 'None' based on your requirements
-                    secure: true, // Ensure the cookie is sent only over HTTPS
-                    maxAge: 3600000, // Expiry time in milliseconds (1 hour in this case)
-                    // Add other cookie configurations like 'domain', 'path', etc. if needed
+                  httpOnly: true,
+                  sameSite: 'Strict',
+                  secure: true,
+                  maxAge: 3600000,
                 });
             
                 return res.status(200).json({ message: 'Account Login Success', result });
