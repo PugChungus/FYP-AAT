@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     <p>Email: ${email}</p>
     <p>Username: ${username}</p>
     
-    <p><a href="/pages/edit-profile.html">Edit Profile</a></p>
+    <p><a href="/edit-profile">Edit Profile</a></p>
     <div id="2fa-section">
       <label class="switch">
         <input type="checkbox" id="2faToggle">

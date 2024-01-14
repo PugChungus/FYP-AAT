@@ -1,4 +1,6 @@
 import express from 'express';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import multer from 'multer';
 import argon2 from 'argon2-browser';
 import path from 'path';
@@ -16,17 +18,127 @@ const port = 3000;
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 app.use(upload.any());
+app.use(cors());
+app.use(cookieParser());
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
-// Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'public', 'pages'));
 
 // Set up a route to render your HTML file
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public/pages/', 'login.html'));
+    res.render('login');
 });
+
+app.get('/2fa', authorizeRoles(['user']), (req, res) => {
+    // Render the HTML page for authorized users
+    res.render('2fa', { user: req.user });
+});
+
+app.get('/change-password', authorizeRoles(['user']), (req, res) => {
+    // Render the HTML page for authorized users
+    res.render('change-password', { user: req.user });
+});
+
+app.get('/decrypt', authorizeRoles(['user']), (req, res) => {
+    // Render the HTML page for authorized users
+    res.render('decrypt', { user: req.user });
+});
+
+app.get('/edit-profile', authorizeRoles(['user']), (req, res) => {
+    // Render the HTML page for authorized users
+    res.render('edit-profile', { user: req.user });
+});
+
+app.get('/encrypt', authorizeRoles(['user']), (req, res) => {
+    // Render the HTML page for authorized users
+    res.render('encrypt', { user: req.user });
+});
+
+app.get('/forgetpassword', authorizeRoles(['user']), (req, res) => {
+    // Render the HTML page for authorized users
+    res.render('forgetpassword', { user: req.user });
+});
+
+app.get('/history', authorizeRoles(['user']), (req, res) => {
+    // Render the HTML page for authorized users
+    res.render('history', { user: req.user });
+});
+
+app.get('/home', authorizeRoles(['user']), (req, res) => {
+    // Render the HTML page for authorized users
+    res.render('home', { user: req.user });
+});
+
+app.get('/keymanagement', authorizeRoles(['user']), (req, res) => {
+    // Render the HTML page for authorized users
+    res.render('keymanagement', { user: req.user });
+});
+
+app.get('/keypopup', authorizeRoles(['user']), (req, res) => {
+    // Render the HTML page for authorized users
+    res.render('keypopup', { user: req.user });
+});
+
+app.get('/login', authorizeRoles(['user']), (req, res) => {
+    // Render the HTML page for authorized users
+    res.render('login', { user: req.user });
+});
+
+app.get('/profile', authorizeRoles(['user']), (req, res) => {
+    // Render the HTML page for authorized users
+    res.render('profile', { user: req.user });
+});
+
+app.get('/register', authorizeRoles(['user']), (req, res) => {
+    // Render the HTML page for authorized users
+    res.render('register', { user: req.user });
+});
+
+app.get('/settings', authorizeRoles(['user']), (req, res) => {
+    // Render the HTML page for authorized users
+    res.render('settings', { user: req.user });
+});
+  
+function authorizeRoles(allowedRoles) {
+    return (req, res, next) => {
+      // Check if req.cookies is defined
+      if (!req.cookies) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+  
+      // Retrieve JWT token from the cookie
+      const jwtToken = req.cookies.jwtToken;
+      console.log(jwtToken)
+  
+      if (!jwtToken) {
+        // If there's no token, user is not authenticated
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+  
+      try {
+        // Decode the JWT token to get user information, including roles
+        const decodedToken = jwt.verify(jwtToken, secretJwtKey);
+
+        console.log(decodedToken)
+
+        console.log(decodedToken.userData.role)
+
+        if (decodedToken.userData && decodedToken.userData.role === 'user') {
+          // User has the required role, proceed to the next middleware
+          next();
+        } else {
+          // User does not have the required role
+          res.status(403).json({ message: 'Insufficient permissions' });
+        }
+      } catch (error) {
+        // Handle token verification errors
+        res.status(401).json({ message: 'Unauthorized' });
+      }
+    };
+}
 
 function generateSalt(length) {
     return crypto.randomBytes(length).toString('hex');
@@ -212,24 +324,22 @@ app.post('/login', async (req, res) => {
                 
                 const account_email_addr = tables_accountData[0]['email_address']
                 const account_username = tables_accountData[0]['username']
-                const account_profile_picture = tables_accountData[0]['profile_picture']
 
                 const userData = {
                     email: account_email_addr,
                     username: account_username,
-                    profile_picture: account_profile_picture,
                     role: 'user',
                 };
 
-                // const JWTtoken = jwt.sign({ userData }, secretJwtKey, { algorithm: 'HS256', expiresIn: '1h' });
+                const JWTtoken = jwt.sign({ userData }, secretJwtKey, { algorithm: 'HS256', expiresIn: '1h' });
 
-                // res.cookie('jwtToken', JWTtoken, {
-                //   httpOnly: true,
-                //   sameSite: 'Strict',
-                //   secure: true,
-                //   maxAge: 3600000,
-                // });
-            
+                res.cookie('jwtToken', JWTtoken, {
+                  httpOnly: true,
+                  sameSite: 'Strict',
+                  secure: true,
+                  maxAge: 3600000,
+                });
+
                 return res.status(200).json({ message: 'Account Login Success', result });
             } else {
                 return res.status(200).json({ message: 'Account Login Failed', result });

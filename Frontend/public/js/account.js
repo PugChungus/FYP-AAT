@@ -192,7 +192,7 @@ async function register() {
             openIndexDB(jwk_private, email);
 
             alert("Registeration Successful.")
-            window.location.href = 'http://localhost:3000/pages/login.html'
+            window.location.href = 'http://localhost:3000/login'
           }
           else{
             alert("Registeration Failed.")
@@ -237,11 +237,14 @@ async function login(event) {
 
     if (count === 1) {
       formData.append('password', password);
+      console.log("ok")
       // Check if 2FA is required
       const loginResponse = await fetch('http://localhost:3000/login', {
         method: 'POST',
         body: formData,
       });
+
+      console.log(loginResponse)
 
       const loginData = await loginResponse.json();
 
@@ -295,7 +298,7 @@ async function login(event) {
 
             const sendSecretData = await sendSecretResponse.json();
             console.log('Secret sent to server:', sendSecretData);
-            window.location.href = 'http://localhost:3000/pages/2fa.html';
+            window.location.href = 'http://localhost:3000/2fa';
           } else {
             // Continue with regular login process
             await continueRegularLogin(formData);
@@ -331,7 +334,7 @@ async function continueRegularLogin(formData) {
   sessionStorage.setItem('email', email_addr);
   sessionStorage.setItem('profile_picture', pfp);
 
-  window.location.href = 'http://localhost:3000/pages/home.html';
+  window.location.href = 'http://localhost:3000/home';
 }
 
 function verifyTOTP(event) {

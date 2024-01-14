@@ -259,7 +259,7 @@ function submitbutton(){
   const button = document.getElementById('submit'); // Replace 'myButton' with the ID of your button
           button.addEventListener('click', function() {
             submit()
-           window.location.href = 'download.html'; // Replace 'anotherPage.html' with the desired page URL
+           window.location.href = 'download'; // Replace 'anotherPage.html' with the desired page URL
            createFileList(global_data)
           });
 }
