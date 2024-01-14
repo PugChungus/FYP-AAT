@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", function () {
             var currentPage = window.location.href;
 
             // Redirect to profile.html with the current page as the source
-            window.location.href = 'profile.html?source=' + encodeURIComponent(currentPage);
+            window.location.href = 'profile?source=' + encodeURIComponent(currentPage);
             console.log(window.location.href);
         });
     }
