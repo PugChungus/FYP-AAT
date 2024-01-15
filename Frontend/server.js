@@ -27,116 +27,139 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'public', 'pages'));
 
+function checkTokenValidity(req) {
+    const jwtToken = req.cookies.jwtToken;
+
+    if (!jwtToken) {
+        // If there's no token, it's considered invalid
+        return false;
+    }
+
+    try {
+        // Decode the JWT token to check its validity
+        jwt.verify(jwtToken, secretJwtKey);
+        return true;
+    } catch (error) {
+        // Handle token verification errors (e.g., expired token)
+        return false;
+    }
+}
+
 // Set up a route to render your HTML file
 app.get('/', (req, res) => {
-    res.render('login');
+    // Check if the JWT token is valid
+    const isTokenValid = checkTokenValidity(req);
+
+    if (isTokenValid) {
+        // If the token is valid, redirect to '/home'
+        return res.redirect('/home');
+    } else {
+        // alert("Your session has expire. Please login again.");
+        // If the token is invalid or not present, render 'login'
+        return res.render('login');
+    }
 });
 
-app.get('/2fa', authorizeRoles(['user']), (req, res) => {
+app.get('/2fa', authorizeRoles(), (req, res) => {
     // Render the HTML page for authorized users
     res.render('2fa', { user: req.user });
 });
 
-app.get('/change-password', authorizeRoles(['user']), (req, res) => {
+app.get('/change-password', authorizeRoles(), (req, res) => {
     // Render the HTML page for authorized users
     res.render('change-password', { user: req.user });
 });
 
-app.get('/decrypt', authorizeRoles(['user']), (req, res) => {
+app.get('/decrypt', authorizeRoles(), (req, res) => {
     // Render the HTML page for authorized users
     res.render('decrypt', { user: req.user });
 });
 
-app.get('/edit-profile', authorizeRoles(['user']), (req, res) => {
+app.get('/edit-profile', authorizeRoles(), (req, res) => {
     // Render the HTML page for authorized users
     res.render('edit-profile', { user: req.user });
 });
 
-app.get('/encrypt', authorizeRoles(['user']), (req, res) => {
+app.get('/encrypt', authorizeRoles(), (req, res) => {
     // Render the HTML page for authorized users
     res.render('encrypt', { user: req.user });
 });
 
-app.get('/forgetpassword', authorizeRoles(['user']), (req, res) => {
+app.get('/forgetpassword', authorizeRoles(), (req, res) => {
     // Render the HTML page for authorized users
     res.render('forgetpassword', { user: req.user });
 });
 
-app.get('/history', authorizeRoles(['user']), (req, res) => {
+app.get('/history', authorizeRoles(), (req, res) => {
     // Render the HTML page for authorized users
     res.render('history', { user: req.user });
 });
 
-app.get('/home', authorizeRoles(['user']), (req, res) => {
+app.get('/home', authorizeRoles(), (req, res) => {
     // Render the HTML page for authorized users
     res.render('home', { user: req.user });
 });
 
-app.get('/keymanagement', authorizeRoles(['user']), (req, res) => {
+app.get('/keymanagement', authorizeRoles(), (req, res) => {
     // Render the HTML page for authorized users
     res.render('keymanagement', { user: req.user });
 });
 
-app.get('/keypopup', authorizeRoles(['user']), (req, res) => {
+app.get('/keypopup', authorizeRoles(), (req, res) => {
     // Render the HTML page for authorized users
     res.render('keypopup', { user: req.user });
 });
 
-app.get('/login', authorizeRoles(['user']), (req, res) => {
+app.get('/login', authorizeRoles(), (req, res) => {
     // Render the HTML page for authorized users
     res.render('login', { user: req.user });
 });
 
-app.get('/profile', authorizeRoles(['user']), (req, res) => {
+app.get('/profile', authorizeRoles(), (req, res) => {
     // Render the HTML page for authorized users
     res.render('profile', { user: req.user });
 });
 
-app.get('/register', authorizeRoles(['user']), (req, res) => {
+app.get('/register', authorizeRoles(), (req, res) => {
     // Render the HTML page for authorized users
     res.render('register', { user: req.user });
 });
 
-app.get('/settings', authorizeRoles(['user']), (req, res) => {
+app.get('/settings', authorizeRoles(), (req, res) => {
     // Render the HTML page for authorized users
     res.render('settings', { user: req.user });
 });
   
-function authorizeRoles(allowedRoles) {
+function authorizeRoles() {
     return (req, res, next) => {
-      // Check if req.cookies is defined
-      if (!req.cookies) {
-        return res.status(401).json({ message: 'Unauthorized' });
-      }
-  
-      // Retrieve JWT token from the cookie
-      const jwtToken = req.cookies.jwtToken;
-      console.log(jwtToken)
-  
-      if (!jwtToken) {
-        // If there's no token, user is not authenticated
-        return res.status(401).json({ message: 'Unauthorized' });
-      }
-  
-      try {
-        // Decode the JWT token to get user information, including roles
-        const decodedToken = jwt.verify(jwtToken, secretJwtKey);
+        try {
+            // Check if req.cookies is defined
+            if (!req.cookies) {
+                return res.status(401).json({ message: 'Unauthorized' });
+            }
 
-        console.log(decodedToken)
+            // Retrieve JWT token from the cookie
+            const jwtToken = req.cookies.jwtToken;
 
-        console.log(decodedToken.userData.role)
+            if (!jwtToken) {
+                // If there's no token, user is not authenticated
+                return res.status(401).json({ message: 'Please return to the login page to renew your token.' });
+            }
 
-        if (decodedToken.userData && decodedToken.userData.role === 'user') {
-          // User has the required role, proceed to the next middleware
-          next();
-        } else {
-          // User does not have the required role
-          res.status(403).json({ message: 'Insufficient permissions' });
+            // Verify the token, catching TokenExpiredError
+            const decodedToken = jwt.verify(jwtToken, secretJwtKey);
+
+            if (decodedToken.userData && decodedToken.userData.role === 'user') {
+                // User has the required role, proceed to the next middleware
+                next();
+            } else {
+                // User does not have the required role
+                res.status(403).json({ message: 'Insufficient permissions' });
+            }
+        } catch (error) {
+            // Handle other token verification errors
+            res.status(401).json({ message: 'Unauthorized' });
         }
-      } catch (error) {
-        // Handle token verification errors
-        res.status(401).json({ message: 'Unauthorized' });
-      }
     };
 }
 
@@ -170,13 +193,12 @@ async function verifyPassword(password, pass_db) {
 
 app.post('/get_data_from_cookie', async (req, res) => {
     try {
-        console.log("ok")
         if (!req.cookies) {
             return res.status(401).json({ message: 'Unauthorized' });
         }
 
         const jwtToken = req.cookies.jwtToken;
-        console.log(jwtToken)
+
         if (!jwtToken) {
             // If there's no token, user is not authenticated
             return res.status(401).json({ message: 'Unauthorized' });
@@ -607,6 +629,6 @@ app.get('/get-access-token', async (req, res) => {
 // Add click event listener to the button to open Google Picker
 //document.getElementById('openPicker').addEventListener('click', openGooglePicker);
 
-app.listen  (port, () => {
+app.listen (port, () => {
     console.log(`Server is running at http://localhost:${port}`);
 });
