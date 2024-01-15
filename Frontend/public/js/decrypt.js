@@ -281,10 +281,17 @@ async function decrypt(file, i) {
             const keyName = keyData.keyName;
             console.log(keyName)
 
+            const newResponse = await fetch('http://localhost:3000/get_data_from_cookie', {
+                method: 'POST'
+            });
+            
+            const data = await newResponse.json(); // await here
+            const email_cookie = data['email_username']['email'];
+
             formData2.append('files', file);
             formData2.append('key_name', keyName);
             formData2.append('type', 'decryption')
-            formData2.append('email', sessionStorage.getItem('email'))
+            formData2.append('email', email_cookie)
 
             const response2 = await fetch('http://localhost:5000/add_to_decryption_history', {
                 method: 'POST',

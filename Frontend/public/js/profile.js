@@ -88,7 +88,13 @@ async function verifyOTP(email, otp) {
 
 
 document.addEventListener('DOMContentLoaded', async function () {
-  const email = sessionStorage.getItem('email');
+  const newResponse = await fetch('http://localhost:3000/get_data_from_cookie', {
+    method: 'POST'
+  });
+
+  const data1 = await newResponse.json(); // await here
+  const email = data1['email_username']['email'];
+
   const formData = new FormData();
   formData.append('email', email);
   const response = await fetch('http://localhost:3000/get_account', {

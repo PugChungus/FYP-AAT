@@ -168,46 +168,9 @@ async function verifyPassword(password, pass_db) {
     }
 }
 
-// function authorizeRoles(allowedRoles) {
-//     return (req, res, next) => {
-//       // Check if req.cookies is defined
-//       if (!req.cookies) {
-//         return res.status(401).json({ message: 'Unauthorized' });
-//       }
-  
-//       // Retrieve JWT token from the cookie
-//       const jwtToken = req.cookies.jwtToken;
-//       console.log(jwtToken)
-  
-//       if (!jwtToken) {
-//         // If there's no token, user is not authenticated
-//         return res.status(401).json({ message: 'Unauthorized' });
-//       }
-  
-//       try {
-//         // Decode the JWT token to get user information, including roles
-//         const decodedToken = jwt.verify(jwtToken, secretJwtKey);
-
-//         console.log(decodedToken)
-
-//         console.log(decodedToken.userData.role)
-
-//         if (decodedToken.userData && decodedToken.userData.role === 'user') {
-//           // User has the required role, proceed to the next middleware
-//           next();
-//         } else {
-//           // User does not have the required role
-//           res.status(403).json({ message: 'Insufficient permissions' });
-//         }
-//       } catch (error) {
-//         // Handle token verification errors
-//         res.status(401).json({ message: 'Unauthorized' });
-//       }
-//     };
-// }
-
 app.post('/get_data_from_cookie', async (req, res) => {
     try {
+        console.log("ok")
         if (!req.cookies) {
             return res.status(401).json({ message: 'Unauthorized' });
         }
@@ -220,16 +183,18 @@ app.post('/get_data_from_cookie', async (req, res) => {
         }
         else {
             const decodedToken = jwt.verify(jwtToken, secretJwtKey);
-            const cookie_data = decodedToken.userData
-            const email = cookie_data.email
-            const username = cookie_data.username
+            console.log(decodedToken)
+            const email = decodedToken.userData.email
+            const username = decodedToken.userData.username
             
-            const userData = {
-                email: email,
-                username: username,
-            };
+            const email_username = {
+                "email": email,
+                "username": username
+            }
             
-            return res.status(200).json({ message: 'Cookie data retrieved', userData });
+            console.log(email_username)
+
+            return res.status(200).json({ message: 'Cookie data retrieved', email_username });
         }
       
     } catch (err) {

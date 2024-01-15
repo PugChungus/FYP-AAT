@@ -41,10 +41,18 @@ function appendRowToTable(index, fileName, file_size, key_name, type, time) {
 
   table.appendChild(newRow);
 }
-  
+
+let email;
+
 async function renderHistory() {
-    const email = sessionStorage.getItem('email');
-  
+    const newResponse = await fetch('http://localhost:3000/get_data_from_cookie', {
+        method: 'POST'
+    });
+
+    const data = await newResponse.json(); // await here
+    email = data['email_username']['email'];
+    const username_cookie = data['email_username']['username']
+      
     const formData = new FormData();
     formData.append('email', email);
   
@@ -88,9 +96,7 @@ async function renderHistory() {
     }
 }
 
-async function clear_history() {
-  const email = sessionStorage.getItem('email');
-  
+async function clear_history() {  
   const formData = new FormData();
   formData.append('email', email);
 

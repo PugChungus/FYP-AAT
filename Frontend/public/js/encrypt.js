@@ -273,16 +273,17 @@ async function encrypt(file, i) {
             console.log(keyName)
 
             const newResponse = await fetch('http://localhost:3000/get_data_from_cookie', {
-                method: 'GET'
+                method: 'POST'
             });
-
-            const data = newResponse.json();
-            console.log(data)
+            
+            const data = await newResponse.json(); // await here
+            const email_cookie = data['email_username']['email'];
+            const username_cookie = data['email_username']['username']
 
             formData2.append('files', file);
             formData2.append('key_name', keyName);
             formData2.append('type', 'encryption')
-            formData2.append('email', sessionStorage.getItem('email'))
+            formData2.append('email', email_cookie)
 
             const response2 = await fetch('http://localhost:5000/add_to_encryption_history', {
                 method: 'POST',
