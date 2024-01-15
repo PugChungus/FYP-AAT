@@ -272,6 +272,13 @@ async function encrypt(file, i) {
             const keyName = keyData.keyName;
             console.log(keyName)
 
+            const newResponse = await fetch('http://localhost:3000/get_data_from_cookie', {
+                method: 'GET'
+            });
+
+            const data = newResponse.json();
+            console.log(data)
+
             formData2.append('files', file);
             formData2.append('key_name', keyName);
             formData2.append('type', 'encryption')
