@@ -273,8 +273,6 @@ async function login(event) {
           var email_addr = data["tables"][0]["email_address"]
           var pfp = data["tables"][0]["profile_picture"]
 
-          sessionStorage.setItem('username', username);
-          sessionStorage.setItem('email', email_addr);
           sessionStorage.setItem('profile_picture', pfp);
 
           const get2FAData = await get2FAResponse.json();
@@ -330,8 +328,6 @@ async function continueRegularLogin(formData) {
   var email_addr = data["tables"][0]["email_address"];
   var pfp = data["tables"][0]["profile_picture"];
 
-  sessionStorage.setItem('username', username);
-  sessionStorage.setItem('email', email_addr);
   sessionStorage.setItem('profile_picture', pfp);
 
   window.location.href = 'http://localhost:3000/home';
