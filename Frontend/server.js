@@ -401,11 +401,9 @@ app.post('/login', async (req, res) => {
                 );
                 
                 const account_email_addr = tables_accountData[0]['email_address']
-                const account_username = tables_accountData[0]['username']
 
                 const userData = {
                     email: account_email_addr,
-                    username: account_username,
                     role: 'user',
                 };
 

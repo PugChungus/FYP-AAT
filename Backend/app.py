@@ -18,6 +18,7 @@ import zipfile
 import hashlib
 import os
 import json
+import jwt
 import pyotp
 import qrcode
 
@@ -28,8 +29,24 @@ user_secrets = {}
 # Connect to the MySQL database
 
 db = pymysql.connect(host = 'localhost', port = 3306, user = 'root', password = 'password', database = 'major_project_db')
-
 user_dicts = {}  # Dictionary to store user-specific dictionaries
+
+secretJwtKey = "ACB725326D68397E743DFC9F3FB64DA50CE7FB135721794C355B0DB219C449B3"
+
+def check_token_validity(cookie):
+    jwt_token = cookie.get('jwtToken')
+
+    if not jwt_token:
+        # If there's no token, it's considered invalid
+        return False
+
+    try:
+        # Decode the JWT token to check its validity
+        jwt.decode(jwt_token, secretJwtKey, algorithms=['HS256'])
+        print("Token Verfied. Please Proceed.")
+        return True
+    except Exception as e:
+        return jsonify({'An error has occured,': str(e)})
 
 @app.route('/create_user_dict', methods=['POST'])
 def create_user_dict():
@@ -162,7 +179,6 @@ def format_date():
     formatted_date = now.strftime("%d:%m:%Y %I:%M:%S %p")
 
     return formatted_date
-    
 
 def store_secret(email, secret):
     try:

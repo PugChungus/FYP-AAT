@@ -239,6 +239,7 @@ async function clearEncryptedFolder() {
 
 async function encrypt(file, i) {
     const formData = new FormData();
+    const myHeaders = new Headers();
 
     if (selectedKey.length === 0) {
         alert('No Key Selected')
@@ -257,12 +258,20 @@ async function encrypt(file, i) {
     }
   
     formData.append('files', file);
-    formData.append('clear', i)
+    formData.append('clear', i);
+
+    const allCookies = document.cookie;
+    console.log(allCookies)
+    const cookieArray = allCookies.split('; ');
+
+    myHeaders.append('Content-Type', 'application/json');
+    myHeaders.append('Authorization', cookie);
   
     try {
         const response = await fetch('http://localhost:5000/encrypt', {
             method: 'POST',
             body: formData,
+            headers: myHeaders
         });
 
         console.log('Response Status:', response.status); 
