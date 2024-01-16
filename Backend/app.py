@@ -665,7 +665,7 @@ def generate_2fa_qr_code():
 
         totp = pyotp.TOTP(secret)
         otp = totp.now()
-        qr_code_url = totp.provisioning_uri(email, issuer_name="YourApp")
+        qr_code_url = totp.provisioning_uri(email, issuer_name="jtr.lol")
 
         return jsonify({'qr_code_url': qr_code_url, 'otp': otp, 'secret': secret})
     except Exception as e:

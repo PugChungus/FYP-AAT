@@ -35,15 +35,10 @@ a:hover {
 
 .card {
   width: 300px;
-  margin: 20px;
+  margin: 20px auto;
   border: 1px solid #ccc;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  top: 0;
-  position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 999;
 }
 
 .card-body {
@@ -99,7 +94,6 @@ a:hover {
   right: 0;
   bottom: 0;
   background-color: #ccc;
-  -webkit-transition: .4s;
   transition: .4s;
 }
 
@@ -111,7 +105,6 @@ a:hover {
   left: 4px;
   bottom: 4px;
   background-color: white;
-  -webkit-transition: .4s;
   transition: .4s;
 }
 
@@ -124,8 +117,6 @@ input:focus + .slider {
 }
 
 input:checked + .slider:before {
-  -webkit-transform: translateX(26px);
-  -ms-transform: translateX(26px);
   transform: translateX(26px);
 }
 
@@ -148,16 +139,16 @@ input:checked + .slider:before {
   left: 50%;
   transform: translateX(-50%);
   width: 300px;
-  margin: 20px;
+  margin: 20px auto;
   border: 1px solid #ccc;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  background-color: #fff; /* Set background color as needed */
-  z-index: 9999; /* Set a high z-index to ensure it appears above other elements */
+  background-color: #fff;
+  z-index: 9999;
 }
 
 .card-header {
-  background-color: #f8f9fa; /* Set header background color as needed */
+  background-color: #f8f9fa;
   padding: 10px;
 }
 
@@ -172,7 +163,5 @@ input:checked + .slider:before {
   right: 10px;
   font-size: 1.5em;
   cursor: pointer;
-  color: #000; /* Set close button color as needed */
+  color: #000;
 }
-
-

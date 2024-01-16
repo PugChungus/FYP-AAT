@@ -82,11 +82,6 @@ app.get('/keypopup', authorizeRoles(['user']), (req, res) => {
     res.render('keypopup', { user: req.user });
 });
 
-app.get('/login', authorizeRoles(['user']), (req, res) => {
-    // Render the HTML page for authorized users
-    res.render('login', { user: req.user });
-});
-
 app.get('/profile', authorizeRoles(['user']), (req, res) => {
     // Render the HTML page for authorized users
     res.render('profile', { user: req.user });
@@ -106,7 +101,7 @@ function authorizeRoles(allowedRoles) {
     return (req, res, next) => {
       // Check if req.cookies is defined
       if (!req.cookies) {
-        return res.status(401).json({ message: 'Unauthorized' });
+        return res.status(401).render('accessdenied');
       }
   
       // Retrieve JWT token from the cookie
@@ -115,7 +110,7 @@ function authorizeRoles(allowedRoles) {
   
       if (!jwtToken) {
         // If there's no token, user is not authenticated
-        return res.status(401).json({ message: 'Unauthorized' });
+        return res.status(401).render('accessdenied');
       }
   
       try {
@@ -135,7 +130,7 @@ function authorizeRoles(allowedRoles) {
         }
       } catch (error) {
         // Handle token verification errors
-        res.status(401).json({ message: 'Unauthorized' });
+        res.status(401).render('accessdenied');
       }
     };
 }
