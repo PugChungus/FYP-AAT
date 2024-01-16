@@ -6,9 +6,11 @@ document.addEventListener("DOMContentLoaded", function () {
             // Get the current page URL
             var currentPage = window.location.href;
 
-            // Redirect to profile.html with the current page as the source
-            window.location.href = 'profile?source=' + encodeURIComponent(currentPage);
-            console.log(window.location.href);
+            // Store the current page in sessionStorage
+            sessionStorage.setItem('currentPage', currentPage);
+
+            // Redirect to the profile page
+            window.location.href = 'profile';
         });
     }
 });
