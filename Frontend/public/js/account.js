@@ -208,13 +208,6 @@ async function register() {
   }
 }
 
-async function cookie_login() {
-  const allCookies = document.cookie;
-  console.log(allCookies)
-}
-
-await cookie_login()
-
 async function login(event) {
   event.preventDefault(); // Prevent the form from submitting normally
 

@@ -212,6 +212,38 @@ async function verifyPassword(password, pass_db) {
     }
 }
 
+app.get('/api/getCookie', async (req, res) => {
+    try {
+        const jwtToken = req.cookies.jwtToken;
+        console.log(jwtToken)
+        return res.status(401).json({ token: {jwtToken} });
+    }
+    catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+app.get('/checkTokenValidity', (req, res) => {
+    const jwtToken = req.cookies.jwtToken;
+  
+    if (!jwtToken) {
+      // If there's no token, it's considered invalid
+      return res.status(401).json({ isValid: false });
+    }
+  
+    try {
+      // Decode the JWT token to check its validity
+      jwt.verify(jwtToken, secretJwtKey);
+      console.log("Token exists")
+      res.status(200).json({ isValid: true });
+    } catch (error) {
+      res.render('accessdenied')
+      // Handle token verification errors (e.g., expired token)
+      res.status(401).json({ isValid: false });
+    }
+  });  
+
 app.post('/get_data_from_cookie', async (req, res) => {
     try {
         if (!req.cookies) {
@@ -374,12 +406,6 @@ app.post('/login', async (req, res) => {
             [email]
         );
 
-        if (tables["is_2fa_enabled"] === 1) {
-            console.log("2FA_enabled: True")
-        } else {
-            console.log("2FA_enabled: False")
-        }
-
         const pass_db = tables[0]['password'];
 
         verificationResult = await verifyPassword(password, pass_db)
@@ -407,15 +433,19 @@ app.post('/login', async (req, res) => {
                     role: 'user',
                 };
 
-                const JWTtoken = jwt.sign({ userData }, secretJwtKey, { algorithm: 'HS256', expiresIn: '1h' });
+                if (tables["is_2fa_enabled"] === 1) {
+                    console.log("2FA_enabled: True")
+                } else {
+                    const JWTtoken = jwt.sign({ userData }, secretJwtKey, { algorithm: 'HS256', expiresIn: '1h' });
 
-                res.cookie('jwtToken', JWTtoken, {
-                  httpOnly: true,
-                  sameSite: 'Strict',
-                  secure: true,
-                  maxAge: 3600000,
-                });
-
+                    res.cookie('jwtToken', JWTtoken, {
+                      httpOnly: true,
+                      sameSite: 'Strict',
+                      secure: true,
+                      maxAge: 3600000,
+                    });    
+                }
+        
                 return res.status(200).json({ message: 'Account Login Success', result });
             } else {
                 return res.status(200).json({ message: 'Account Login Failed', result });
@@ -452,7 +482,6 @@ app.post('/get_account', async (req, res) => {
         return res.status(500).json({ error: 'Internal Server Error' });
     }
 });
-
 
 app.post('/enable2fa', async (req, res) => {
     try {

@@ -34,7 +34,7 @@ user_dicts = {}  # Dictionary to store user-specific dictionaries
 secretJwtKey = "ACB725326D68397E743DFC9F3FB64DA50CE7FB135721794C355B0DB219C449B3"
 
 def check_token_validity(cookie):
-    jwt_token = cookie.get('jwtToken')
+    jwt_token = cookie
 
     if not jwt_token:
         # If there's no token, it's considered invalid
@@ -67,7 +67,7 @@ def create_user_dict():
         
         encrypted_data_dict = user_dicts[email]["encrypted_data_dict"]
         decrypted_data_dict = user_dicts[email]["decrypted_data_dict"]
-
+        
         return jsonify("User dictionary created.")
     except Exception as e:
         print("Error:", e)
@@ -325,15 +325,24 @@ def upload_file():
         return {"isValid": False, "error": str(e)}
 
 @app.route('/encrypt', methods=['POST'])
+@cross_origin()
 def encrypt_files():
     try:
-        uploaded_files = request.files.getlist('files')
-        clear_dict = request.form['clear']
-        hex = request.form['hex']
-        key = bytes.fromhex(hex)
+        authorization_header = request.headers['Authorization']
+        print(authorization_header)
+        isValid = check_token_validity(authorization_header)
+        if not isValid:
+            return "Invalid Token."
         
+        uploaded_files = request.files.getlist('files')
+        print(uploaded_files)
+
+        clear_dict = request.form['clear']
         if clear_dict == '0':
             encrypted_data_dict.clear()
+
+        hex = request.form['hex']
+        key = bytes.fromhex(hex)
 
         # Create a BytesIO object to store the ZIP file in memory
         for uploaded_file in uploaded_files:

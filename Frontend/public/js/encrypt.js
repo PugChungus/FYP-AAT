@@ -6,6 +6,16 @@ const seen = new Set();
 const keyDropdown = document.getElementById('key-dropdown');
 let selectedKey = keyDropdown.value;
 
+async function get_cookie() {
+    const cookie_response = await fetch('http://localhost:3000/api/getCookie', {
+        method: 'GET',
+    });
+
+    const cookie_data = await cookie_response.json()
+    const token = cookie_data.token.jwtToken
+    return token
+}
+
 function getAllKeyData() {
     const keyData = [];
     for (let i = 0; i < sessionStorage.length; i++) {
@@ -256,15 +266,12 @@ async function encrypt(file, i) {
         console.log(keyValue)
         formData.append('hex', keyValue);
     }
-  
+
+    const cookie = await get_cookie()
+      
     formData.append('files', file);
     formData.append('clear', i);
-
-    const allCookies = document.cookie;
-    console.log(allCookies)
-    const cookieArray = allCookies.split('; ');
-
-    myHeaders.append('Content-Type', 'application/json');
+    myHeaders.append('Content-Type', 'multipart/form-data');
     myHeaders.append('Authorization', cookie);
   
     try {

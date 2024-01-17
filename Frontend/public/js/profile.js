@@ -246,7 +246,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                   console.log('OTP is valid. Proceed with enabling 2FA.');
                 qrCodeCardDiv.style.display = 'none'
 
-                } else{
+                } else {
                   alert('Invalid OTP. Please enter a valid 6-digit numeric OTP.');
                 }
               } else {

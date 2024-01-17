@@ -26,4 +26,36 @@ document.addEventListener('DOMContentLoaded', async function() {
   const imgElement = document.getElementById('profile-picture');
   imgElement.src = objectURL;
 });
+
+async function cookie_login() {
+
+  const valid_token = await fetch('http://localhost:3000/checkTokenValidity', {
+    method: 'GET',
+  });
+
+  const isValid = await valid_token.json();
+
+  if (isValid['isValid'] == true) {
+    
+    const newResponse = await fetch('http://localhost:3000/get_data_from_cookie', {
+      method: 'POST'
+    });
+  
+    const data = await newResponse.json(); // await here
+    const email_cookie = data['email_username']['email'];
+    
+    const formData = new FormData();
+    formData.append('email', email_cookie)
+
+    const response = await fetch('http://localhost:5000/create_user_dict', {
+      method: 'POST',
+      body: formData,
+    });
+  }
+  else {
+    window.location.href = 'login'
+  }
+}
+
+cookie_login()
   
