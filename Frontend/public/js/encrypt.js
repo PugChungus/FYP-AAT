@@ -249,7 +249,6 @@ async function clearEncryptedFolder() {
 
 async function encrypt(file, i) {
     const formData = new FormData();
-    const myHeaders = new Headers();
 
     if (selectedKey.length === 0) {
         alert('No Key Selected')
@@ -266,19 +265,18 @@ async function encrypt(file, i) {
         console.log(keyValue)
         formData.append('hex', keyValue);
     }
-
-    const cookie = await get_cookie()
       
     formData.append('files', file);
+    console.log(file)
     formData.append('clear', i);
-    myHeaders.append('Content-Type', 'multipart/form-data');
-    myHeaders.append('Authorization', cookie);
-  
+    console.log(formData)
+
     try {
         const response = await fetch('http://localhost:5000/encrypt', {
             method: 'POST',
+            // credentials: 'include', // Include credentials (cookies) in the request
             body: formData,
-            headers: myHeaders
+            // headers: myHeaders,
         });
 
         console.log('Response Status:', response.status); 

@@ -216,7 +216,7 @@ app.get('/api/getCookie', async (req, res) => {
     try {
         const jwtToken = req.cookies.jwtToken;
         console.log(jwtToken)
-        return res.status(401).json({ token: {jwtToken} });
+        return res.status(200).json({ token: {jwtToken} });
     }
     catch (err) {
         console.error(err);

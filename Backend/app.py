@@ -23,7 +23,7 @@ import pyotp
 import qrcode
 
 app = Flask(__name__)
-CORS(app)  
+CORS(app)
 
 user_secrets = {}
 # Connect to the MySQL database
@@ -325,24 +325,26 @@ def upload_file():
         return {"isValid": False, "error": str(e)}
 
 @app.route('/encrypt', methods=['POST'])
-@cross_origin()
 def encrypt_files():
     try:
-        authorization_header = request.headers['Authorization']
-        print(authorization_header)
-        isValid = check_token_validity(authorization_header)
-        if not isValid:
-            return "Invalid Token."
-        
+        # authorization_cookie = request.cookies.get('jwtToken')
+        # print(authorization_cookie)
+        # isValid = check_token_validity(authorization_cookie)
+
+        # if not isValid:
+        #     print('invalid token')
+        #     return "Invalid Token."
         uploaded_files = request.files.getlist('files')
         print(uploaded_files)
 
         clear_dict = request.form['clear']
+        print(clear_dict)
         if clear_dict == '0':
             encrypted_data_dict.clear()
 
-        hex = request.form['hex']
-        key = bytes.fromhex(hex)
+        hex_value = request.form['hex']
+        print(hex_value)
+        key = bytes.fromhex(hex_value)
 
         # Create a BytesIO object to store the ZIP file in memory
         for uploaded_file in uploaded_files:
