@@ -274,7 +274,9 @@ async function encrypt(file, i) {
     try {
         const response = await fetch('http://localhost:5000/encrypt', {
             method: 'POST',
-            // credentials: 'include', // Include credentials (cookies) in the request
+            headers: {
+                'Authorization': `${Bearer} ${jwtToken}`
+            },
             body: formData,
             // headers: myHeaders,
         });
