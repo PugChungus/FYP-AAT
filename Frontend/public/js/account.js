@@ -1,5 +1,17 @@
 let db;
 
+async function get_cookie() {
+  const cookie_response = await fetch('http://localhost:3000/api/getCookie', {
+      method: 'GET',
+  });
+
+  const cookie_data = await cookie_response.json()
+  const token = cookie_data.token.jwtToken
+  return token
+}
+
+let jwtToken = await get_cookie()
+
 function getCurrentTime() {
   const now = new Date();
 
@@ -265,6 +277,9 @@ async function login(event) {
 
           const response2 = await fetch('http://localhost:5000/create_user_dict', {
             method: 'POST',
+            headers: {
+              'Authorization': `Bearer: ${jwtToken}`
+            },
             body: formData,
           });
 
@@ -288,6 +303,7 @@ async function login(event) {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer: ${jwtToken}`
               },
               body: JSON.stringify({
                 secret: secret,
@@ -360,6 +376,7 @@ function verifyTOTP(event) {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer: ${jwtToken}`
       },
       body: JSON.stringify(data),
   })

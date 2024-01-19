@@ -44,6 +44,18 @@ function appendRowToTable(index, fileName, file_size, key_name, type, time) {
 
 let email;
 
+async function get_cookie() {
+  const cookie_response = await fetch('http://localhost:3000/api/getCookie', {
+      method: 'GET',
+  });
+
+  const cookie_data = await cookie_response.json()
+  const token = cookie_data.token.jwtToken
+  return token
+}
+
+let jwtToken = await get_cookie()
+
 async function renderHistory() {
     const newResponse = await fetch('http://localhost:3000/get_data_from_cookie', {
         method: 'POST'
@@ -59,6 +71,9 @@ async function renderHistory() {
     try {
       const response = await fetch('http://localhost:5000/display_history', {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer: ${jwtToken}`
+        },
         body: formData,
       });
   
@@ -103,6 +118,9 @@ async function clear_history() {
   try {
     const response = await fetch('http://localhost:5000/clear_history', {
       method: 'POST',
+      headers: {
+        'Authorization': `Bearer: ${jwtToken}`
+      },
       body: formData,
     });
 

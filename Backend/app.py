@@ -33,24 +33,41 @@ user_dicts = {}  # Dictionary to store user-specific dictionaries
 
 secretJwtKey = "ACB725326D68397E743DFC9F3FB64DA50CE7FB135721794C355B0DB219C449B3"
 
-def check_token_validity(cookie):
-    jwt_token = cookie
-
-    if not jwt_token:
-        # If there's no token, it's considered invalid
-        return False
-
+def check_token_validity(authorization_header):
     try:
-        # Decode the JWT token to check its validity
-        jwt.decode(jwt_token, secretJwtKey, algorithms=['HS256'])
-        print("Token Verfied. Please Proceed.")
-        return True
+        # Check if the header starts with 'Bearer'
+        if authorization_header.startswith('Bearer '):
+            # Extract the token part after 'Bearer '
+            jwt_token = authorization_header.split('Bearer ')[1]
+
+            # Decode the JWT token to check its validity
+            jwt.decode(jwt_token, secretJwtKey, algorithms=['HS256'])
+            
+            print("Token Verified. Please Proceed.")
+            return True
+        else:
+            # If the header format is not as expected
+            return jsonify({'error': 'Invalid authorization header format'})
     except Exception as e:
-        return jsonify({'An error has occured,': str(e)})
+        # Handle token verification errors
+        return jsonify({'error': str(e)})
 
 @app.route('/create_user_dict', methods=['POST'])
 def create_user_dict():
     try:
+        authorization_header = request.headers.get('Authorization')
+
+        if authorization_header is None:
+            return "Token is Invalid"
+        
+        isValid = check_token_validity(authorization_header)
+        
+        if not isValid:
+            print('Invalid Token.')
+            return "Invalid Token."
+        else:
+            print('Valid Token')
+
         email = request.form['email']
 
         global user_dicts
@@ -77,6 +94,19 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'svg'}  # Define the allowed 
 
 @app.route('/upload', methods=['POST'])
 def upload():
+    authorization_header = request.headers.get('Authorization')
+
+    if authorization_header is None:
+        return "Token is Invalid"
+    
+    isValid = check_token_validity(authorization_header)
+    
+    if not isValid:
+        print('Invalid Token.')
+        return "Invalid Token."
+    else:
+        print('Valid Token')
+
     username = request.form.get('name')
     uploaded_file = request.files.get('profile-picture')
     email = request.form.get('email')
@@ -136,6 +166,18 @@ def aes_keygen():
 @app.route('/check_key', methods=['POST'])
 def check_key():
     try:
+        authorization_header = request.headers.get('Authorization')
+
+        if authorization_header is None:
+            return "Token is Invalid"
+        
+        isValid = check_token_validity(authorization_header)
+        
+        if not isValid:
+            print('Invalid Token.')
+            return "Invalid Token."
+        else:
+            print('Valid Token')
         #secure file upload
         uploaded_file = request.files['file']
         file_content = uploaded_file.read()
@@ -302,6 +344,19 @@ def virustotal_scan(hash_value):
 @app.route('/upload_file', methods=['POST'])
 def upload_file():
     try:
+        authorization_header = request.headers.get('Authorization')
+
+        if authorization_header is None:
+            return "Token is Invalid"
+        
+        isValid = check_token_validity(authorization_header)
+        
+        if not isValid:
+            print('Invalid Token.')
+            return "Invalid Token."
+        else:
+            print('Valid Token')
+
         uploaded_file = request.files['file']
         
         with uploaded_file.stream as f:
@@ -327,13 +382,19 @@ def upload_file():
 @app.route('/encrypt', methods=['POST'])
 def encrypt_files():
     try:
-        # authorization_cookie = request.cookies.get('jwtToken')
-        # print(authorization_cookie)
-        # isValid = check_token_validity(authorization_cookie)
+        authorization_header = request.headers.get('Authorization')
 
-        # if not isValid:
-        #     print('invalid token')
-        #     return "Invalid Token."
+        if authorization_header is None:
+            return "Token is Invalid"
+        
+        isValid = check_token_validity(authorization_header)
+        
+        if not isValid:
+            print('Invalid Token.')
+            return "Invalid Token."
+        else:
+            print('Valid Token')
+        
         uploaded_files = request.files.getlist('files')
         print(uploaded_files)
 
@@ -385,6 +446,19 @@ def encrypt_files():
 @app.route('/decrypt', methods=['POST'])
 def decrypt_files():
     try:
+        authorization_header = request.headers.get('Authorization')
+
+        if authorization_header is None:
+            return "Token is Invalid"
+        
+        isValid = check_token_validity(authorization_header)
+        
+        if not isValid:
+            print('Invalid Token.')
+            return "Invalid Token."
+        else:
+            print('Valid Token')
+
         uploaded_files = request.files.getlist('files')
         clear_dict = request.form['clear']
         hex_key = request.form['hex']
@@ -475,6 +549,19 @@ def decrypt_files():
 @app.route('/clear_history', methods=['POST'])
 def clear_history():
     try:
+        authorization_header = request.headers.get('Authorization')
+
+        if authorization_header is None:
+            return "Token is Invalid"
+        
+        isValid = check_token_validity(authorization_header)
+        
+        if not isValid:
+            print('Invalid Token.')
+            return "Invalid Token."
+        else:
+            print('Valid Token')
+
         email = request.form['email']
 
         sql = "DELETE FROM history " \
@@ -495,6 +582,19 @@ def clear_history():
 @app.route('/display_history', methods=['POST'])
 def display_history():
     try:
+        authorization_header = request.headers.get('Authorization')
+
+        if authorization_header is None:
+            return "Token is Invalid"
+        
+        isValid = check_token_validity(authorization_header)
+        
+        if not isValid:
+            print('Invalid Token.')
+            return "Invalid Token."
+        else:
+            print('Valid Token')
+
         email = request.form['email']
 
         sql = "SELECT history.time, history.file_name, history.file_size, history.type, history.key_name " \
@@ -519,6 +619,19 @@ def display_history():
 @app.route('/add_to_encryption_history', methods=['POST'])
 def encrypt_history():
     try:
+        authorization_header = request.headers.get('Authorization')
+
+        if authorization_header is None:
+            return "Token is Invalid"
+        
+        isValid = check_token_validity(authorization_header)
+        
+        if not isValid:
+            print('Invalid Token.')
+            return "Invalid Token."
+        else:
+            print('Valid Token')
+
         uploaded_file = request.files['files']
         file_name = uploaded_file.filename
         file_data = uploaded_file.read()
@@ -546,6 +659,19 @@ def encrypt_history():
 @app.route('/add_to_decryption_history', methods=['POST'])
 def decrypt_history():
     try:
+        authorization_header = request.headers.get('Authorization')
+
+        if authorization_header is None:
+            return "Token is Invalid"
+        
+        isValid = check_token_validity(authorization_header)
+        
+        if not isValid:
+            print('Invalid Token.')
+            return "Invalid Token."
+        else:
+            print('Valid Token')
+            
         uploaded_file = request.files['files']
         file_name = uploaded_file.filename
         file_data = uploaded_file.read()
@@ -682,6 +808,19 @@ user_secrets = {}
 @app.route('/generate_2fa_qr_code', methods=['POST'])
 def generate_2fa_qr_code():
     try:
+        authorization_header = request.headers.get('Authorization')
+
+        if authorization_header is None:
+            return "Token is Invalid"
+        
+        isValid = check_token_validity(authorization_header)
+        
+        if not isValid:
+            print('Invalid Token.')
+            return "Invalid Token."
+        else:
+            print('Valid Token')
+
         email = request.form.get('email')
 
         # Generate a new secret for the user
@@ -701,6 +840,19 @@ def generate_2fa_qr_code():
 @app.route('/verify_otp', methods=['POST'])
 def verify_otp():
     try:
+        authorization_header = request.headers.get('Authorization')
+
+        if authorization_header is None:
+            return "Token is Invalid"
+        
+        isValid = check_token_validity(authorization_header)
+        
+        if not isValid:
+            print('Invalid Token.')
+            return "Invalid Token."
+        else:
+            print('Valid Token')
+
         email = request.form.get('email')
         otp_value = request.form.get('otp')
 
@@ -726,6 +878,19 @@ def verify_otp():
 @app.route('/verify_2fa', methods=['POST'])
 def verify_2fa():
     try:
+        authorization_header = request.headers.get('Authorization')
+
+        if authorization_header is None:
+            return "Token is Invalid"
+        
+        isValid = check_token_validity(authorization_header)
+        
+        if not isValid:
+            print('Invalid Token.')
+            return "Invalid Token."
+        else:
+            print('Valid Token')
+
         data = request.get_json()
         user_input_otp = data.get('otp')
         email = data.get('email')
@@ -756,6 +921,19 @@ def verify_2fa():
 @app.route('/send_secret', methods=['POST'])
 def send_secret():
     try:
+        authorization_header = request.headers.get('Authorization')
+
+        if authorization_header is None:
+            return "Token is Invalid"
+        
+        isValid = check_token_validity(authorization_header)
+        
+        if not isValid:
+            print('Invalid Token.')
+            return "Invalid Token."
+        else:
+            print('Valid Token')
+
         data = request.json
         user_key = data.get('email')
         secret = data.get('secret')
