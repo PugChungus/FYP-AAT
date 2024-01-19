@@ -33,6 +33,9 @@ user_dicts = {}  # Dictionary to store user-specific dictionaries
 
 secretJwtKey = "ACB725326D68397E743DFC9F3FB64DA50CE7FB135721794C355B0DB219C449B3"
 
+SECRET_KEY = get_random_bytes(32)
+IV = get_random_bytes(16)
+
 def check_token_validity(authorization_header):
     try:
         # Check if the header starts with 'Bearer'
@@ -911,11 +914,11 @@ def verify_2fa():
         print("IsitValid: ", is_valid)
 
         if is_valid:
-            return jsonify({'message': 'OTP is valid'})
+            return jsonify({'message': 'OTP is valid', 'email': email})
         else:
-            return jsonify({'error': 'Invalid OTP'})
+            return jsonify({'error': 'Invalid OTP', 'email': email})
     except Exception as e:
-        return jsonify({'error': str(e)})
+        return jsonify({'error': str(e), 'email': email})
 
 
 @app.route('/send_secret', methods=['POST'])
@@ -943,7 +946,19 @@ def send_secret():
 
         return jsonify({'message': 'Secret received and stored successfully'})
     except Exception as e:
+        return jsonify({'error': str(e)})       
+
+@app.route('/send_email', methods=['POST'])
+def send_email():
+    try:
+        data = request.json
+        email = data.get('email')
+        # Store the secret in user_secrets dictionary
+
+        return jsonify({'message': 'Email Sent'})
+    except Exception as e:
         return jsonify({'error': str(e)})                         
+                  
 
 
 def insert_secret_into_db(email, secret):
@@ -955,6 +970,33 @@ def insert_secret_into_db(email, secret):
     except Exception as e:
         db.rollback()
         print("Error inserting secret into the database: ", str(e))
+
+def encrypt_email(email):
+    cipher = AES.new(SECRET_KEY, AES.MODE_CBC, IV)
+    padded_email = pad(email.encode(), AES.block_size)
+    encrypted_email = cipher.encrypt(padded_email)
+    return b64encode(IV + encrypted_email).decode()
+
+def decrypt_email(encrypted_email):
+    encrypted_data = b64decode(encrypted_email.encode())
+    iv = encrypted_data[:16]
+    cipher = AES.new(SECRET_KEY, AES.MODE_CBC, iv)
+    decrypted_data = unpad(cipher.decrypt(encrypted_data[16:]), AES.block_size)
+    return decrypted_data.decode()
+
+@app.route('/encrypt_email', methods=['POST'])
+def encrypt_email_route():
+    data = request.get_json()
+    email = data.get('email', '')
+    encrypted_email = encrypt_email(email)
+    return jsonify({'encryptedEmail': encrypted_email})
+
+@app.route('/decrypt_email', methods=['POST'])
+def decrypt_email_route():
+    data = request.get_json()
+    encrypted_email = data.get('encryptedEmail', '')
+    decrypted_email = decrypt_email(encrypted_email)
+    return jsonify({'decryptedEmail': decrypted_email})
 
 if __name__ == '__main__':
     app.run(debug=True,
