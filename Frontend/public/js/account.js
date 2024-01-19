@@ -208,11 +208,32 @@ async function register() {
   }
 }
 
+async function encryptEmail(email) {
+  try {
+    const response = await fetch('http://localhost:5000/encrypt_email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: email,
+      }),
+    });
+
+    const data = await response.json();
+    return data.encryptedEmail;
+  } catch (error) {
+    console.error('Error during email encryption:', error);
+    return null;
+  }
+}
+
 async function login(event) {
   event.preventDefault(); // Prevent the form from submitting normally
 
   // Get values from the form
   const email = document.getElementById('email-field').value;
+  console.log("THIS:", email)
   const password = document.getElementById('password-field').value;
 
   if (!emailRegex.test(email)) {
@@ -224,6 +245,7 @@ async function login(event) {
   formData.append('email', email);
 
   try {
+
     const response = await fetch('http://localhost:3000/check_account', {
       method: 'POST',
       body: formData,
@@ -238,13 +260,14 @@ async function login(event) {
     if (count === 1) {
       formData.append('password', password);
       console.log("ok")
+
       // Check if 2FA is required
       const loginResponse = await fetch('http://localhost:3000/login', {
         method: 'POST',
         body: formData,
       });
 
-      console.log(loginResponse)
+      console.log("BROOOOO:", loginResponse)
 
       const loginData = await loginResponse.json();
 
@@ -252,6 +275,7 @@ async function login(event) {
         const count = loginData.result[0]['count(*)'];
 
         if (count === 1) {
+
           // Check if 2FA is required
           const get2FAResponse = await fetch('http://localhost:3000/get2faStatus', {
             method: 'POST',
@@ -279,6 +303,7 @@ async function login(event) {
           console.log("2fa Data:", get2FAData);
           const is2FAEnabled = get2FAData.is_2fa_enabled === 1;
           const secret = get2FAData.secret;
+          const emailz = get2FAData.email;
 
           console.log('Is 2FA Enabled: ', is2FAEnabled);
           console.log('Secret Key: ', secret);
@@ -296,6 +321,15 @@ async function login(event) {
 
             const sendSecretData = await sendSecretResponse.json();
             console.log('Secret sent to server:', sendSecretData);
+
+            const encryptedEmail = await encryptEmail(email);
+
+            if (!encryptedEmail) {
+              console.error('Email encryption failed');
+            return;
+            }
+
+            sessionStorage.setItem('encrypted_email', encryptedEmail);
             window.location.href = 'http://localhost:3000/2fa';
           } else {
             // Continue with regular login process
@@ -333,49 +367,90 @@ async function continueRegularLogin(formData) {
   window.location.href = 'http://localhost:3000/home';
 }
 
-function verifyTOTP(event) {
-  event.preventDefault();
-
-  // Get the OTP value from the input field
-  var otpValue = document.getElementById('otp-field').value;
-
-  var emailValue = sessionStorage.getItem('verificationEmail');
-  console.log("EMAILZ", emailValue)
-  const formData = new FormData();
-  formData.append('email', emailValue);
-  // Get the email value (you may need to adapt this based on how your email is stored in the frontend)
-
-  if (!emailValue) {
-    // Handle the case where the email is not found in sessionStorage
+function getEmailFromSessionStorage() {
+  const email = sessionStorage.getItem('encryptedEmail');
+  if (!email) {
     console.error('Email not found in sessionStorage');
-    return;
+    return null;
   }
-  // Prepare the data to be sent in the POST request
-  var data = {
-    otp: otpValue
-  };
-
-  // Make an HTTP POST request to your backend endpoint
-  fetch('http://localhost:5000/verify_2fa', {
-      method: 'POST',
-      headers: {
-          'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-  })
-  .then(response => response.json())
-  .then(data => {
-      // Handle the response from the backend
-      console.log(data);
-      if (data.message === 'OTP is valid') {
-        continueRegularLogin(formData)
-        
-      } else {
-        alert('Invalid OTP. Please try again.')
-      }
-  })
-  .catch((error) => {
-      console.error('Error:', error);
-  });
+  return email;
 }
 
+  
+
+
+  async function verifyTOTP(event) {
+    event.preventDefault();
+  
+    // Get the OTP value from the input field
+    var otpValue = document.getElementById('otp-field').value;
+  
+    // Retrieve the encrypted email from sessionStorage
+    let encryptedEmail = sessionStorage.getItem('encrypted_email');
+  
+    if (!encryptedEmail) {
+      console.error('Encrypted email not found in sessionStorage');
+      return;
+    }
+  
+    try {
+      const response = await fetch('http://localhost:5000/decrypt_email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          encryptedEmail: encryptedEmail,
+        }),
+      });
+  
+      const emaildata = await response.json();
+  
+      if (emaildata.decryptedEmail) {
+        const emailValue = emaildata.decryptedEmail;
+  
+        // Now you can use the emailValue and otpValue for further processing
+        const formData = new FormData();
+        formData.append('email', emailValue);
+        formData.append('otp', otpValue);
+
+        if (!emailValue) {
+          // Handle the case where the email is not found in sessionStorage
+          console.error('Email not found in sessionStorage');
+          return;
+        }
+        // Prepare the data to be sent in the POST request
+        var data = {
+          otp: otpValue
+        };
+    
+        // Make an HTTP POST request to your backend endpoint
+        fetch('http://localhost:5000/verify_2fa', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Handle the response from the backend
+            console.log(data);
+            if (data.message === 'OTP is valid') {
+              continueRegularLogin(formData)
+              
+            } else {
+              alert('Invalid OTP. Please try again.')
+            }
+        })
+  
+        
+  
+      } else {
+        console.error('Email decryption failed');
+      }
+    } catch (error) {
+      console.error('Error during email decryption:', error);
+    }
+  }
+  

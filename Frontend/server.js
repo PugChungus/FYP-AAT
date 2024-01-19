@@ -462,7 +462,7 @@ app.post('/login', async (req, res) => {
 
 app.post('/get_account', async (req, res) => {
     const email = req.body.email;
-    console.log(email)
+    console.log("isit this one:", email)
     const emailRegex = /^[\w-]+(\.[\w-]+)*@[A-Za-z0-9]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$/;
 
     if (!emailRegex.test(email)) {
@@ -529,7 +529,7 @@ app.post('/get2faStatus', async (req, res) => {
 
             console.log('is_2fa_enabled:', is2FAEnabled);
             console.log("TFASecret:", tfasecret)
-            res.json({ is_2fa_enabled: is2FAEnabled, secret: tfasecret });
+            res.json({ is_2fa_enabled: is2FAEnabled, secret: tfasecret, email: email });
         } else {
             res.status(404).json({ error: 'User not found '});
         }
@@ -597,6 +597,20 @@ app.get('/get-access-token', async (req, res) => {
       res.status(500).send('Error getting access token.');
     }
   });
+
+
+  app.post('/send_email_from_login', (req, res) => {
+    const email = req.body.email;
+  
+    // Process the email as needed
+    console.log('Received email from login:', email);
+  
+    // You can now use the email in your verification logic, store it in the database, etc.
+  
+    // Send a response back to the client
+    res.json({ message: 'Email received successfully' });
+  });
+
 
 
 
