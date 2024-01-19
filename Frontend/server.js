@@ -455,6 +455,19 @@ app.post('/login', async (req, res) => {
     }
 });
 
+app.get('/logout', (req, res) => {
+    // Clear the JWT token cookie
+    res.cookie('jwtToken', '', {
+        expires: new Date(0),  // Set expiration to a past date
+        httpOnly: true,
+        sameSite: 'Strict',
+        secure: true,
+    });
+
+    // Redirect or respond as needed
+    return res.redirect('/');
+});
+
 app.post('/get_account', async (req, res) => {
     const email = req.body.email;
     console.log("isit this one:", email)

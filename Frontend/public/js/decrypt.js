@@ -6,6 +6,7 @@ const keyDropdown = document.getElementById('key-dropdown');
 let selectedKey = keyDropdown.value;
 let decryptedExtension;
 let decryptedExtensionList = [];
+const seen = new Set();
 
 async function get_cookie() {
     const cookie_response = await fetch('http://localhost:3000/api/getCookie', {
@@ -16,8 +17,6 @@ async function get_cookie() {
     const token = cookie_data.token.jwtToken
     return token
 }
-
-let jwtToken = get_cookie()
 
 function getAllKeyData() {
     const keyData = [];
@@ -201,6 +200,10 @@ async function sendFileToBackend(file) {
         return
     }
 
+    const fileNameParts = file.name.split('.');
+    const fileExtension = fileNameParts.length > 1 ? fileNameParts.pop() : '';
+    const fileNameWithoutExtension = fileNameParts.join('');
+
     const scanLoader = document.getElementById('scan-loader');
     scanLoader.style.display = 'block'
 
@@ -209,6 +212,12 @@ async function sendFileToBackend(file) {
 
         if (scanResult.isValid) {
             selectedFiles.files.push(file); 
+            if (seen.has(fileNameWithoutExtension)) {
+                alert('Duplicate file name')
+                return;
+            }
+            
+            seen.add(fileNameWithoutExtension);
             console.log(`Scan result for ${file.name}: Non-malicious. Proceeding with upload`)
             displayFileDetails(file, formData)
         } else {
@@ -227,6 +236,8 @@ async function sendFileToBackend(file) {
 
 async function performScan(formData) {
     try {
+        const jwtToken = get_cookie()
+
         const response = await fetch('http://localhost:5000/upload_file', {
             method:'POST',
             headers: {
@@ -283,6 +294,8 @@ async function decrypt(file, i) {
     formData.append('clear', i)
 
     try {
+        const jwtToken = get_cookie()
+
         const response = await fetch('http://localhost:5000/decrypt', {
             method: 'POST',
             headers: {
@@ -310,6 +323,8 @@ async function decrypt(file, i) {
             formData2.append('key_name', keyName);
             formData2.append('type', 'decryption')
             formData2.append('email', email_cookie)
+
+            const jwtToken = get_cookie()
 
             const response2 = await fetch('http://localhost:5000/add_to_decryption_history', {
                 method: 'POST',
@@ -375,6 +390,20 @@ function displayFileDetails(file, formData) {
     const fileSize = document.createElement('div');
     fileSize.textContent = `File Size: ${formatFileSize(file.size)}`;
     fileContainer.appendChild(fileSize);
+
+    const removeButton = document.createElement('button');
+    removeButton.textContent = 'Remove';
+    removeButton.addEventListener('click', () => {
+        // Remove the file container from the details container
+        fileDetailsContainer.removeChild(fileContainer);
+        const fileNameParts = file.name.split('.');
+        const fileExtension = fileNameParts.length > 1 ? fileNameParts.pop() : '';
+        const fileNameWithoutExtension = fileNameParts.join('');
+        console.log(fileNameWithoutExtension)
+        seen.delete(fileNameWithoutExtension);
+        // You can also perform additional logic or updates here
+    });
+    fileContainer.appendChild(removeButton);
 
     // Append file container to the details container
     fileDetailsContainer.appendChild(fileContainer);

@@ -54,8 +54,6 @@ async function get_cookie() {
   return token
 }
 
-let jwtToken = get_cookie()
-
 async function renderHistory() {
     const newResponse = await fetch('http://localhost:3000/get_data_from_cookie', {
         method: 'POST'
@@ -69,6 +67,8 @@ async function renderHistory() {
     formData.append('email', email);
   
     try {
+      const jwtToken = get_cookie()
+
       const response = await fetch('http://localhost:5000/display_history', {
         method: 'POST',
         headers: {
@@ -116,6 +116,8 @@ async function clear_history() {
   formData.append('email', email);
 
   try {
+    const jwtToken = get_cookie()
+    
     const response = await fetch('http://localhost:5000/clear_history', {
       method: 'POST',
       headers: {

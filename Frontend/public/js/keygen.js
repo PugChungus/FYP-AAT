@@ -22,8 +22,6 @@ async function get_cookie() {
     return token
 }
 
-let jwtToken = get_cookie()
-
 function generateKey() {
     var keyName = document.getElementById('keyName').value;
 
@@ -97,6 +95,8 @@ async function importKey() {
         const file = fileInput.files[0];
         const formData = new FormData();
         formData.append('file', file);
+
+        const jwtToken = get_cookie()
 
         const response = await fetch('http://localhost:5000/check_key', {
             method: 'POST',

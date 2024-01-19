@@ -2,6 +2,10 @@ const selectedFiles = {
     files: []
 };
 
+const seen = new Set();
+const keyDropdown = document.getElementById('key-dropdown');
+let selectedKey = keyDropdown.value;
+
 async function get_cookie() {
     const cookie_response = await fetch('http://localhost:3000/api/getCookie', {
         method: 'GET',
@@ -11,12 +15,6 @@ async function get_cookie() {
     const token = cookie_data.token.jwtToken
     return token
 }
-
-let jwtToken = get_cookie()
-
-const seen = new Set();
-const keyDropdown = document.getElementById('key-dropdown');
-let selectedKey = keyDropdown.value;
 
 function getAllKeyData() {
     const keyData = [];
@@ -217,6 +215,7 @@ async function sendFileToBackend(file) {
 }
 
 async function performScan(formData) {
+    const jwtToken = get_cookie()
     try {
         const response = await fetch('http://localhost:5000/upload_file', {
             method:'POST',
@@ -276,6 +275,7 @@ async function encrypt(file, i) {
     console.log(formData)
 
     try {
+        const jwtToken = get_cookie()
         const response = await fetch('http://localhost:5000/encrypt', {
             method: 'POST',
             headers: {
@@ -304,6 +304,8 @@ async function encrypt(file, i) {
             formData2.append('key_name', keyName);
             formData2.append('type', 'encryption')
             formData2.append('email', email_cookie)
+
+            const jwtToken = get_cookie()
 
             const response2 = await fetch('http://localhost:5000/add_to_encryption_history', {
                 method: 'POST',
@@ -334,17 +336,17 @@ async function sendFilesToBackend() {
     if (totalFiles == 1) {
         const file = files[0];
         const i = 0
-        const decryptionSuccessful = await encrypt(file, i);
+        const encryptionSuccessful = await encrypt(file, i);
 
-        if (decryptionSuccessful) {
+        if (encryptionSuccessful) {
             hideDropZoneAndFileDetails();
         }
     } else {
         for (let i = 0; i < totalFiles; i++) {
             const file = files[i];
-            const decryptionSuccessful = await encrypt(file, i);
+            const encryptionSuccessful = await encrypt(file, i);
 
-            if (!decryptionSuccessful) {
+            if (!encryptionSuccessful) {
                 // If decryption fails for any file, stop processing the rest
                 return;
             }
@@ -371,6 +373,20 @@ function displayFileDetails(file, formData) {
     const fileSize = document.createElement('div');
     fileSize.textContent = `File Size: ${formatFileSize(file.size)}`;
     fileContainer.appendChild(fileSize);
+
+    const removeButton = document.createElement('button');
+    removeButton.textContent = 'Remove';
+    removeButton.addEventListener('click', () => {
+        // Remove the file container from the details container
+        fileDetailsContainer.removeChild(fileContainer);
+        const fileNameParts = file.name.split('.');
+        const fileExtension = fileNameParts.length > 1 ? fileNameParts.pop() : '';
+        const fileNameWithoutExtension = fileNameParts.join('');
+        console.log(fileNameWithoutExtension)
+        seen.delete(fileNameWithoutExtension);
+        // You can also perform additional logic or updates here
+    });
+    fileContainer.appendChild(removeButton);
 
     // Append file container to the details container
     fileDetailsContainer.appendChild(fileContainer);

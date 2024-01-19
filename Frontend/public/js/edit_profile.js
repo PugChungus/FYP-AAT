@@ -10,8 +10,6 @@ async function get_cookie() {
     return token
 }
 
-let jwtToken = get_cookie()
-
 document.addEventListener('DOMContentLoaded', async function() {
     const newResponse = await fetch('http://localhost:3000/get_data_from_cookie', {
         method: 'POST'
@@ -55,6 +53,8 @@ document.getElementById('profileForm').addEventListener('submit', function (even
     if (fileInput.files.length > 0) {
         formData.append('profile-picture', fileInput.files[0]);
     }
+
+    const jwtToken = get_cookie()
 
     // Send data to the /upload route using Fetch
     fetch('http://localhost:5000/upload', {

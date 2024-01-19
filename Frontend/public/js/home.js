@@ -8,8 +8,6 @@ async function get_cookie() {
   return token
 }
 
-let jwtToken = get_cookie()
-
 document.addEventListener('DOMContentLoaded', async function() {
   const newResponse = await fetch('http://localhost:3000/get_data_from_cookie', {
     method: 'POST'
@@ -59,6 +57,8 @@ async function cookie_login() {
     const formData = new FormData();
     formData.append('email', email_cookie)
 
+    const jwtToken = get_cookie()
+
     const response = await fetch('http://localhost:5000/create_user_dict', {
       method: 'POST',
       headers: {
@@ -73,4 +73,31 @@ async function cookie_login() {
 }
 
 cookie_login()
-  
+
+function handleSignOut() {
+  fetch('http://localhost:3000/logout', {
+    method: 'GET',
+  })
+  .then(response => {
+    if (response.ok) {
+      window.location.href = '/';
+    } else {
+      console.log("Logout Success.");
+    }
+  })
+  .catch(error => {
+    console.error('Error during fetch:', error);
+  });
+}
+
+const signOutText = document.getElementById('signOutText');
+const signOutIcon = document.getElementById('signOutIcon');
+
+signOutIcon.addEventListener('click', function() {
+  handleSignOut();
+});
+
+
+signOutText.addEventListener('click', function() {
+  handleSignOut();
+});

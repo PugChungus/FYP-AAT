@@ -156,7 +156,7 @@ def upload():
         db.rollback()
         return jsonify({'error': str(e)})
 
-@app.route('/aes_keygen', methods=['POST'])
+@app.route('/aes_keygen', methods=['GET'])
 def aes_keygen():
     try:
         generated_key = get_random_bytes(32)
