@@ -191,10 +191,11 @@ document.addEventListener('DOMContentLoaded', async function () {
       try {
         const formData = new FormData();
         formData.append('email', email)
-
+        const cookie = await get_cookie()
         const response = await fetch('http://localhost:3000/enable2fa', {
           method: 'POST',
           body: formData,
+          headers: {'Authorization':  `Bearer: ${cookie}`}
         });
 
         if (response.ok){
@@ -370,3 +371,13 @@ document.addEventListener('DOMContentLoaded', async function () {
     document.body.appendChild(cardDiv);
   });
 });
+
+async function get_cookie() {
+  const cookie_response = await fetch('http://localhost:3000/api/getCookie', {
+      method: 'GET',
+  });
+
+  const cookie_data = await cookie_response.json()
+  const token = cookie_data.token.jwtToken
+  return token
+}
