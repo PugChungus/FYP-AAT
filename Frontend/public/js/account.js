@@ -10,8 +10,6 @@ async function get_cookie() {
   return token
 }
 
-let jwtToken = await get_cookie()
-
 function getCurrentTime() {
   const now = new Date();
 
@@ -282,6 +280,7 @@ async function login(event) {
       console.log("BROOOOO:", loginResponse)
 
       const loginData = await loginResponse.json();
+      const jwtToken = await get_cookie()
 
       if (loginData.result) {
         const count = loginData.result[0]['count(*)'];
@@ -383,7 +382,7 @@ async function continueRegularLogin(formData) {
   window.location.href = 'http://localhost:3000/home';
 }
 
-function getEmailFromSessionStorage() {
+async function getEmailFromSessionStorage() {
   const email = sessionStorage.getItem('encryptedEmail');
   if (!email) {
     console.error('Email not found in sessionStorage');
@@ -394,6 +393,8 @@ function getEmailFromSessionStorage() {
   var data = {
     otp: otpValue
   };
+
+  const jwtToken = await get_cookie()
 
   // Make an HTTP POST request to your backend endpoint
   fetch('http://localhost:5000/verify_2fa', {

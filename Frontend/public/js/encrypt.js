@@ -12,7 +12,7 @@ async function get_cookie() {
     return token
 }
 
-let jwtToken = await get_cookie()
+let jwtToken = get_cookie()
 
 const seen = new Set();
 const keyDropdown = document.getElementById('key-dropdown');

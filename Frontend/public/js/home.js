@@ -8,7 +8,7 @@ async function get_cookie() {
   return token
 }
 
-let jwtToken = await get_cookie()
+let jwtToken = get_cookie()
 
 document.addEventListener('DOMContentLoaded', async function() {
   const newResponse = await fetch('http://localhost:3000/get_data_from_cookie', {

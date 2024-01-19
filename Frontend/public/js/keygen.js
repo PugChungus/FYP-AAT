@@ -22,7 +22,7 @@ async function get_cookie() {
     return token
 }
 
-let jwtToken = await get_cookie()
+let jwtToken = get_cookie()
 
 function generateKey() {
     var keyName = document.getElementById('keyName').value;

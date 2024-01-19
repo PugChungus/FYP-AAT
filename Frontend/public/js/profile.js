@@ -24,7 +24,7 @@ async function get_cookie() {
   return token
 }
 
-let jwtToken = await get_cookie()
+let jwtToken = get_cookie()
 
 async function exportPublicKey(key) {
   const exported = await window.crypto.subtle.exportKey("spki", key);
