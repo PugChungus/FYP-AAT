@@ -12,16 +12,24 @@ function isValidKeyName(keyName) {
     return pattern.test(keyName);
 }
 
+async function get_cookie() {
+    const cookie_response = await fetch('http://localhost:3000/api/getCookie', {
+        method: 'GET',
+    });
+  
+    const cookie_data = await cookie_response.json()
+    const token = cookie_data.token.jwtToken
+    return token
+}
+
+let jwtToken = await get_cookie()
+
 function generateKey() {
     var keyName = document.getElementById('keyName').value;
 
     if (isValidKeyName(keyName)) {
         fetch('http://localhost:5000/aes_keygen', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ keyName: keyName }),
+            method: 'GET',
         })
         .then(response => response.json())
         .then(data => {
@@ -92,6 +100,9 @@ async function importKey() {
 
         const response = await fetch('http://localhost:5000/check_key', {
             method: 'POST',
+            headers: {
+                'Authorization': `Bearer: ${jwtToken}`
+            },
             body: formData,
         });
 

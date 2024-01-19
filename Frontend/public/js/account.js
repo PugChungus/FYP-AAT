@@ -1,5 +1,17 @@
 let db;
 
+async function get_cookie() {
+  const cookie_response = await fetch('http://localhost:3000/api/getCookie', {
+      method: 'GET',
+  });
+
+  const cookie_data = await cookie_response.json()
+  const token = cookie_data.token.jwtToken
+  return token
+}
+
+let jwtToken = await get_cookie()
+
 function getCurrentTime() {
   const now = new Date();
 
@@ -289,6 +301,9 @@ async function login(event) {
 
           const response2 = await fetch('http://localhost:5000/create_user_dict', {
             method: 'POST',
+            headers: {
+              'Authorization': `Bearer: ${jwtToken}`
+            },
             body: formData,
           });
 
@@ -313,6 +328,7 @@ async function login(event) {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer: ${jwtToken}`
               },
               body: JSON.stringify({
                 secret: secret,
@@ -373,11 +389,38 @@ function getEmailFromSessionStorage() {
     console.error('Email not found in sessionStorage');
     return null;
   }
+
+  // Prepare the data to be sent in the POST request
+  var data = {
+    otp: otpValue
+  };
+
+  // Make an HTTP POST request to your backend endpoint
+  fetch('http://localhost:5000/verify_2fa', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer: ${jwtToken}`
+      },
+      body: JSON.stringify(data),
+  })
+  .then(response => response.json())
+  .then(data => {
+      // Handle the response from the backend
+      console.log(data);
+      if (data.message === 'OTP is valid') {
+        continueRegularLogin(formData)
+        
+      } else {
+        alert('Invalid OTP. Please try again.')
+      }
+  })
+  .catch((error) => {
+      console.error('Error:', error);
+  });
+
   return email;
 }
-
-  
-
 
   async function verifyTOTP(event) {
     event.preventDefault();

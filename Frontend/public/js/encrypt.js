@@ -2,10 +2,6 @@ const selectedFiles = {
     files: []
 };
 
-const seen = new Set();
-const keyDropdown = document.getElementById('key-dropdown');
-let selectedKey = keyDropdown.value;
-
 async function get_cookie() {
     const cookie_response = await fetch('http://localhost:3000/api/getCookie', {
         method: 'GET',
@@ -15,6 +11,12 @@ async function get_cookie() {
     const token = cookie_data.token.jwtToken
     return token
 }
+
+let jwtToken = await get_cookie()
+
+const seen = new Set();
+const keyDropdown = document.getElementById('key-dropdown');
+let selectedKey = keyDropdown.value;
 
 function getAllKeyData() {
     const keyData = [];
@@ -184,13 +186,6 @@ async function sendFileToBackend(file) {
     const fileNameWithoutExtension = fileNameParts.join('');
     console.log(fileNameWithoutExtension)
 
-    if (seen.has(fileNameWithoutExtension)) {
-        alert('Duplicate file name')
-        return;
-    }
-    
-    seen.add(fileNameWithoutExtension);
-
     const scanLoader = document.getElementById('scan-loader');
     scanLoader.style.display = 'block'
 
@@ -199,6 +194,12 @@ async function sendFileToBackend(file) {
 
         if (scanResult.isValid) {
             selectedFiles.files.push(file); 
+            if (seen.has(fileNameWithoutExtension)) {
+                alert('Duplicate file name')
+                return;
+            }
+            
+            seen.add(fileNameWithoutExtension);
             console.log(`Scan result for ${file.name}: Non-malicious. Proceeding with upload`)
             displayFileDetails(file, formData)
         } else {
@@ -219,6 +220,9 @@ async function performScan(formData) {
     try {
         const response = await fetch('http://localhost:5000/upload_file', {
             method:'POST',
+            headers: {
+                'Authorization': `Bearer: ${jwtToken}`
+            },
             body: formData,
         });
 
@@ -275,7 +279,7 @@ async function encrypt(file, i) {
         const response = await fetch('http://localhost:5000/encrypt', {
             method: 'POST',
             headers: {
-                'Authorization': `${Bearer} ${jwtToken}`
+                'Authorization': `Bearer: ${jwtToken}`
             },
             body: formData,
             // headers: myHeaders,
@@ -303,6 +307,9 @@ async function encrypt(file, i) {
 
             const response2 = await fetch('http://localhost:5000/add_to_encryption_history', {
                 method: 'POST',
+                headers: {
+                    'Authorization': `Bearer: ${jwtToken}`
+                },
                 body: formData2,
             });
 

@@ -14,6 +14,18 @@ function ab2str(buf) {
   return String.fromCharCode.apply(null, new Uint8Array(buf));
 }
 
+async function get_cookie() {
+  const cookie_response = await fetch('http://localhost:3000/api/getCookie', {
+      method: 'GET',
+  });
+
+  const cookie_data = await cookie_response.json()
+  const token = cookie_data.token.jwtToken
+  return token
+}
+
+let jwtToken = await get_cookie()
+
 async function exportPublicKey(key) {
   const exported = await window.crypto.subtle.exportKey("spki", key);
   const exportedAsString = ab2str(exported);
@@ -70,6 +82,9 @@ async function verifyOTP(email, otp) {
 
     const response = await fetch('http://localhost:5000/verify_otp', {
       method: 'POST',
+      headers: {
+        'Authorization': `Bearer: ${jwtToken}`
+      },
       body: formData,
     });
 
@@ -186,9 +201,12 @@ document.addEventListener('DOMContentLoaded', async function () {
         if (response.ok){
           console.log('2FA Enabled Succesfully');
           const qrResponse = await fetch('http://localhost:5000/generate_2fa_qr_code', {
-          method: 'POST',
-          body: formData,
-        });
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer: ${jwtToken}`
+            },
+            body: formData,
+          });
 
         if (qrResponse.ok) {
           const qrData = await qrResponse.json();

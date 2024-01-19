@@ -29,7 +29,7 @@ app.set('views', path.join(__dirname, 'public', 'pages'));
 
 function checkTokenValidity(req) {
     const jwtToken = req.cookies.jwtToken;
-
+    
     if (!jwtToken) {
         // If there's no token, it's considered invalid
         return false;
@@ -109,11 +109,6 @@ app.get('/keypopup', authorizeRoles(), (req, res) => {
     // Render the HTML page for authorized users
     res.render('keypopup', { user: req.user });
 });
-
-app.get('/profile', authorizeRoles(['user']), (req, res) => {
-    res.render('profile', { user: req.user})
-});
-
 
 app.get('/profile', authorizeRoles(), (req, res) => {
     // Render the HTML page for authorized users
