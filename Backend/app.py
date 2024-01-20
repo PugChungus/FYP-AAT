@@ -53,7 +53,7 @@ def check_token_validity(authorization_header):
             return jsonify({'error': 'Invalid authorization header format'})
     except Exception as e:
         # Handle token verification errors
-        return jsonify({'error': str(e)})
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/create_user_dict', methods=['POST'])
 def create_user_dict():
@@ -91,7 +91,7 @@ def create_user_dict():
         return jsonify("User dictionary created.")
     except Exception as e:
         print("Error:", e)
-        return jsonify({'error': str(e)})
+        return jsonify({'error': str(e)}), 500
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'svg'}  # Define the allowed image file extensions
 
@@ -126,7 +126,7 @@ def upload():
             return jsonify({'message': 'Username updated successfully'})
         except Exception as e:
             db.rollback()
-            return jsonify({'error': str(e)})
+            return jsonify({'error': str(e)}), 500
 
     print("hello")
     if uploaded_file is None:
@@ -154,7 +154,7 @@ def upload():
         return jsonify({'message': 'File uploaded successfully'})
     except Exception as e:
         db.rollback()
-        return jsonify({'error': str(e)})
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/aes_keygen', methods=['GET'])
 def aes_keygen():
@@ -233,7 +233,7 @@ def store_secret(email, secret):
         db.commit()
     except Exception as e:
         db.rollback()
-        print("Error storing secret: ", str(e))
+        print("Error storing secret: ", str(e)), 500
 
 def format_size(size_in_bytes):
     size_in_bytes = float(size_in_bytes)
@@ -380,7 +380,7 @@ def upload_file():
 
     except Exception as e:
         print("Error processing File:", str(e))
-        return {"isValid": False, "error": str(e)}
+        return {"isValid": False, "error": str(e)}, 500
 
 @app.route('/encrypt', methods=['POST'])
 def encrypt_files():
@@ -444,7 +444,7 @@ def encrypt_files():
 
     except Exception as e:
         print("Error processing Files:", str(e))
-        return {"isValid": False, "error": str(e)}
+        return {"isValid": False, "error": str(e)}, 500
 
 @app.route('/decrypt', methods=['POST'])
 def decrypt_files():
@@ -547,7 +547,7 @@ def decrypt_files():
 
     except Exception as e:
         print("Error processing Files:", str(e))
-        return {"isValid": False, "error": str(e)}
+        return {"isValid": False, "error": str(e)}, 500
 
 @app.route('/clear_history', methods=['POST'])
 def clear_history():
@@ -579,7 +579,7 @@ def clear_history():
 
     except Exception as e:
         db.rollback()
-        return jsonify({'error': str(e)})
+        return jsonify({'error': str(e)}), 500
 
     
 @app.route('/display_history', methods=['POST'])
@@ -617,7 +617,7 @@ def display_history():
 
     except Exception as e:
         db.rollback()
-        return jsonify({'error': str(e)})
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/add_to_encryption_history', methods=['POST'])
 def encrypt_history():
@@ -657,7 +657,7 @@ def encrypt_history():
     
     except Exception as e:
         db.rollback()
-        return jsonify({'error': str(e)})
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/add_to_decryption_history', methods=['POST'])
 def decrypt_history():
@@ -697,7 +697,7 @@ def decrypt_history():
     
     except Exception as e:
         db.rollback()
-        return jsonify({'error': str(e)})
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/download_single_encrypted_file/<filename>', methods=['GET'])
 def download_single_encrypted_file(filename):
@@ -838,7 +838,7 @@ def generate_2fa_qr_code():
 
         return jsonify({'qr_code_url': qr_code_url, 'otp': otp, 'secret': secret})
     except Exception as e:
-        return jsonify({'error': str(e)})
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/verify_otp', methods=['POST'])
 def verify_otp():
@@ -876,7 +876,7 @@ def verify_otp():
         else:
             return jsonify({"is_valid": 0, "message": "Invalid OTP"})
     except Exception as e:
-        return jsonify({"is_valid": 0, "message": f"Error: {str(e)}"})
+        return jsonify({"is_valid": 0, "message": f"Error: {str(e)}"}), 500
 
 @app.route('/verify_2fa', methods=['POST'])
 def verify_2fa():
@@ -918,7 +918,7 @@ def verify_2fa():
         else:
             return jsonify({'error': 'Invalid OTP', 'email': email})
     except Exception as e:
-        return jsonify({'error': str(e), 'email': email})
+        return jsonify({'error': str(e), 'email': email}), 500
 
 
 @app.route('/send_secret', methods=['POST'])
@@ -946,7 +946,7 @@ def send_secret():
 
         return jsonify({'message': 'Secret received and stored successfully'})
     except Exception as e:
-        return jsonify({'error': str(e)})       
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/send_email', methods=['POST'])
 def send_email():
@@ -957,9 +957,7 @@ def send_email():
 
         return jsonify({'message': 'Email Sent'})
     except Exception as e:
-        return jsonify({'error': str(e)})                         
-                  
-
+        return jsonify({'error': str(e)}), 500                      
 
 def insert_secret_into_db(email, secret):
     try:
@@ -969,7 +967,7 @@ def insert_secret_into_db(email, secret):
         db.commit()
     except Exception as e:
         db.rollback()
-        print("Error inserting secret into the database: ", str(e))
+        print("Error inserting secret into the database: ", str(e)), 500
 
 def encrypt_email(email):
     cipher = AES.new(SECRET_KEY, AES.MODE_CBC, IV)

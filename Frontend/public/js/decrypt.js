@@ -304,6 +304,8 @@ async function decrypt(file, i) {
             body: formData,
         });
 
+        console.log(response)
+
         if (response.ok) {
             const responseData = await response.json();
             decryptedExtension = responseData.decrypted_extension;
@@ -336,7 +338,7 @@ async function decrypt(file, i) {
 
             return true; // Return true indicating decryption success
         } else {
-            alert('Invalid File Extension')
+            alert('Decryption Failed. Are you sure you are using the correct key, you previously used to encrypt the file?')
             return false; // Return false indicating decryption failure
         }
     } catch (error) {

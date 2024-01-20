@@ -85,9 +85,9 @@ app.get('/encrypt', authorizeRoles(), (req, res) => {
     res.render('encrypt', { user: req.user });
 });
 
-app.get('/forgetpassword', authorizeRoles(), (req, res) => {
+app.get('/forgetpassword', (req, res) => {
     // Render the HTML page for authorized users
-    res.render('forgetpassword', { user: req.user });
+    res.render('forgetpassword');
 });
 
 app.get('/history', authorizeRoles(), (req, res) => {
@@ -105,19 +105,14 @@ app.get('/keymanagement', authorizeRoles(), (req, res) => {
     res.render('keymanagement', { user: req.user });
 });
 
-app.get('/keypopup', authorizeRoles(), (req, res) => {
-    // Render the HTML page for authorized users
-    res.render('keypopup', { user: req.user });
-});
-
 app.get('/profile', authorizeRoles(), (req, res) => {
     // Render the HTML page for authorized users
     res.render('profile', { user: req.user });
 });
 
-app.get('/register', authorizeRoles(), (req, res) => {
+app.get('/register', (req, res) => {
     // Render the HTML page for authorized users
-    res.render('register', { user: req.user });
+    res.render('register');
 });
 
 app.get('/settings', authorizeRoles(), (req, res) => {
@@ -306,6 +301,13 @@ app.post('/create_account', async (req, res) => {
             'INSERT INTO user_account (username, password, email_address) VALUES (?, ?, ?)',
             [username, encodedHash, email]
         );
+
+        res.cookie('jwtToken', '', {
+            expires: new Date(0),  // Set expiration to a past date
+            httpOnly: true,
+            sameSite: 'Strict',
+            secure: true,
+        });    
 
         return res.status(200).json({ message: 'Account created successfully' });
     } catch (err) {

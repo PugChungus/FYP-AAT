@@ -101,7 +101,6 @@ async function verifyOTP(email, otp) {
   }
 }
 
-
 document.addEventListener('DOMContentLoaded', async function () {
   const newResponse = await fetch('http://localhost:3000/get_data_from_cookie', {
     method: 'POST'
@@ -129,7 +128,6 @@ document.addEventListener('DOMContentLoaded', async function () {
   const userInfoElement = document.getElementById('user-info');
   userInfoElement.innerHTML = `
     <h2>Welcome, ${username}</h2>
-    <p>Email: ${email}</p>
     <p>Username: ${username}</p>
     
     <p><a href="/edit-profile">Edit Profile</a></p>

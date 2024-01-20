@@ -97,7 +97,6 @@ signOutIcon.addEventListener('click', function() {
   handleSignOut();
 });
 
-
 signOutText.addEventListener('click', function() {
   handleSignOut();
 });

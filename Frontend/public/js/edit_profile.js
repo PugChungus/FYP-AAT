@@ -72,6 +72,7 @@ document.getElementById('profileForm').addEventListener('submit', function (even
         } else {
             console.log('Success:', result.message);
             window.history.back();
+            location.href = location.href;
         }
     })
     .catch(error => console.error('Error:', error));
