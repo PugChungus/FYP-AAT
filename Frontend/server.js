@@ -205,7 +205,7 @@ async function verifyPassword(password, pass_db) {
 app.get('/api/getCookie', async (req, res) => {
     try {
         const jwtToken = req.cookies.jwtToken;
-        console.log(jwtToken)
+        console.log("Getting Cookie:", jwtToken)
         return res.status(200).json({ token: {jwtToken} });
     }
     catch (err) {
@@ -248,7 +248,7 @@ app.post('/get_data_from_cookie', async (req, res) => {
         }
         else {
             const decodedToken = jwt.verify(jwtToken, secretJwtKey);
-            console.log(decodedToken)
+            console.log("Decoded Token:",  decodedToken)
             const email = decodedToken.userData.email
             const username = decodedToken.userData.username
             
@@ -592,7 +592,7 @@ app.get('/get-access-token', async (req, res) => {
       // Use the access token to make requests to Google APIs or other services
       const accessToken = tokens.access_token;
       //app.locals.accessToken = accessToken;
-      console.log(accessToken)
+      console.log("TOKENZ:", accessToken)
       // Sending the access token in the response
       app.locals.token = accessToken;
       //TODO: Discuss
