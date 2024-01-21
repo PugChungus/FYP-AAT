@@ -71,8 +71,7 @@ document.getElementById('profileForm').addEventListener('submit', function (even
             console.error('Error:', result.error);
         } else {
             console.log('Success:', result.message);
-            window.history.back();
-            location.href = location.href;
+            window.location.href = 'http://localhost:3000/profile'
         }
     })
     .catch(error => console.error('Error:', error));

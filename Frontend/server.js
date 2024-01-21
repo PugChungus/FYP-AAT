@@ -174,6 +174,36 @@ function authorizeRoles() {
     };
 }
 
+const { secret_key, secret_iv, encryption_method } = { 
+    secret_key: '\xc2\x99~t\xe52\xcbo\xaa\xe8\x93dX\x04\x14\xa8\xa8\x9a\xd8P\x90\xd9"\xd0|\x1cO\xe5\xcbE\x06n', 
+    secret_iv: '\xb1\xe1z9\xcf\xc7\x94\x14\xb7u\xa9C\x0f\xf6\x8c\xbc\xc0\x0b\xff\xc4X@\xa4\xb0\x05\x95Ni[\xc8\xdfg',
+    encryption_method: 'aes-256-cbc' 
+};
+
+//use hash to convert into valid key and iv
+const key = crypto
+    .createHash('sha512')
+    .update(secret_iv)
+    .digest('hex')
+    .substring(0, 32);
+
+const encryptionIV = crypto
+    .createHash('sha512')
+    .update(secret_iv)
+    .digest('hex')
+    .substring(0, 16);
+
+async function encryptData(data) {
+    const cipher = crypto.createCipheriv(encryption_method, key, encryptionIV);
+    return Buffer.from(cipher.update(data, 'utf8', 'hex') + cipher.final('hex'), 'hex').toString('base64');
+}
+
+async function decryptData(encryptedData) {
+    const buff = Buffer.from(encryptedData, 'base64');
+    const decipher = crypto.createDecipheriv(encryption_method, key, encryptionIV);
+    return decipher.update(buff.toString('hex'), 'hex', 'utf8') + decipher.final('utf8');
+}
+
 function generateSalt(length) {
     return crypto.randomBytes(length).toString('hex');
 }
@@ -423,24 +453,31 @@ app.post('/login', async (req, res) => {
                     [email]
                 );
                 
-                const account_email_addr = tables_accountData[0]['email_address']
+                const account_id = tables_accountData[0]['account_id']
 
                 const userData = {
-                    email: account_email_addr,
+                    id: account_id,
                     role: 'user',
                 };
+
+                const userDataString = JSON.stringify(userData);
+
+                const encryptedUserData = await encryptData(userDataString)
+
+                console.log(encryptedUserData)
 
                 if (tables["is_2fa_enabled"] === 1) {
                     console.log("2FA_enabled: True")
                 } else {
-                    const JWTtoken = jwt.sign({ userData }, secretJwtKey, { algorithm: 'HS256', expiresIn: '1h' });
+                    const jwtToken = jwt.sign({ encryptedUserData }, secretJwtKey, { algorithm: 'HS512', expiresIn: '1h' });
 
-                    res.cookie('jwtToken', JWTtoken, {
+                    // Set the JWE in a cookie
+                    res.cookie('jwtToken', jwtToken, {
                       httpOnly: true,
                       sameSite: 'Strict',
                       secure: true,
                       maxAge: 3600000,
-                    });    
+                    });
                 }
         
                 return res.status(200).json({ message: 'Account Login Success', result });
