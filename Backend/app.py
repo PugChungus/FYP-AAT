@@ -996,6 +996,40 @@ def decrypt_email_route():
     decrypted_email = decrypt_email(encrypted_email)
     return jsonify({'decryptedEmail': decrypted_email})
 
+def check_email_existence(api_key, email):
+    base_url = "https://api.hunter.io/v2/email-verifier"
+
+    params = {
+        'email': email,
+        'api_key': api_key,
+    }
+
+    response = requests.get(base_url, params=params)
+    data = response.json()
+
+    if response.status_code == 200:
+        result = data.get('data', {})
+        if result.get('result') == 'deliverable':
+            return True
+        else:
+            return False
+    else:
+        print(f"Error: {data.get('errors')}")
+        return False
+
+@app.route('/check_email', methods=['POST'])
+def check_email_route():
+    api_key = '86da3112fcda1e710eaf536b25298d036bd2424b'
+    email = request.form.get('email')
+
+    if not api_key or not email:
+        return jsonify({'error': 'Missing required parameters'})
+
+    if check_email_existence(api_key, email):
+        return jsonify({'status': 'exists'})
+    else:
+        return jsonify({'status': 'not exists'})
+
 if __name__ == '__main__':
     app.run(debug=True,
     port=5000)

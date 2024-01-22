@@ -532,6 +532,12 @@ app.post('/get_account', async (req, res) => {
 
 app.post('/enable2fa', async (req, res) => {
     try {
+        const cookie_from_frontend =    req.header['authorization']
+        const isValid = checkTokenValidity( cookie_from_frontend)
+       
+        if (!isValid) {
+               print("Error Validating KEy")
+        } else {
       const { email } = req.body;
   
       const sql = 'UPDATE user_account SET is_2fa_enabled = 1 WHERE email_address = ?';
@@ -540,6 +546,7 @@ app.post('/enable2fa', async (req, res) => {
       await pool.query(sql, values);
   
       res.json({ message: '2FA Enabled' });
+    }
     } catch (error) {
       console.error('Error enabling 2FA:', error);
       res.status(500).json({ error: 'Internal Server Error' });
@@ -657,7 +664,6 @@ app.get('/get-access-token', async (req, res) => {
     // Send a response back to the client
     res.json({ message: 'Email received successfully' });
   });
-
 
 
 
