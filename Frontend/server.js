@@ -27,17 +27,21 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'public', 'pages'));
 
-function checkTokenValidity(req) {
-    const jwtToken = req.cookies.jwtToken;
-    
-    if (!jwtToken) {
+function checkTokenValidity(authorizationHeader) {
+    if (!authorizationHeader) {
         // If there's no token, it's considered invalid
         return false;
     }
 
+    // Ensure authorizationHeader is a string
+    const headerString = authorizationHeader.toString();
+
+    // Extract the token from the Authorization header
+    const token = headerString.split(' ')[1];
+
     try {
         // Decode the JWT token to check its validity
-        jwt.verify(jwtToken, secretJwtKey);
+        jwt.verify(token, secretJwtKey);
         return true;
     } catch (error) {
         // Handle token verification errors (e.g., expired token)
@@ -535,21 +539,21 @@ app.post('/get_account2', async (req, res) => {
 
 app.post('/enable2fa', async (req, res) => {
     try {
-        const cookie_from_frontend =    req.header['authorization']
-        const isValid = checkTokenValidity( cookie_from_frontend)
+        const cookie_from_frontend =  req.headers.authorization
+        const isValid = checkTokenValidity(cookie_from_frontend)
        
         if (!isValid) {
-               print("Error Validating KEy")
+            console.log("Error Validating Key")
         } else {
-      const { email } = req.body;
-  
-      const sql = 'UPDATE user_account SET is_2fa_enabled = 1 WHERE email_address = ?';
-      const values = [email];
-  
-      await pool.query(sql, values);
-  
-      res.json({ message: '2FA Enabled' });
-    }
+            const { id } = req.body;
+        
+            const sql = 'UPDATE user_account SET is_2fa_enabled = 1 WHERE account_id = ?';
+            const values = [id];
+        
+            await pool.query(sql, values);
+        
+            res.json({ message: '2FA Enabled' });
+        }
     } catch (error) {
       console.error('Error enabling 2FA:', error);
       res.status(500).json({ error: 'Internal Server Error' });
@@ -558,10 +562,10 @@ app.post('/enable2fa', async (req, res) => {
 
 app.post('/disable2fa', async (req, res) => {
     try {
-        const { email } = req.body;
+        const { id } = req.body;
 
-        const sql = 'UPDATE user_account SET is_2fa_enabled = 0 WHERE email_address = ?'
-        const values = [email];
+        const sql = 'UPDATE user_account SET is_2fa_enabled = 0 WHERE account_id = ?'
+        const values = [id];
         await pool.query(sql, values);
         res.json({ message: '2FA Disabled'});
     } catch (error) {
@@ -572,10 +576,10 @@ app.post('/disable2fa', async (req, res) => {
 
 app.post('/get2faStatus', async (req, res) => {
     try {
-        const { email } = req.body;
+        const { id } = req.body;
 
-        const sql = 'SELECT is_2fa_enabled, tfa_secret FROM user_account WHERE email_address =?';
-        const values = [email];
+        const sql = 'SELECT is_2fa_enabled, tfa_secret FROM user_account WHERE account_id =?';
+        const values = [id];
 
         const result = await pool.query(sql, values);
         console.log("Result: ", result)
@@ -586,7 +590,7 @@ app.post('/get2faStatus', async (req, res) => {
 
             console.log('is_2fa_enabled:', is2FAEnabled);
             console.log("TFASecret:", tfasecret)
-            res.json({ is_2fa_enabled: is2FAEnabled, secret: tfasecret, email: email });
+            res.json({ is_2fa_enabled: is2FAEnabled, secret: tfasecret});
         } else {
             res.status(404).json({ error: 'User not found '});
         }

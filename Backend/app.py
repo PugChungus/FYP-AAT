@@ -419,7 +419,9 @@ def encrypt_files():
             nonce = get_random_bytes(12)
 
             file_size_bytes = uploaded_file.content_length
+            print(file_size_bytes)
             formatted_size = format_size(file_size_bytes)
+            print(formatted_size)
             header = f'{format_date()} {formatted_size}'
             header_bytes = header.encode('utf-8')
 
@@ -569,13 +571,13 @@ def clear_history():
         else:
             print('Valid Token')
 
-        email = request.form['email']
+        id = request.form['id']
 
         sql = "DELETE FROM history " \
-              "WHERE account_id IN (SELECT account_id FROM user_account WHERE email_address = %s);"
+              "WHERE account_id IN (SELECT account_id FROM user_account WHERE account_id = %s);"
 
         with db.cursor() as cursor:
-            cursor.execute(sql, (email,))
+            cursor.execute(sql, (id))
 
         db.commit()  # Make sure to commit the changes after executing the query
 
