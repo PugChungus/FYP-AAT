@@ -64,12 +64,7 @@
                 <div id="file-details-container"></div>
             </div>
         </div>
-        <button id="authorize_button" onclick="handleAuthClick()">Authorize</button>
-        <label for="file-input-key" class = "btn btn-primary rounded-pill">Select KEY</label>
-        <input type="file" id="file-input-key" name="files" multiple style="display: none;">
-        <div id="selected-file-name"></div>
-
-
+       
         
         <div class="FilesContainer" id="files-details-container">
             <div class="input-group md-form form-sm form-2 pl-0">
@@ -80,15 +75,23 @@
             <div id="file_items"></div>
             <button id="submit" onclick="submit()">submit</button>
         </div>
-    </div>
-        
 
-    <script src="/js/navbar.js"></script>
+
+    </div>
+    <button id="encryptButton" class="eButton" onclick="uploadFiles()">Encrypt</button>
+    <button id="launchPicker">Launch OneDrive Picker</button>
+    <button id="googlepicker" onclick="handleAuthClick()">Launch Google Picker</button>
+    <script src="/js/navbar.js"></script><button id="encryptButton" class="eButton" onclick="uploadFiles()">Encrypt</button>
     <script src="/js/home.js"></script>
     <script src="/js/toprofilePage.js"></script>
     <script src="/js/encryptProgress.js"></script>
-    <script src="/js/dropzone.js"></script>
-    <script src ="/js/googlepicker.js"></script>
+    <script src="/js/encrypt.js"></script>
+    
+    <script type="text/javascript" src="https://alcdn.msauth.net/browser/2.19.0/js/msal-browser.min.js"></script>
+    <script src="/js/onedrivepicker.js"></script>
+    <script src ="/js/authonedrive.js"></script>
+    
+    <script src ="/js/googlepicker.js"></script> 
     <script src="https://apis.google.com/js/api.js"></script>
     <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
     <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>

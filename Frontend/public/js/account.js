@@ -88,8 +88,10 @@ async function login(event) {
       body: formData,
     });
 
-    const data = await response.json();
-    count = data.result[0]['count(*)']
+    const responseData = await response.text()
+    console.log("Response Data: ", responseData)
+    const data = JSON.parse(responseData)
+    count = data.result[0][0].count
     console.log("Count:", count)
 
     if (count == 1) {
@@ -104,9 +106,13 @@ async function login(event) {
 
       console.log("hello")
       const data = await response.json();
-      if (data.result) {
-        const count = data.result[0]['count(*)'];
+      console.log(data)
       
+      if (data.result) {
+        console.log(data.result)
+        // document.cookie = `jwtToken=${data.JWTtoken}; SameSite=Strict; Secure`;
+        const count = data.result[0][0].user_count;
+        console.log(count)
         if (count === 1) {
           const response = await fetch('http://localhost:3000/get_account', {
             method: 'POST',
@@ -114,20 +120,26 @@ async function login(event) {
           });
 
           const data = await response.json();
-          var username = data["tables"][0]["username"]
-          var email_addr = data["tables"][0]["email_address"]
-          var pfp = data["tables"][0]["profile_picture"]
+          console.log("yo msitawhite")
+          console.log(data)
+          var username = data.tables[0][0].username
+          var email_addr = data.tables[0][0].email_address
+          var pfp = data.tables[0][0].profile_picture
+          console.log(username)
+          console.log(email_addr)
+          console.log(pfp)
 
           sessionStorage.setItem('username', username);
           sessionStorage.setItem('email', email_addr);
           sessionStorage.setItem('profile_picture', pfp);
-          
-          window.location.href = 'http://localhost:3000/pages/home.html';
+          // document.cookie = `jwtToken=${token}; SameSite=Strict; Secure`;
+
+        window.location.href = 'http://localhost:3000/pages/home.html';
         } else {
           alert("Login Failed");
         }
       } else {
-        alert("Login Failed");
+        alert("Login Failed here  ");
       }
     }
     else {
