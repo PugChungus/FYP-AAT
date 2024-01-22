@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   });
   
   const data = await response.json();
-  var pfpBuffer = data["tables"][0]["profile_picture"];
+  var pfpBuffer = data.tables[0][0].profile_picture
   if (pfpBuffer !== null) {
     var dataArray = pfpBuffer.data;
     var uint8Array = new Uint8Array(dataArray);

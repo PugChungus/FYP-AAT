@@ -22,6 +22,7 @@ import jwt
 import pyotp
 import qrcode
 
+import requests
 app = Flask(__name__)
 CORS(app)
 
