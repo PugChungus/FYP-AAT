@@ -119,6 +119,16 @@ app.get('/register', (req, res) => {
     res.render('register');
 });
 
+app.get('/activation', (req, res) => {
+    // Render the HTML page for authorized users
+    res.render('activation');
+});
+
+app.get('/activation_failure', (req, res) => {
+    // Render the HTML page for authorized users
+    res.render('activation_failure');
+});
+
 app.get('/settings', authorizeRoles(), (req, res) => {
     // Render the HTML page for authorized users
     res.render('settings', { user: req.user });
@@ -321,10 +331,8 @@ app.post('/create_account', async (req, res) => {
         console.log("Salt:", random_salt)
         console.log("Encode Hash:", encodedHash)
 
-        const [result] = await pool.execute(  //the execute method from the mysql2 takes care of proper escaping
-            'INSERT INTO user_account (username, password, email_address) VALUES (?, ?, ?)',
-            [username, encodedHash, email]
-        );
+        const [result] = await pool.execute('CALL create_account(?, ?, ?)', [username, encodedHash, email]);
+        
 
         res.cookie('jwtToken', '', {
             expires: new Date(0),  // Set expiration to a past date
@@ -339,6 +347,45 @@ app.post('/create_account', async (req, res) => {
         return res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
+app.post('/create_pubkey', async (req, res) => {
+    try {
+        const public_key = req.body.public_key;
+        console.log(public_key)
+
+        const accountIdResult = await pool.execute(
+            'SELECT LAST_INSERT_ID() as account_id'
+        );
+
+        const accountId = accountIdResult[0][0].account_id;
+
+        // Now, you have the account_id, and you can use it in the next INSERT statement
+        const publicKeyResult = await pool.execute('CALL InsertPublicKey(?, ?)', [public_key, accountId]);
+
+
+        return res.status(200).json({ message: 'Public Key created successfully' });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+})
+
+app.post('/update_pubkey', async (req, res) => {
+    try {
+        const public_key = req.body.public_key;
+        const email = req.body.email;
+        console.log(public_key)
+
+        // Now, you have the account_id, and you can use it in the next INSERT statement
+        const publicKeyResult = await pool.execute('CALL UpdatePublicKey(?, ?)', [public_key, email]);
+
+
+        return res.status(200).json({ message: 'Public Key updated successfully' });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+})
 
 app.post('/create_pubkey', async (req, res) => {
     try {
@@ -395,12 +442,11 @@ app.post('/check_account', async (req, res) => {
     }
 
     try {
-        const [result] = await pool.execute(  //the execute method from the mysql2 takes care of proper escaping
-        'SELECT count(*) FROM user_account WHERE email_address = ?',
-        [email]
-        )
-
-        if (result[0]['count(*)'] == 1) {
+        const [result] = await pool.execute('CALL Check_account(?)', [email]);
+        console.log(result)
+        const count = result[0]['count(*)'] || 0;
+        if (result[0][0]['count(*)'] == 1) {
+            
             return res.status(200).json({ message: 'Email Exists', result });
         } else {
             return res.status(200).json({ message: 'Email Does Not Exist', result });
@@ -422,17 +468,39 @@ app.post('/login', async (req, res) => {
     }
 
     try {
-        const [tables] = await pool.execute(
-            'SELECT password, is_2fa_enabled FROM user_account WHERE email_address = ?;',
-            [email]
-        );
 
-        const pass_db = tables[0]['password'];
+        console.log(email)
+        console.log("YEPP")
+        const [tables] = await pool.execute('CALL check2FA(?)', [email]);
+
+
+
+        console.log("Tables:", tables)
+
+        const pass_db = tables[0][0].password;
+        console.log(password);
+        console.log(pass_db);
 
         verificationResult = await verifyPassword(password, pass_db)
         //Generation of JWT token
 
         if (verificationResult == true) {
+            
+            
+            const [result] = await pool.execute('CALL ValidateUserCredentials(?, ?)', [email, pass_db]);
+
+            
+            if (result[0][0].user_count == 1) {
+                
+                const JWTtoken = jwt.sign({ email }, secretJwtKey, { expiresIn: '1h' });
+                res.cookie('jwtToken', JWTtoken, {
+                    httpOnly: true, // Ensure the cookie is accessible only by the server
+                    sameSite: 'Lax', // or 'Lax' or 'None' based on your requirements
+                    secure: true, // Ensure the cookie is sent only over HTTPS
+                    maxAge: 3600000, // Expiry time in milliseconds (1 hour in this case)
+                    // Add other cookie configurations like 'domain', 'path', etc. if needed
+                });
+                
             
             const [result] = await pool.execute(
                 'SELECT count(*) FROM user_account WHERE email_address = ? AND password = ?;',
@@ -460,7 +528,11 @@ app.post('/login', async (req, res) => {
 
                 const encryptedUserData = await encryptData(userDataString)
 
-                console.log(encryptedUserData)
+                console.log("WHAT THE HELL!!!:", encryptedUserData)
+                
+                if (tables['activated'] === 0) {
+                    window.location.href = 'http://localhost:3000/activation_failure' 
+                }else {
 
                 if (tables["is_2fa_enabled"] === 1) {
                     console.log("2FA_enabled: True")
@@ -477,6 +549,7 @@ app.post('/login', async (req, res) => {
                 }
         
                 return res.status(200).json({ message: 'Account Login Success', result });
+            }
             } else {
                 return res.status(200).json({ message: 'Account Login Failed', result });
             }
@@ -524,14 +597,12 @@ app.post('/get_account2', async (req, res) => {
     const email = req.body.email;
     
     try {
-        const [tables] = await pool.execute(
-            'SELECT * FROM user_account WHERE email_address = ?;',
-            [email]
-        );
-
+        const [tables] = await pool.execute('CALL GetUserAccountByEmail(?)', [email]);
+        
         return res.status(200).json({ message: 'Account Data', tables });
        
     } catch (error) {
+        console.log("error here")
         console.error(error);
         return res.status(500).json({ error: 'Internal Server Error' });
     }

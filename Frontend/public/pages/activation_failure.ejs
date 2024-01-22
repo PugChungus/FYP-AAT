@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JTR Encryption Login</title>
+    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/login.css">
+</head>
+
+<body class="img js-fullheight" style="background-image: url(/images/bg.jpg);">
+    <section class="ftco-section">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6 col-lg-4">
+                    <div class="login-wrap p-0">
+                        <h3 class="mb-4 text-center">
+                            {% if activation_status == 'success' %}
+                                Account Activated Successfully!
+                            {% elif activation_status == 'error' %}
+                                Account Activation Failed!
+                            {% else %}
+                                Welcome!
+                            {% endif %}
+                            YOUR ACCOUNT IS NOT ACTIVATED
+                        </h3>
+                        {% if activation_status == 'success' %}
+                            <p class="text-center">Your account has been successfully activated.</p>
+                        {% elif activation_status == 'error' %}
+                            <p class="text-center">Sorry, there was an issue activating your account.</p>
+                        {% endif %}
+                        <div class="form-group">
+                            <a href="/login" class="form-control btn btn-primary submit px-3 text-center">Back to Login</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="/js/bootstrap.min.js"></script>
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/main.js"></script>
+    <script src="/js/account.js"></script>
+    <script src="/js/popper.js"></script>
+    <script src="/js/clearInputBoxes.js"></script>
+</body>
+
+</html>

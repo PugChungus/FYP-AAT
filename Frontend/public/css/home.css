@@ -42,3 +42,11 @@
 .header_img {
     cursor: pointer;
 }
+
+#signOutIcon {
+    color: white;
+}
+
+#signOutIcon:hover {
+    text-decoration: underline;
+}

@@ -199,12 +199,25 @@ async function register() {
           });
           
           if (newResponse.ok) {
-            openIndexDB(jwk_private, email);
+            const verificationFormData = new FormData();
+            verificationFormData.append('email', email)
+            console.log('Am I getting it lmao?:', verificationFormData)
 
-            alert("Registeration Successful.")
-            window.location.href = 'http://localhost:3000'
+            const verificationResponse = await fetch('http://localhost:5000/email_verification', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(Object.fromEntries(verificationFormData.entries())),
+          });
+          if (verificationResponse.ok) {
+            openIndexDB(jwk_private, email);
+            alert("Registration Successful. Please Check your Email to activate your account. Mail Might take up to 5 Minutes. Might wanna check Junk or Spam folder ;)");
+            window.location.href = 'http://localhost:3000';
+          } else {
+            alert("Email verification failed. Please try again.");
           }
-          else{
+        }else{
             alert("Registeration Failed.")
           }
         }
@@ -261,11 +274,11 @@ async function login(event) {
       body: formData,
     });
 
-    const responseData = await response.text();
-    console.log("Response Data: ", responseData);
-    const data = JSON.parse(responseData);
-    const count = data.result[0]['count(*)'];
-    console.log("Count:", count);
+    const responseData = await response.text()
+    console.log("Response Data: ", responseData)
+    const data = JSON.parse(responseData)
+    count = data.result[0][0].count
+    console.log("Count:", count)
 
     if (count === 1) {
       formData.append('password', password);
@@ -282,9 +295,13 @@ async function login(event) {
       const loginData = await loginResponse.json();
       const jwtToken = await get_cookie()
 
+      console.log(data)
+      
       if (loginData.result) {
-        const count = loginData.result[0]['count(*)'];
-
+        console.log(data.result)
+        // document.cookie = `jwtToken=${data.JWTtoken}; SameSite=Strict; Secure`;
+        const count = loginData.result[0][0].user_count;
+  console.log(count)
         if (count === 1) {
 
           // Check if 2FA is required
@@ -351,11 +368,14 @@ async function login(event) {
             await continueRegularLogin(formData);
           }
           
+          // document.cookie = `jwtToken=${token}; SameSite=Strict; Secure`;
+
+        window.location.href = 'http://localhost:3000/pages/home.html';
         } else {
           alert("Login Failed");
         }
       } else {
-        alert("Login Failed");
+        alert("Login Failed here  ");
       }
     } else {
       alert('You do not have an email registered with us.');

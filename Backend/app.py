@@ -1,3 +1,4 @@
+from __future__ import print_function
 from flask import Flask, render_template, request, jsonify, Response
 from werkzeug.utils import secure_filename
 from flask_cors import cross_origin
@@ -21,7 +22,14 @@ import json
 import jwt
 import pyotp
 import qrcode
+import secrets
+import time
+import sib_api_v3_sdk
+from sib_api_v3_sdk.rest import ApiException
+from pprint import pprint
 
+
+import requests
 app = Flask(__name__)
 CORS(app)
 
@@ -1033,6 +1041,71 @@ def check_email_route():
         return jsonify({'status': 'exists'})
     else:
         return jsonify({'status': 'not exists'})
+
+@app.route('/email_verification', methods=['POST'])
+def email_verification():
+    data = request.get_json()
+    print(f"Received JSON data: {data}")
+    emailaddress = data.get('email','')
+    verification_token = secrets.token_urlsafe(32)
+    configuration = sib_api_v3_sdk.Configuration()
+    configuration.api_key['api-key'] = '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'
+
+    api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
+    subject = "Email Verification"
+    html_content = f"""
+    <html>
+        <head>
+            <style>
+                body {{
+                    background-color: #f4f4f4;
+                    margin: 0;
+                    padding: 0;
+                }}
+                h1 {{
+                    color: #333333;
+                }}
+                p {{
+                    color: #666666;
+                }}
+                a {{
+                    display: inline-block;
+                    padding: 10px 20px;
+                    margin-top: 20px;
+                    background-color: #3498db;
+                    color: #ffffff;
+                    text-decoration: none;
+                    border-radius: 5px;
+                }}
+                a:hover {{
+                    background-color: #2980b9;
+                }}
+            </style>
+        </head>
+        <body>
+            <h1>Verify Your Email Address</h1>
+            <p>Thank you for signing up! Click the link below to verify your email address:</p>
+            <a href="https://localhost:3000/activation?token={verification_token}">Verify Email</a>
+        </body>
+    </html>
+    """
+    sender = {"name":"JTR Support","email":"jtrhelp123@gmail.com"}
+    print(f"Recipient's email address: {emailaddress}")
+    to = [{'email': emailaddress}]
+    cc = None
+    bcc =None
+    reply_to = None
+    headers = {"Some-Custom-Name":"unique-id-1234"}
+    params = {"parameter":"My param value","subject":"New Subject"}
+    send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(to=to, bcc=bcc, cc=cc, reply_to=reply_to, headers=headers, html_content=html_content, sender=sender, subject=subject)
+
+    try:
+        api_response = api_instance.send_transac_email(send_smtp_email)
+        pprint(api_response)
+        return jsonify({'message': 'Email verification sent successfully'})
+    except ApiException as e:
+        print("Exception when calling SMTPApi->send_transac_email: %s\n" % e)
+        return jsonify({'error': 'Failed to send email verification'})
 
 if __name__ == '__main__':
     app.run(debug=True,
