@@ -536,11 +536,11 @@ app.post('/login', async (req, res) => {
         else {
             return res.status(200).json({ message: 'Account Login Failed'});
         }
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
+    } 
+}catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+}});
 
 app.get('/logout', (req, res) => {
     // Clear the JWT token cookie
