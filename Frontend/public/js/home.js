@@ -81,6 +81,7 @@ function handleSignOut() {
   .then(response => {
     if (response.ok) {
       window.location.href = '/';
+      clearInputBoxes();
     } else {
       console.log("Logout Success.");
     }
@@ -90,8 +91,15 @@ function handleSignOut() {
   });
 }
 
-const signOutText = document.getElementById('signOutText');
-const signOutIcon = document.getElementById('signOutIcon');
+function clearInputBoxes() {
+  // Set placeholders for input boxes
+  document.getElementById('email-field').placeholder = 'Email';
+  document.getElementById('password-field').placeholder = 'Password';
+
+  // Clear input values
+  document.getElementById('email-field').value = '';
+  document.getElementById('password-field').value = '';
+}
 
 signOutIcon.addEventListener('click', function() {
   handleSignOut();
