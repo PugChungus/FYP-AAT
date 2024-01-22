@@ -38,6 +38,29 @@ async function exportPrivateKey(key) {
   return jwkString;
 }
 
+async function get_email_via_id() {
+  const newResponse = await fetch('http://localhost:3000/get_data_from_cookie', {
+    method: 'POST'
+  });
+
+  const data = await newResponse.json(); // await here
+  const id = data['id_username']['id'];
+
+  const formData = new FormData();
+  formData.append('id', id);
+
+  const response = await fetch('http://localhost:3000/get_account', {
+    method: 'POST',
+    body: formData,
+  });
+
+  const data2 = await response.json();
+  var email_addr = data2["tables"][0]["email_address"];
+
+  return email_addr
+}
+
+
 async function keygen() {
   try {
     const keyPair = await window.crypto.subtle.generateKey(
@@ -264,7 +287,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
               if (/^\d{6}$/.test(enteredOTP)) {
                 console.log('Submitted OTP:', enteredOTP);
-                const isValidOTP = await verifyOTP(email, enteredOTP);
+                const isValidOTP = await verifyOTP(await get_email_via_id(), enteredOTP);
 
                 if (isValidOTP) {
                   console.log('OTP is valid. Proceed with enabling 2FA.');
@@ -349,6 +372,7 @@ rotationButton.addEventListener('click', async function () {
     const jwk_private = await exportPrivateKey(private_key);
 
     const formData = new FormData();
+    const email = await get_email_via_id()
     formData.append('email', email);
     formData.append('public_key', pem_public);
 

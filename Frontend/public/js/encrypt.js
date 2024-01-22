@@ -941,12 +941,6 @@ async function uploadtoGoogle (type,name){
     console.error('Error uploading file to Google Drive:', error);
 }
 }
-       
-
-
-    
-
-
 }
 
 function downloadEncryptedFiles(type, name) {
