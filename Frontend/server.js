@@ -140,7 +140,7 @@ function authorizeRoles() {
             const jwtToken = req.cookies?.jwtToken;
 
             if (!jwtToken) {
-                res.status(401).render('accessdenied');
+                return res.status(401).json({ message: 'Please return to the login page to renew your token.' });
             }
 
             const decodedToken = jwt.verify(jwtToken, secretJwtKey);
@@ -153,19 +153,19 @@ function authorizeRoles() {
                     if (role === 'user') {
                         next();
                     } else {
-                        res.status(401).render('accessdenied');
+                        res.status(403).json({ message: 'Insufficient permissions' });
                     }
                 })
                 .catch(error => {
                     console.error('Error during decryption:', error);
-                    res.status(401).render('accessdenied');
+                    res.status(500).json({ message: 'Internal Server Error' });
                 });
         } catch (error) {
             if (error.name === 'TokenExpiredError') {
-                res.status(401).render('accessdenied');
+                return res.status(401).json({ message: 'Token has expired. Please log in again.' });
             }
 
-            res.status(401).render('accessdenied');
+            res.status(401).json({ message: 'Unauthorized' });
         }
     };
 }
