@@ -122,55 +122,37 @@ app.get('/settings', authorizeRoles(), (req, res) => {
   
 function authorizeRoles() {
     return (req, res, next) => {
-      // Check if req.cookies is defined
-      if (!req.cookies) {
-        return res.status(401).render('accessdenied');
-      }
-  
-      // Retrieve JWT token from the cookie
-      const jwtToken = req.cookies.jwtToken;
-      console.log(jwtToken)
-  
-      if (!jwtToken) {
-        // If there's no token, user is not authenticated
-        return res.status(401).render('accessdenied');
-      }
-  
-      try {
-        // Decode the JWT token to get user information, including roles
-        const decodedToken = jwt.verify(jwtToken, secretJwtKey);
         try {
-            // Check if req.cookies is defined
-            if (!req.cookies) {
-                return res.status(401).json({ message: 'Unauthorized' });
-            }
-
-            // Retrieve JWT token from the cookie
-            const jwtToken = req.cookies.jwtToken;
+            const jwtToken = req.cookies?.jwtToken;
 
             if (!jwtToken) {
-                // If there's no token, user is not authenticated
                 return res.status(401).json({ message: 'Please return to the login page to renew your token.' });
             }
 
-            // Verify the token, catching TokenExpiredError
             const decodedToken = jwt.verify(jwtToken, secretJwtKey);
+            const encryptedUserData = decodedToken.encryptedUserData;
 
-            if (decodedToken.userData && decodedToken.userData.role === 'user') {
-                // User has the required role, proceed to the next middleware
-                next();
-            } else {
-                // User does not have the required role
-                res.status(403).json({ message: 'Insufficient permissions' });
-            }
+            decryptData(encryptedUserData)
+                .then(decryptedUserData => {
+                    const originalObject = JSON.parse(decryptedUserData)
+                    const role = originalObject.role
+                    if (role === 'user') {
+                        next();
+                    } else {
+                        res.status(403).json({ message: 'Insufficient permissions' });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error during decryption:', error);
+                    res.status(500).json({ message: 'Internal Server Error' });
+                });
         } catch (error) {
-            // Handle other token verification errors
+            if (error.name === 'TokenExpiredError') {
+                return res.status(401).json({ message: 'Token has expired. Please log in again.' });
+            }
+
             res.status(401).json({ message: 'Unauthorized' });
         }
-      } catch (error) {
-        // Handle token verification errors
-        res.status(401).render('accessdenied');
-      }
     };
 }
 
