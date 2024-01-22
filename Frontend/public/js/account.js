@@ -293,7 +293,7 @@ async function login(event) {
             body: formData,
           });
 
-          const response = await fetch('http://localhost:3000/get_account', { 
+          const response = await fetch('http://localhost:3000/get_account2', { 
             method: 'POST',
             body: formData,
           });

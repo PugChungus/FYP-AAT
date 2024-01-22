@@ -260,18 +260,26 @@ app.post('/get_data_from_cookie', async (req, res) => {
         }
         else {
             const decodedToken = jwt.verify(jwtToken, secretJwtKey);
-            console.log("Decoded Token:",  decodedToken)
-            const email = decodedToken.userData.email
-            const username = decodedToken.userData.username
-            
-            const email_username = {
-                "email": email,
-                "username": username
-            }
-            
-            console.log(email_username)
-
-            return res.status(200).json({ message: 'Cookie data retrieved', email_username });
+            const encryptedUserData = decodedToken.encryptedUserData;
+            decryptData(encryptedUserData)
+                .then(decryptedUserData => {
+                    const originalObject = JSON.parse(decryptedUserData)
+                    const id = originalObject.id
+                    console.log(id)
+                    const username = originalObject.username
+                    console.log(username)
+                    
+                    const id_username = {
+                        "id": id,
+                        "username": username
+                    }
+                    
+                    return res.status(200).json({ message: 'Cookie data retrieved', id_username });
+                })
+                .catch(error => {
+                    console.error('Error during decryption:', error);
+                    res.status(500).json({ message: 'Internal Server Error' });
+                });
         }
       
     } catch (err) {
@@ -436,9 +444,11 @@ app.post('/login', async (req, res) => {
                 );
                 
                 const account_id = tables_accountData[0]['account_id']
+                const username = tables_accountData[0]['username']
 
                 const userData = {
                     id: account_id,
+                    username: username,
                     role: 'user',
                 };
 
@@ -490,14 +500,25 @@ app.get('/logout', (req, res) => {
 });
 
 app.post('/get_account', async (req, res) => {
-    const email = req.body.email;
-    console.log("isit this one:", email)
-    const emailRegex = /^[\w-]+(\.[\w-]+)*@[A-Za-z0-9]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$/;
+    const id = req.body.id;
 
-    if (!emailRegex.test(email)) {
-        return res.status(400).json({ error: 'Invalid email format' });
+    try {
+        const [tables] = await pool.execute(
+            'SELECT * FROM user_account WHERE account_id = ?;',
+            [id]
+        );
+
+        return res.status(200).json({ message: 'Account Data', tables });
+       
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Internal Server Error' });
     }
+});
 
+app.post('/get_account2', async (req, res) => {
+    const email = req.body.email;
+    
     try {
         const [tables] = await pool.execute(
             'SELECT * FROM user_account WHERE email_address = ?;',

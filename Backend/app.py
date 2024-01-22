@@ -70,8 +70,20 @@ def create_user_dict():
             return "Invalid Token."
         else:
             print('Valid Token')
+ 
+        if 'id' in request.form:
+            account_id = request.form['id']
 
-        email = request.form['email']
+            with db.cursor() as cursor:
+                sql = "SELECT email_address FROM user_account WHERE account_id = %s;"
+                cursor.execute(sql, (account_id,))
+                result = cursor.fetchone()
+
+            if result:
+                email = result[0]
+
+        elif 'email' in request.form:
+            email = request.form['email']
 
         global user_dicts
         global encrypted_data_dict
@@ -112,16 +124,16 @@ def upload():
 
     username = request.form.get('name')
     uploaded_file = request.files.get('profile-picture')
-    email = request.form.get('email')
+    account_id = request.form.get('id')
 
     print(uploaded_file, username)
 
     if uploaded_file is None and username is not None:
         try:
             # Proceed with the database update for username only
-            sql = "UPDATE user_account SET username = %s WHERE email_address = %s"
+            sql = "UPDATE user_account SET username = %s  WHERE account_id = %s"
             with db.cursor() as cursor:
-                cursor.execute(sql, (username, email))
+                cursor.execute(sql, (username, account_id))
             db.commit()
             return jsonify({'message': 'Username updated successfully'})
         except Exception as e:
@@ -147,9 +159,9 @@ def upload():
 
     try:
         # Proceed with the database update for both username and profile picture
-        sql = "UPDATE user_account SET username = %s, profile_picture = %s WHERE email_address = %s"
+        sql = "UPDATE user_account SET username = %s, profile_picture = %s WHERE account_id = %s"
         with db.cursor() as cursor:
-            cursor.execute(sql, (username, file_bytes, email))
+            cursor.execute(sql, (username, file_bytes, account_id))
         db.commit()
         return jsonify({'message': 'File uploaded successfully'})
     except Exception as e:
@@ -199,14 +211,6 @@ def check_key():
         print("Error generating key: ", str(e))
         return jsonify({"error": str(e)}), 500
 
-def get_account_id(email):
-    # Assuming you have a function to retrieve account_id based on email
-    with db.cursor() as cursor:
-        sql = "SELECT account_id FROM user_account WHERE email_address = %s;"
-        cursor.execute(sql, (email,))
-        result = cursor.fetchone()
-        return result[0] if result else None
-    
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -598,15 +602,15 @@ def display_history():
         else:
             print('Valid Token')
 
-        email = request.form['email']
+        account_id = request.form['id']
 
         sql = "SELECT history.time, history.file_name, history.file_size, history.type, history.key_name " \
             "FROM history " \
             "INNER JOIN user_account ON history.account_id = user_account.account_id " \
-            "WHERE user_account.email_address = %s;"
+            "WHERE user_account.account_id = %s;"
 
         with db.cursor() as cursor:
-            cursor.execute(sql, (email))
+            cursor.execute(sql, (account_id))
             rows = cursor.fetchall()
             print(rows)
             
@@ -639,9 +643,8 @@ def encrypt_history():
         file_name = uploaded_file.filename
         file_data = uploaded_file.read()
         file_size = format_size(len(file_data))
-        email = request.form['email']  # Use request.form for form data
+        account_id = request.form['id']  # Use request.form for form data
         # Assuming you have a function to retrieve account_id based on email
-        account_id = get_account_id(email)
         key_name = request.form['key_name']
         type_of_encryption = request.form['type']  # Use request.form for form data
 
@@ -679,11 +682,10 @@ def decrypt_history():
         file_name = uploaded_file.filename
         file_data = uploaded_file.read()
         file_size = format_size(len(file_data))
-        email = request.form['email']  # Use request.form for form data
+        account_id = request.form['id']  # Use request.form for form data
         # Assuming you have a function to retrieve account_id based on email
-        account_id = get_account_id(email)
-        key_name = request.form['key_name']
         type_of_encryption = request.form['type']  # Use request.form for form data
+        key_name = request.form['key_name']
 
         # Proceed with the database update for username only
         sql = "INSERT INTO history (time, file_name, file_size, account_id, type, key_name) VALUES (%s, %s, %s, %s, %s, %s);"

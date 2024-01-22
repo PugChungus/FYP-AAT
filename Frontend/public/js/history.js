@@ -42,7 +42,7 @@ function appendRowToTable(index, fileName, file_size, key_name, type, time) {
   table.appendChild(newRow);
 }
 
-let email;
+let id;
 
 async function get_cookie() {
   const cookie_response = await fetch('http://localhost:3000/api/getCookie', {
@@ -60,11 +60,10 @@ async function renderHistory() {
     });
 
     const data = await newResponse.json(); // await here
-    email = data['email_username']['email'];
-    const username_cookie = data['email_username']['username']
+    id = data['id_username']['id'];
       
     const formData = new FormData();
-    formData.append('email', email);
+    formData.append('id', id);
   
     try {
       const jwtToken = get_cookie()

@@ -319,12 +319,12 @@ async function decrypt(file, i) {
             });
             
             const data = await newResponse.json(); // await here
-            const email_cookie = data['email_username']['email'];
+            const id = data['id_username']['id'];
 
             formData2.append('files', file);
             formData2.append('key_name', keyName);
             formData2.append('type', 'decryption')
-            formData2.append('email', email_cookie)
+            formData2.append('id', id)
 
             const jwtToken = get_cookie()
 

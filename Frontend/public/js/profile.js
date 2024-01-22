@@ -107,10 +107,10 @@ document.addEventListener('DOMContentLoaded', async function () {
   });
 
   const data1 = await newResponse.json(); // await here
-  const email = data1['email_username']['email'];
+  const id = data1['id_username']['id'];
 
   const formData = new FormData();
-  formData.append('email', email);
+  formData.append('id', id);
   const response = await fetch('http://localhost:3000/get_account', {
     method: 'POST',
     body: formData,

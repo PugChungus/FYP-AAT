@@ -1,4 +1,4 @@
-let email;
+let id;
 
 async function get_cookie() {
     const cookie_response = await fetch('http://localhost:3000/api/getCookie', {
@@ -16,10 +16,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     });
     
     const data_1 = await newResponse.json(); // await here
-    email = data_1['email_username']['email'];
+    id = data_1['id_username']['id'];
 
     const formData = new FormData();
-    formData.append('email', email);
+    formData.append('id', id);
   
     const response = await fetch('http://localhost:3000/get_account', {
       method: 'POST',
@@ -48,7 +48,7 @@ document.getElementById('profileForm').addEventListener('submit', function (even
     const fileInput = document.getElementById('profile-picture');
 
     formData.append('name', name);
-    formData.append('email', email);
+    formData.append('id', id);
     
     if (fileInput.files.length > 0) {
         formData.append('profile-picture', fileInput.files[0]);
