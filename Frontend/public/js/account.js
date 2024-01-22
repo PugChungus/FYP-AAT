@@ -497,4 +497,29 @@ async function getEmailFromSessionStorage() {
       console.error('Error during email decryption:', error);
     }
   }
+
+
+  function checkEmail() {
+    var email = document.getElementById('email-field').value;
+
+    if (email.trim() !== "") {
+        // Perform AJAX call only if email is not empty or whitespace
+        $.ajax({
+            type: "POST",
+            url: "http://localhost:5000/check_email",  // Point to your Flask route
+            data: { email: email },
+            success: function(response) {
+                if (response.status === "exists") {
+                    alert("OK");
+                } else {
+                    alert("Please use an email that actually exists");
+                }
+            },
+            error: function() {
+                alert("Error checking email existence. Please try again.");
+            }
+        });
+    }
+    // If email is empty or whitespace, do nothing
+}
   
