@@ -115,6 +115,16 @@ app.get('/register', (req, res) => {
     res.render('register');
 });
 
+app.get('/activation', (req, res) => {
+    // Render the HTML page for authorized users
+    res.render('activation');
+});
+
+app.get('/activation_failure', (req, res) => {
+    // Render the HTML page for authorized users
+    res.render('activation_failure');
+});
+
 app.get('/settings', authorizeRoles(), (req, res) => {
     // Render the HTML page for authorized users
     res.render('settings', { user: req.user });
@@ -419,7 +429,7 @@ app.post('/login', async (req, res) => {
 
     try {
         const [tables] = await pool.execute(
-            'SELECT password, is_2fa_enabled FROM user_account WHERE email_address = ?;',
+            'SELECT password, is_2fa_enabled, activated FROM user_account WHERE email_address = ?;',
             [email]
         );
 
@@ -456,7 +466,11 @@ app.post('/login', async (req, res) => {
 
                 const encryptedUserData = await encryptData(userDataString)
 
-                console.log(encryptedUserData)
+                console.log("WHAT THE HELL!!!:", encryptedUserData)
+                
+                if (tables['activated'] === 0) {
+                    window.location.href = 'http://localhost:3000/activation_failure' 
+                }else {
 
                 if (tables["is_2fa_enabled"] === 1) {
                     console.log("2FA_enabled: True")
@@ -473,6 +487,7 @@ app.post('/login', async (req, res) => {
                 }
         
                 return res.status(200).json({ message: 'Account Login Success', result });
+            }
             } else {
                 return res.status(200).json({ message: 'Account Login Failed', result });
             }
