@@ -274,11 +274,11 @@ async function login(event) {
       body: formData,
     });
 
-    const responseData = await response.text();
-    console.log("Response Data: ", responseData);
-    const data = JSON.parse(responseData);
-    const count = data.result[0]['count(*)'];
-    console.log("Count:", count);
+    const responseData = await response.text()
+    console.log("Response Data: ", responseData)
+    const data = JSON.parse(responseData)
+    count = data.result[0][0].count
+    console.log("Count:", count)
 
     if (count === 1) {
       formData.append('password', password);
@@ -295,9 +295,13 @@ async function login(event) {
       const loginData = await loginResponse.json();
       const jwtToken = await get_cookie()
 
+      console.log(data)
+      
       if (loginData.result) {
-        const count = loginData.result[0]['count(*)'];
-
+        console.log(data.result)
+        // document.cookie = `jwtToken=${data.JWTtoken}; SameSite=Strict; Secure`;
+        const count = loginData.result[0][0].user_count;
+  console.log(count)
         if (count === 1) {
 
           // Check if 2FA is required
@@ -364,11 +368,14 @@ async function login(event) {
             await continueRegularLogin(formData);
           }
           
+          // document.cookie = `jwtToken=${token}; SameSite=Strict; Secure`;
+
+        window.location.href = 'http://localhost:3000/pages/home.html';
         } else {
           alert("Login Failed");
         }
       } else {
-        alert("Login Failed");
+        alert("Login Failed here  ");
       }
     } else {
       alert('You do not have an email registered with us.');

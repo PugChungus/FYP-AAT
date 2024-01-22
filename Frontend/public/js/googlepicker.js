@@ -96,6 +96,63 @@ async function sendAccessTokenToServer(accessToken) {
   }
 }
 
+function auth(){
+    const width = 600;
+    const height = 600;
+    const left = window.screenX + (window.outerWidth - width) / 2;
+    const top = window.screenY + (window.outerHeight - height) / 2;
+    const url = '/get-access-token'; // Endpoint to start authentication
+
+    window.open(url, 'Google Auth', `width=${width},height=${height},left=${left},top=${top}`);
+  }
+
+
+async function sendAccessTokenToServer(accessToken) {
+  try {
+    const response = await fetch('/store-access-token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ accessToken }),
+    });
+
+    if (response.ok) {
+      console.log('Access token sent to server successfully');
+      // Handle any further actions after sending the token
+    } else {
+      throw new Error('Failed to send access token to server');
+    }
+  } catch (error) {
+    console.error('Error sending access token to server:', error);
+  }
+}
+async function getGoogleToken() {
+  return new Promise((resolve, reject) => {
+      tokenClient.callback = async (response) => {
+          if (response.error !== undefined) {
+              reject(response);
+          } else {
+              const accessToken = response.access_token;
+              console.log(accessToken);
+              resolve(accessToken);
+          }
+      };
+
+      if (accessToken === null) {
+          // Prompt the user to select a Google Account and ask for consent to share their data
+          // when establishing a new session.
+          tokenClient.requestAccessToken({ prompt: "consent" });
+      } else {
+          // Skip display of account chooser and consent dialog for an existing session.
+          tokenClient.requestAccessToken({ prompt: "consent" });
+      }
+  });
+}
+
+
+  
+
 function handleAuthClick() {
     console.log(tokenClient)
     tokenClient.callback = async (response) => {
@@ -160,8 +217,8 @@ async function pickerCallback(data) {
           console.log(response)
           //const base64 = `data:${mimeType};base64,${await this.blobToBase64(blob)}`;
           // Now you have the file content as a base64-encoded string - proceed as desired
-          const file = new File([blob], document[google.picker.Document.NAME]);
-          uploadFile(file)
+          const file = new File([blobe], document[google.picker.Document.NAME]);
+          sendFileToBackend(file)
           
         } else {
           console.error('Failed to fetch file:', response.status, response.statusText);
@@ -185,58 +242,60 @@ async function pickerCallback(data) {
     
 }
 
-document.getElementById('file-input-encrypt').addEventListener('change', handleFileUpload);
+// document.getElementById('file-input-encrypt').addEventListener('change', handleFileUpload);
 
 
-function handleFileUpload(event) {
-    const files = event.target.files;
+// function handleFileUpload(event) {
+//     const files = event.target.files;
 
+//     // Clear previous file details
+//     document.getElementById(  'file-details-container').innerHTML = '';
     // Clear previous file details
     document.getElementById(  'file-details-container').innerHTML = '';
 
-    // Display file details
-    for (const file of files) {
-        const fileName = file.name;
-        console.log(fileName)
-        uploadFile(file);
-    }
-}
+//     // Display file details
+//     for (const file of files) {
+//         const fileName = file.name;
+//         console.log(fileName)
+//         uploadFile(file);
+//     }
+// }
 
-function uploadFile(file) {
-    console.log("Filedata")
+// function uploadFile(file) {
+//     console.log("Filedata")
     
-    console.log("name")
+//     console.log("name")
   
     
     // Display file details in the file details container
-    const fileDetailsContainer = document.getElementById('file-details-container');
+    // const fileDetailsContainer = document.getElementById('file-details-container');
 
-    // Create a div element for the selected file
-    const fileContainer = document.createElement('div');
-    fileContainer.classList.add('file-container');
+    // // Create a div element for the selected file
+    // const fileContainer = document.createElement('div');
+    // fileContainer.classList.add('file-container');
 
-    // Display file name
-    const fileName = document.createElement('div');
-    fileName.textContent = `File Name: ${file.name}`;
-    fileContainer.appendChild(fileName);
+    // // Display file name
+    // const fileName = document.createElement('div');
+    // fileName.textContent = `File Name: ${file.name}`;
+    // fileContainer.appendChild(fileName);
 
-    // Display file size
-    const fileSize = document.createElement('div');
-    fileSize.textContent = `File Size: ${formatFileSize(file.size)}`;
-    fileContainer.appendChild(fileSize);
+    // // Display file size
+    // const fileSize = document.createElement('div');
+    // fileSize.textContent = `File Size: ${formatFileSize(file.size)}`;
+    // fileContainer.appendChild(fileSize);
 
-    // Append file container to the details container
-    fileDetailsContainer.appendChild(fileContainer);
+    // // Append file container to the details container
+    // fileDetailsContainer.appendChild(fileContainer);
 
     // You can perform other actions here using fileData if needed
     // For example, initiate an AJAX request to upload the file or perform other operations
     
-    
-  updatefilearrays(file)
+    // 
+//   updatefilearrays(file)
 
 
 
-}
+// }
 
 let fileArray = [];
 
