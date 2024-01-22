@@ -5,13 +5,13 @@ import multer from 'multer';
 import argon2 from 'argon2-browser';
 import path from 'path';
 import crypto from 'crypto';
+import cron from 'node-cron';
 import { pool } from './db-connection.js';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { OAuth2Client } from "google-auth-library";
 import jwt from 'jsonwebtoken';
 
-const secretJwtKey = "ACB725326D68397E743DFC9F3FB64DA50CE7FB135721794C355B0DB219C449B3" //key rotation?
 const app = express();
 const port = 3000;
 
@@ -27,6 +27,30 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'public', 'pages'));
 
+let keys = {
+    secretJwtKey: "ACB725326D68397E743DFC9F3FB64DA50CE7FB135721794C355B0DB219C449B3",
+    secret_key: '\xc2\x99~t\xe52\xcbo\xaa\xe8\x93dX\x04\x14\xa8\xa8\x9a\xd8P\x90\xd9"\xd0|\x1cO\xe5\xcbE\x06n',
+    secret_iv: '\xb1\xe1z9\xcf\xc7\x94\x14\xb7u\xa9C\x0f\xf6\x8c\xbc\xc0\x0b\xff\xc4X@\xa4\xb0\x05\x95Ni[\xc8\xdfg',
+    encryption_method: 'aes-256-cbc'
+};
+
+const rotateKeys = () => {
+    // Generate new keys
+    keys.secretJwtKey = crypto.randomBytes(32).toString('hex');
+    keys.secret_key = crypto.randomBytes(32).toString('hex');
+    keys.secret_iv = crypto.randomBytes(16).toString('hex');
+
+    console.log('Keys rotated:', keys.secretJwtKey);
+};
+
+// Schedule the key rotation at 00:00 every day
+cron.schedule('0 0 * * *', rotateKeys);
+
+// Example: Log the keys every minute for testing
+cron.schedule('* * * * *', () => {
+    console.log('Current Keys:', keys.secretJwtKey, keys.secret_key, keys.secret_iv);
+});
+
 function checkTokenValidity(authorizationHeader) {
     if (!authorizationHeader) {
         // If there's no token, it's considered invalid
@@ -41,7 +65,7 @@ function checkTokenValidity(authorizationHeader) {
 
     try {
         // Decode the JWT token to check its validity
-        jwt.verify(token, secretJwtKey);
+        jwt.verify(token, keys.secretJwtKey);
         return true;
     } catch (error) {
         // Handle token verification errors (e.g., expired token)
@@ -143,7 +167,7 @@ function authorizeRoles() {
                 return res.status(401).json({ message: 'Please return to the login page to renew your token.' });
             }
 
-            const decodedToken = jwt.verify(jwtToken, secretJwtKey);
+            const decodedToken = jwt.verify(jwtToken, keys.secretJwtKey);
             const encryptedUserData = decodedToken.encryptedUserData;
 
             decryptData(encryptedUserData)
@@ -170,33 +194,27 @@ function authorizeRoles() {
     };
 }
 
-const { secret_key, secret_iv, encryption_method } = { 
-    secret_key: '\xc2\x99~t\xe52\xcbo\xaa\xe8\x93dX\x04\x14\xa8\xa8\x9a\xd8P\x90\xd9"\xd0|\x1cO\xe5\xcbE\x06n', 
-    secret_iv: '\xb1\xe1z9\xcf\xc7\x94\x14\xb7u\xa9C\x0f\xf6\x8c\xbc\xc0\x0b\xff\xc4X@\xa4\xb0\x05\x95Ni[\xc8\xdfg',
-    encryption_method: 'aes-256-cbc' 
-};
-
 //use hash to convert into valid key and iv
 const key = crypto
     .createHash('sha512')
-    .update(secret_key)
+    .update(keys.secret_key)
     .digest('hex')
     .substring(0, 32);
 
 const encryptionIV = crypto
     .createHash('sha512')
-    .update(secret_iv)
+    .update(keys.secret_iv)
     .digest('hex')
     .substring(0, 16);
 
 async function encryptData(data) {
-    const cipher = crypto.createCipheriv(encryption_method, key, encryptionIV);
+    const cipher = crypto.createCipheriv(keys.encryption_method, key, encryptionIV);
     return Buffer.from(cipher.update(data, 'utf8', 'hex') + cipher.final('hex'), 'hex').toString('base64');
 }
 
 async function decryptData(encryptedData) {
     const buff = Buffer.from(encryptedData, 'base64');
-    const decipher = crypto.createDecipheriv(encryption_method, key, encryptionIV);
+    const decipher = crypto.createDecipheriv(keys.encryption_method, key, encryptionIV);
     return decipher.update(buff.toString('hex'), 'hex', 'utf8') + decipher.final('utf8');
 }
 
@@ -250,7 +268,7 @@ app.get('/checkTokenValidity', (req, res) => {
   
     try {
       // Decode the JWT token to check its validity
-      jwt.verify(jwtToken, secretJwtKey);
+      jwt.verify(jwtToken, keys.secretJwtKey);
       console.log("Token exists")
       res.status(200).json({ isValid: true });
     } catch (error) {
@@ -273,7 +291,7 @@ app.post('/get_data_from_cookie', async (req, res) => {
             return res.status(401).json({ message: 'Unauthorized' });
         }
         else {
-            const decodedToken = jwt.verify(jwtToken, secretJwtKey);
+            const decodedToken = jwt.verify(jwtToken, keys.secretJwtKey);
             const encryptedUserData = decodedToken.encryptedUserData;
             decryptData(encryptedUserData)
                 .then(decryptedUserData => {
@@ -492,7 +510,7 @@ app.post('/login', async (req, res) => {
             
             if (result[0][0].user_count == 1) {
                 
-                const JWTtoken = jwt.sign({ email }, secretJwtKey, { expiresIn: '1h' });
+                const JWTtoken = jwt.sign({ email }, keys.secretJwtKey, { expiresIn: '1h' });
                 res.cookie('jwtToken', JWTtoken, {
                     httpOnly: true, // Ensure the cookie is accessible only by the server
                     sameSite: 'Lax', // or 'Lax' or 'None' based on your requirements
@@ -537,7 +555,7 @@ app.post('/login', async (req, res) => {
                 if (tables["is_2fa_enabled"] === 1) {
                     console.log("2FA_enabled: True")
                 } else {
-                    const jwtToken = jwt.sign({ encryptedUserData }, secretJwtKey, { algorithm: 'HS512', expiresIn: '1h' });
+                    const jwtToken = jwt.sign({ encryptedUserData }, keys.secretJwtKey, { algorithm: 'HS512', expiresIn: '1h' });
 
                     // Set the JWE in a cookie
                     res.cookie('jwtToken', jwtToken, {
