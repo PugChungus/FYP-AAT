@@ -27,9 +27,8 @@ import time
 import sib_api_v3_sdk
 from sib_api_v3_sdk.rest import ApiException
 from pprint import pprint
-
-
 import requests
+
 app = Flask(__name__)
 CORS(app)
 
