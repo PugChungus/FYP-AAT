@@ -317,7 +317,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 
   check2FAStatus();
 
-  const rotationButton = document.getElementById('rotationButton');
+const rotationButton = document.getElementById('rotationButton');
+
 rotationButton.addEventListener('click', async function () {
   const cardDiv = document.createElement('div');
   cardDiv.className = 'card';

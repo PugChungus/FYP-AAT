@@ -179,7 +179,7 @@ const { secret_key, secret_iv, encryption_method } = {
 //use hash to convert into valid key and iv
 const key = crypto
     .createHash('sha512')
-    .update(secret_iv)
+    .update(secret_key)
     .digest('hex')
     .substring(0, 32);
 
@@ -530,9 +530,9 @@ app.post('/login', async (req, res) => {
 
                 console.log("WHAT THE HELL!!!:", encryptedUserData)
                 
-                if (tables['activated'] === 0) {
-                    window.location.href = 'http://localhost:3000/activation_failure' 
-                }else {
+                // if (tables['activated'] === 0) {
+                //     window.location.href = 'http://localhost:3000/activation_failure' 
+                // }else {
 
                 if (tables["is_2fa_enabled"] === 1) {
                     console.log("2FA_enabled: True")

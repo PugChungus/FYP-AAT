@@ -454,13 +454,7 @@ async function downloadEncryptedFiles(type, name) {
 
         await clearEncryptedFolder();
     }
-}const selectedFiles = {
-    files: []
-};
-
-const seen = new Set();
-const keyDropdown = document.getElementById('key-dropdown');
-let selectedKey = keyDropdown.value;
+}
 
 function getAllKeyData() {
     const keyData = [];
