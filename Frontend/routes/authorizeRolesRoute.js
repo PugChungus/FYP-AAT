@@ -1,6 +1,5 @@
 import jwt from 'jsonwebtoken';
-import crypto from 'crypto';
-import { keys } from './keys.js';
+import { keys, decryptData } from './keyRoute.js';
 
 export function authorizeRoles() {
     return (req, res, next) => {
@@ -38,25 +37,24 @@ export function authorizeRoles() {
     };
 }
 
-async function encryptData(data) {
-    const cipher = crypto.createCipheriv(keys.encryption_method, key, encryptionIV);
-    return Buffer.from(cipher.update(data, 'utf8', 'hex') + cipher.final('hex'), 'hex').toString('base64');
+export function checkTokenValidity(authorizationHeader) {
+    if (!authorizationHeader) {
+        // If there's no token, it's considered invalid
+        return false;
+    }
+
+    // Ensure authorizationHeader is a string
+    const headerString = authorizationHeader.toString();
+
+    // Extract the token from the Authorization header
+    const token = headerString.split(' ')[1];
+
+    try {
+        // Decode the JWT token to check its validity
+        jwt.verify(token, keys.secretJwtKey);
+        return true;
+    } catch (error) {
+        // Handle token verification errors (e.g., expired token)
+        return false;
+    }
 }
-
-export async function decryptData(encryptedData) {
-    const buff = Buffer.from(encryptedData, 'base64');
-    const decipher = crypto.createDecipheriv(keys.encryption_method, key, encryptionIV);
-    return decipher.update(buff.toString('hex'), 'hex', 'utf8') + decipher.final('utf8');
-}
-
-const key = crypto
-    .createHash('sha512')
-    .update(keys.secret_key)
-    .digest('hex')
-    .substring(0, 32);
-
-const encryptionIV = crypto
-    .createHash('sha512')
-    .update(keys.secret_iv)
-    .digest('hex')
-    .substring(0, 16);

@@ -1,4 +1,5 @@
 import cron from 'node-cron';
+import crypto from 'crypto';
 
 export let keys = {
     secretJwtKey: "ACB725326D68397E743DFC9F3FB64DA50CE7FB135721794C355B0DB219C449B3",
@@ -15,6 +16,29 @@ const rotateKeys = () => {
 
     console.log('Keys rotated:', keys.secretJwtKey);
 };
+
+export async function encryptData(data) {
+    const cipher = crypto.createCipheriv(keys.encryption_method, key, encryptionIV);
+    return Buffer.from(cipher.update(data, 'utf8', 'hex') + cipher.final('hex'), 'hex').toString('base64');
+}
+
+export async function decryptData(encryptedData) {
+    const buff = Buffer.from(encryptedData, 'base64');
+    const decipher = crypto.createDecipheriv(keys.encryption_method, key, encryptionIV);
+    return decipher.update(buff.toString('hex'), 'hex', 'utf8') + decipher.final('utf8');
+}
+
+const key = crypto
+    .createHash('sha512')
+    .update(keys.secret_key)
+    .digest('hex')
+    .substring(0, 32);
+
+const encryptionIV = crypto
+    .createHash('sha512')
+    .update(keys.secret_iv)
+    .digest('hex')
+    .substring(0, 16);
 
 cron.schedule('0 0 * * *', rotateKeys);
 

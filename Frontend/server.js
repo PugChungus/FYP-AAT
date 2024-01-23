@@ -10,8 +10,11 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { OAuth2Client } from "google-auth-library";
 import jwt from 'jsonwebtoken';
-import { authorizeRoles } from './routes/authorizeRoles.js';
+
+import { authorizeRoles, checkTokenValidity } from './routes/authorizeRolesRoute.js';
+import { keys, decryptData } from './routes/keyRoute.js';
 import loginRouter from './routes/loginroute.js'
+import accountRouter from './routes/accountRoute.js'
 
 const app = express();
 const port = 3000;
@@ -22,6 +25,7 @@ app.use(upload.any());
 app.use(cors());
 app.use(cookieParser());
 app.use('/', loginRouter);
+app.use('/', accountRouter);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -29,91 +33,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'public', 'pages'));
 
-function checkTokenValidity(authorizationHeader) {
-    if (!authorizationHeader) {
-        // If there's no token, it's considered invalid
-        return false;
-    }
-
-    // Ensure authorizationHeader is a string
-    const headerString = authorizationHeader.toString();
-
-    // Extract the token from the Authorization header
-    const token = headerString.split(' ')[1];
-
-    try {
-        // Decode the JWT token to check its validity
-        jwt.verify(token, keys.secretJwtKey);
-        return true;
-    } catch (error) {
-        // Handle token verification errors (e.g., expired token)
-        return false;
-    }
-}
-
 // Set up a route to render your HTML file
 app.get('/', (req, res) => {
-    // Check if the JWT token is valid
     const isTokenValid = checkTokenValidity(req);
 
     if (isTokenValid) {
-        // If the token is valid, redirect to '/home'
         return res.redirect('/home');
     } else {
-        // alert("Your session has expire. Please login again.");
-        // If the token is invalid or not present, render 'login'
         return res.render('login');
     }
-});
-
-app.get('/2fa', authorizeRoles(), (req, res) => {
-    // Render the HTML page for authorized users
-    res.render('2fa', { user: req.user });
-});
-
-app.get('/change-password', authorizeRoles(), (req, res) => {
-    // Render the HTML page for authorized users
-    res.render('change-password', { user: req.user });
-});
-
-app.get('/decrypt', authorizeRoles(), (req, res) => {
-    // Render the HTML page for authorized users
-    res.render('decrypt', { user: req.user });
-});
-
-app.get('/edit-profile', authorizeRoles(), (req, res) => {
-    // Render the HTML page for authorized users
-    res.render('edit-profile', { user: req.user });
-});
-
-app.get('/encrypt', authorizeRoles(), (req, res) => {
-    // Render the HTML page for authorized users
-    res.render('encrypt', { user: req.user });
-});
-
-app.get('/forgetpassword', (req, res) => {
-    // Render the HTML page for authorized users
-    res.render('forgetpassword');
-});
-
-app.get('/history', authorizeRoles(), (req, res) => {
-    // Render the HTML page for authorized users
-    res.render('history', { user: req.user });
-});
-
-app.get('/home', authorizeRoles(), (req, res) => {
-    // Render the HTML page for authorized users
-    res.render('home', { user: req.user });
-});
-
-app.get('/keymanagement', authorizeRoles(), (req, res) => {
-    // Render the HTML page for authorized users
-    res.render('keymanagement', { user: req.user });
-});
-
-app.get('/profile', authorizeRoles(), (req, res) => {
-    // Render the HTML page for authorized users
-    res.render('profile', { user: req.user });
 });
 
 app.get('/register', (req, res) => {
@@ -131,38 +59,49 @@ app.get('/activation_failure', (req, res) => {
     res.render('activation_failure');
 });
 
+app.get('/forgetpassword', (req, res) => {
+    res.render('forgetpassword');
+});
+
+app.get('/2fa', authorizeRoles(), (req, res) => {
+    res.render('2fa', { user: req.user });
+});
+
+app.get('/change-password', authorizeRoles(), (req, res) => {
+    res.render('change-password', { user: req.user });
+});
+
+app.get('/decrypt', authorizeRoles(), (req, res) => {
+    res.render('decrypt', { user: req.user });
+});
+
+app.get('/edit-profile', authorizeRoles(), (req, res) => {
+    res.render('edit-profile', { user: req.user });
+});
+
+app.get('/encrypt', authorizeRoles(), (req, res) => {
+    res.render('encrypt', { user: req.user });
+});
+
+app.get('/history', authorizeRoles(), (req, res) => {
+    res.render('history', { user: req.user });
+});
+
+app.get('/home', authorizeRoles(), (req, res) => {
+    res.render('home', { user: req.user });
+});
+
+app.get('/keymanagement', authorizeRoles(), (req, res) => {
+    res.render('keymanagement', { user: req.user });
+});
+
+app.get('/profile', authorizeRoles(), (req, res) => {
+    res.render('profile', { user: req.user });
+});
+
 app.get('/settings', authorizeRoles(), (req, res) => {
-    // Render the HTML page for authorized users
     res.render('settings', { user: req.user });
 });
-  
-function generateSalt(length) {
-    return crypto.randomBytes(length).toString('hex');
-}
-
-async function hashPassword(password, salt) {
-    try {
-      const res = await argon2.hash({ pass: password, salt: salt });
-      const encodedHash = res.encoded;
-      return encodedHash;
-    } catch (err) {
-      console.error(err.message, err.code);
-      throw err;
-    }
-}
-
-let verificationResult;
-
-async function verifyPassword(password, pass_db) {
-    try {
-        await argon2.verify({ pass: password, encoded: pass_db });
-        verificationResult = true;
-        return verificationResult
-    } catch (e) {
-        verificationResult = false;
-        console.error(e.message, e.code);
-    }
-}
 
 app.get('/api/getCookie', async (req, res) => {
     try {
@@ -232,52 +171,6 @@ app.post('/get_data_from_cookie', async (req, res) => {
                 });
         }
       
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
-
-app.post('/create_account', async (req, res) => {
-    try {
-        const username = req.body.username;
-        const email = req.body.email;
-        const password = req.body.password;
-        const confirmPassword = req.body.confirmPassword;
-
-        const emailRegex = /^[\w-]+(\.[\w-]+)*@[A-Za-z0-9]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$/;
-
-        // Check if all fields are filled
-        if (!username || !email || !password || !confirmPassword) {
-            return res.status(400).json({ error: 'All fields must be filled' });
-        }
-
-        // Check if email is valid
-        if (!emailRegex.test(email)) {
-            return res.status(400).json({ error: 'Invalid email format' });
-        }
-
-        // Check if passwords match
-        if (password !== confirmPassword) {
-            return res.status(400).json({ error: 'Passwords do not match' });
-        }
-
-        const random_salt = generateSalt(16)
-        const encodedHash = await hashPassword(password, random_salt)
-        console.log("Salt:", random_salt)
-        console.log("Encode Hash:", encodedHash)
-
-        const [result] = await pool.execute('CALL create_account(?, ?, ?)', [username, encodedHash, email]);
-        
-
-        res.cookie('jwtToken', '', {
-            expires: new Date(0),  // Set expiration to a past date
-            httpOnly: true,
-            sameSite: 'Strict',
-            secure: true,
-        });    
-
-        return res.status(200).json({ message: 'Account created successfully' });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ error: 'Internal Server Error' });

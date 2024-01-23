@@ -1,10 +1,9 @@
 // loginRoute.js
 import express from 'express';
 import jwt from 'jsonwebtoken';
-import crypto from 'crypto';
 import { pool } from '../db-connection.js';
 import argon2 from 'argon2-browser';
-import { keys } from './keys.js';
+import { keys, encryptData } from './keyRoute.js';
 
 const loginRouter = express.Router();
 let verificationResult;
@@ -19,12 +18,7 @@ loginRouter.post('/login', async (req, res) => {
     }
 
     try {
-
-        console.log(email)
-        console.log("YEPP")
         const [tables] = await pool.execute('CALL check2FA(?)', [email]);
-
-
 
         console.log("Tables:", tables)
 
@@ -68,8 +62,6 @@ loginRouter.post('/login', async (req, res) => {
                 const userDataString = JSON.stringify(userData);
 
                 const encryptedUserData = await encryptData(userDataString)
-
-                console.log("WHAT THE HELL!!!:", encryptedUserData)
                 
                 // if (tables['activated'] === 0) {
                 //     window.location.href = 'http://localhost:3000/activation_failure' 
@@ -104,17 +96,6 @@ loginRouter.post('/login', async (req, res) => {
     }
 });
 
-async function encryptData(data) {
-    const cipher = crypto.createCipheriv(keys.encryption_method, key, encryptionIV);
-    return Buffer.from(cipher.update(data, 'utf8', 'hex') + cipher.final('hex'), 'hex').toString('base64');
-}
-
-async function decryptData(encryptedData) {
-    const buff = Buffer.from(encryptedData, 'base64');
-    const decipher = crypto.createDecipheriv(keys.encryption_method, key, encryptionIV);
-    return decipher.update(buff.toString('hex'), 'hex', 'utf8') + decipher.final('utf8');
-}
-
 async function verifyPassword(password, pass_db) {
     try {
         await argon2.verify({ pass: password, encoded: pass_db });
@@ -125,17 +106,5 @@ async function verifyPassword(password, pass_db) {
         console.error(e.message, e.code);
     }
 }
-
-const key = crypto
-    .createHash('sha512')
-    .update(keys.secret_key)
-    .digest('hex')
-    .substring(0, 32);
-
-const encryptionIV = crypto
-    .createHash('sha512')
-    .update(keys.secret_iv)
-    .digest('hex')
-    .substring(0, 16);
 
 export default loginRouter;
