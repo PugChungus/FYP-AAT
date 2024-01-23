@@ -2,18 +2,12 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import { pool } from './db-connection.js';
+import { pool } from '../db-connection.js';
 import argon2 from 'argon2-browser';
+import { keys } from './keys.js';
 
 const loginRouter = express.Router();
 let verificationResult;
-
-let keys = {
-    secretJwtKey: "ACB725326D68397E743DFC9F3FB64DA50CE7FB135721794C355B0DB219C449B3",
-    secret_key: '\xc2\x99~t\xe52\xcbo\xaa\xe8\x93dX\x04\x14\xa8\xa8\x9a\xd8P\x90\xd9"\xd0|\x1cO\xe5\xcbE\x06n',
-    secret_iv: '\xb1\xe1z9\xcf\xc7\x94\x14\xb7u\xa9C\x0f\xf6\x8c\xbc\xc0\x0b\xff\xc4X@\xa4\xb0\x05\x95Ni[\xc8\xdfg',
-    encryption_method: 'aes-256-cbc'
-};
 
 loginRouter.post('/login', async (req, res) => {
     const email = req.body.email;
