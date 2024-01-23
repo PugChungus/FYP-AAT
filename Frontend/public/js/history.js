@@ -112,7 +112,7 @@ async function renderHistory() {
 
 async function clear_history() {  
   const formData = new FormData();
-  formData.append('id', id);
+  formData.append('email', email);
 
   try {
     const jwtToken = get_cookie()
