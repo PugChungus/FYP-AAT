@@ -15,6 +15,7 @@ import { authorizeRoles, checkTokenValidity } from './routes/authorizeRolesRoute
 import { keys, decryptData } from './routes/keyRoute.js';
 import loginRouter from './routes/loginroute.js'
 import accountRouter from './routes/accountRoute.js'
+import cookieRouter from './routes/cookieRoute.js';
 
 const app = express();
 const port = 3000;
@@ -26,6 +27,7 @@ app.use(cors());
 app.use(cookieParser());
 app.use('/', loginRouter);
 app.use('/', accountRouter);
+app.use('/', cookieRouter);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -101,80 +103,6 @@ app.get('/profile', authorizeRoles(), (req, res) => {
 
 app.get('/settings', authorizeRoles(), (req, res) => {
     res.render('settings', { user: req.user });
-});
-
-app.get('/api/getCookie', async (req, res) => {
-    try {
-        const jwtToken = req.cookies.jwtToken;
-        console.log("Getting Cookie:", jwtToken)
-        return res.status(200).json({ token: {jwtToken} });
-    }
-    catch (err) {
-        console.error(err);
-        return res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
-
-app.get('/checkTokenValidity', (req, res) => {
-    const jwtToken = req.cookies.jwtToken;
-  
-    if (!jwtToken) {
-      // If there's no token, it's considered invalid
-      return res.status(401).json({ isValid: false });
-    }
-  
-    try {
-      // Decode the JWT token to check its validity
-      jwt.verify(jwtToken, keys.secretJwtKey);
-      console.log("Token exists")
-      res.status(200).json({ isValid: true });
-    } catch (error) {
-      res.render('accessdenied')
-      // Handle token verification errors (e.g., expired token)
-      res.status(401).json({ isValid: false });
-    }
-});  
-
-app.post('/get_data_from_cookie', async (req, res) => {
-    try {
-        if (!req.cookies) {
-            return res.status(401).json({ message: 'Unauthorized' });
-        }
-
-        const jwtToken = req.cookies.jwtToken;
-
-        if (!jwtToken) {
-            // If there's no token, user is not authenticated
-            return res.status(401).json({ message: 'Unauthorized' });
-        }
-        else {
-            const decodedToken = jwt.verify(jwtToken, keys.secretJwtKey);
-            const encryptedUserData = decodedToken.encryptedUserData;
-            decryptData(encryptedUserData)
-                .then(decryptedUserData => {
-                    const originalObject = JSON.parse(decryptedUserData)
-                    const id = originalObject.id
-                    console.log(id)
-                    const username = originalObject.username
-                    console.log(username)
-                    
-                    const id_username = {
-                        "id": id,
-                        "username": username
-                    }
-                    
-                    return res.status(200).json({ message: 'Cookie data retrieved', id_username });
-                })
-                .catch(error => {
-                    console.error('Error during decryption:', error);
-                    res.status(500).json({ message: 'Internal Server Error' });
-                });
-        }
-      
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({ error: 'Internal Server Error' });
-    }
 });
 
 app.post('/create_pubkey', async (req, res) => {
@@ -287,12 +215,6 @@ app.post('/check_account', async (req, res) => {
         return res.status(500).json({ error: 'Internal Server Error' });
     }
 });
-
-
-app.use('/', loginRouter);
-
-
-
 
 app.get('/logout', (req, res) => {
     // Clear the JWT token cookie
