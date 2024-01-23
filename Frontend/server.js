@@ -429,9 +429,12 @@ app.post('/check_account', async (req, res) => {
 
     try {
         const [result] = await pool.execute('CALL Check_account(?)', [email]);
+        console.log("here")
         console.log(result)
-        const count = result[0]['count(*)'] || 0;
-        if (result[0][0]['count(*)'] == 1) {
+        //const count = result[0][0]['count(*)'] || 0;
+        const count = (result[0][0] && result[0][0].count) || 0;
+
+        if (result[0][0].count == 1) {
             
             return res.status(200).json({ message: 'Email Exists', result });
         } else {
