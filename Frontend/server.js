@@ -10,9 +10,12 @@ import { pool } from './db-connection.js';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { OAuth2Client } from "google-auth-library";
+import { authorizeRoles } from './authorizeRoles.js';
 import jwt from 'jsonwebtoken';
-import { authorizeRoles } from './public/js/authorizeRoles.js';
+
+// import { authorizeRoles } from './public/js/authorizeRoles.js';
 import loginRouter from './loginroute.js'
+
 
 const app = express();
 const port = 3000;
@@ -22,6 +25,8 @@ const upload = multer({ storage: storage });
 app.use(upload.any());
 app.use(cors());
 app.use(cookieParser());
+// app.use(loginRouter);
+app.use('/', loginRouter);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -49,9 +54,9 @@ const rotateKeys = () => {
 cron.schedule('0 0 * * *', rotateKeys);
 
 // // Example: Log the keys every minute for testing
-// cron.schedule('* * * * *', () => {
-//     console.log('Current Keys:', keys.secretJwtKey, keys.secret_key, keys.secret_iv);
-// });
+cron.schedule('* * * * *', () => {
+    console.log('Current Keys:', keys.secretJwtKey, keys.secret_key, keys.secret_iv);
+});
 
 function checkTokenValidity(authorizationHeader) {
     if (!authorizationHeader) {
@@ -160,41 +165,7 @@ app.get('/settings', authorizeRoles(), (req, res) => {
     res.render('settings', { user: req.user });
 });
   
-// function authorizeRoles() {
-//     return (req, res, next) => {
-//         try {
-//             const jwtToken = req.cookies?.jwtToken;
 
-//             if (!jwtToken) {
-//                 res.status(401).render('accessdenied');
-//             }
-
-//             const decodedToken = jwt.verify(jwtToken, keys.secretJwtKey);
-//             const encryptedUserData = decodedToken.encryptedUserData;
-
-//             decryptData(encryptedUserData)
-//                 .then(decryptedUserData => {
-//                     const originalObject = JSON.parse(decryptedUserData)
-//                     const role = originalObject.role
-//                     if (role === 'user') {
-//                         next();
-//                     } else {
-//                         res.status(401).render('accessdenied');
-//                     }
-//                 })
-//                 .catch(error => {
-//                     console.error('Error during decryption:', error);
-//                     res.status(401).render('accessdenied');
-//                 });
-//         } catch (error) {
-//             if (error.name === 'TokenExpiredError') {
-//                 res.status(401).render('accessdenied');
-//             }
-
-//             res.status(401).render('accessdenied');
-//         }
-//     };
-// }
 
 //use hash to convert into valid key and iv
 const key = crypto
@@ -479,103 +450,11 @@ app.post('/check_account', async (req, res) => {
     }
 });
 
+
 app.use('/', loginRouter);
 
 
-// app.post('/login', async (req, res) => {
-//     const email = req.body.email;
-//     const password = req.body.password;
-//     const emailRegex = /^[\w-]+(\.[\w-]+)*@[A-Za-z0-9]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$/;
 
-//     if (!emailRegex.test(email)) {
-//         return res.status(400).json({ error: 'Invalid email format' });
-//     }
-
-//     try {
-
-//         console.log(email)
-//         console.log("YEPP")
-//         const [tables] = await pool.execute('CALL check2FA(?)', [email]);
-
-
-
-//         console.log("Tables:", tables)
-
-//         const pass_db = tables[0][0].password;
-//         console.log(password);
-//         console.log(pass_db);
-
-//         verificationResult = await verifyPassword(password, pass_db)
-//         //Generation of JWT token
-
-//         if (verificationResult == true) {
-            
-            
-//             const [result] = await pool.execute('CALL ValidateUserCredentials(?, ?)', [email, pass_db]);
-
-            
-//             if (result[0][0].user_count == 1) {
-                
-//             const [result] = await pool.execute(
-//                 'SELECT count(*) FROM user_account WHERE email_address = ? AND password = ?;',
-//                 [email, pass_db]
-
-//             );
-
-//             if (result[0]['count(*)'] == 1) {
-
-//                 const [tables_accountData] = await pool.execute(
-//                     'SELECT * FROM user_account WHERE email_address = ?;',
-//                     [email]
-//                 );
-                
-//                 const account_id = tables_accountData[0]['account_id']
-//                 const username = tables_accountData[0]['username']
-
-//                 const userData = {
-//                     id: account_id,
-//                     username: username,
-//                     role: 'user',
-//                 };
-
-//                 const userDataString = JSON.stringify(userData);
-
-//                 const encryptedUserData = await encryptData(userDataString)
-
-//                 console.log("WHAT THE HELL!!!:", encryptedUserData)
-                
-//                 // if (tables['activated'] === 0) {
-//                 //     window.location.href = 'http://localhost:3000/activation_failure' 
-//                 // }else {
-
-//                 if (tables["is_2fa_enabled"] === 1) {
-//                     console.log("2FA_enabled: True")
-//                 } else {
-//                     const jwtToken = jwt.sign({ encryptedUserData }, keys.secretJwtKey, { algorithm: 'HS512', expiresIn: '1h' });
-
-//                     // Set the JWE in a cookie
-//                     res.cookie('jwtToken', jwtToken, {
-//                       httpOnly: true,
-//                       sameSite: 'Strict',
-//                       secure: true,
-//                       maxAge: 3600000,
-//                     });
-//                 }
-        
-//                 return res.status(200).json({ message: 'Account Login Success', result });
-//             }
-//             } else {
-//                 return res.status(200).json({ message: 'Account Login Failed', result });
-//             }
-//         }
-//         else {
-//             return res.status(200).json({ message: 'Account Login Failed'});
-//         }
-//     } catch (error) {
-//         console.error(error);
-//         return res.status(500).json({ error: 'Internal Server Error' });
-//     }
-// });
 
 app.get('/logout', (req, res) => {
     // Clear the JWT token cookie
@@ -706,7 +585,7 @@ app.get('/get-access-token', async (req, res) => {
   });
 
 
-  app.get('/auth/google/callback', async (req, res) => {
+app.get('/auth/google/callback', async (req, res) => {
     const { code } = req.query;
 
     // Create a new OAuth2Client with your Google credentials
