@@ -38,6 +38,7 @@ async function exportPrivateKey(key) {
   return jwkString;
 }
 
+
 async function get_email_via_id() {
   const newResponse = await fetch('http://localhost:3000/get_data_from_cookie', {
     method: 'POST'
@@ -287,7 +288,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
               if (/^\d{6}$/.test(enteredOTP)) {
                 console.log('Submitted OTP:', enteredOTP);
-                const isValidOTP = await verifyOTP(await get_email_via_id(), enteredOTP);
+                const isValidOTP = await verifyOTP(email, enteredOTP);
 
                 if (isValidOTP) {
                   console.log('OTP is valid. Proceed with enabling 2FA.');
@@ -340,8 +341,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
   check2FAStatus();
 
-const rotationButton = document.getElementById('rotationButton');
-
+  const rotationButton = document.getElementById('rotationButton');
 rotationButton.addEventListener('click', async function () {
   const cardDiv = document.createElement('div');
   cardDiv.className = 'card';
@@ -372,7 +372,6 @@ rotationButton.addEventListener('click', async function () {
     const jwk_private = await exportPrivateKey(private_key);
 
     const formData = new FormData();
-    const email = await get_email_via_id()
     formData.append('email', email);
     formData.append('public_key', pem_public);
 
