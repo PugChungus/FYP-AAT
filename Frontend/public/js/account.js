@@ -1,13 +1,25 @@
+import { get_cookie } from "./cookie.js";
 let db;
 
-async function get_cookie() {
-  const cookie_response = await fetch('http://localhost:3000/api/getCookie', {
-      method: 'GET',
-  });
+// async function get_cookie() {
+//   const cookie_response = await fetch('http://localhost:3000/api/getCookie', {
+//       method: 'GET',
+//   });
 
-  const cookie_data = await cookie_response.json()
-  const token = cookie_data.token.jwtToken
-  return token
+//   const cookie_data = await cookie_response.json()
+//   const token = cookie_data.token.jwtToken
+//   return token
+// }
+
+async function example() {
+  try {
+      const token = await get_cookie();
+      console.log('Token:', token);
+      // Continue with your code
+  } catch (error) {
+      console.error('Error in example:', error);
+      // Handle the error appropriately
+  }
 }
 
 function getCurrentTime() {
@@ -128,7 +140,7 @@ function openIndexDB(jwk_private, user_email) {
 
 const emailRegex = /^[\w-]+(\.[\w-]+)*@[A-Za-z0-9]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$/;
 //add frontend regex???????????
-async function register() {
+export async function register() {
   const username = document.getElementById('username-field').value;
   const email = document.getElementById('email-field').value;
   const password = document.getElementById('password-field').value;
@@ -251,7 +263,7 @@ async function encryptEmail(email) {
   }
 }
 
-async function login(event) {
+export async function login(event) {
   event.preventDefault(); // Prevent the form from submitting normally
 
   // Get values from the form
@@ -266,6 +278,7 @@ async function login(event) {
 
   const formData = new FormData();
   formData.append('email', email);
+  console.log("FORMDATAAPPENDING:", formData)
 
   try {
 
@@ -277,7 +290,7 @@ async function login(event) {
     const responseData = await response.text()
     console.log("Response Data: ", responseData)
     const data = JSON.parse(responseData)
-    count = data.result[0][0].count
+    let count = data.result[0][0].count
     console.log("Count:", count)
 
     if (count === 1) {
@@ -293,7 +306,7 @@ async function login(event) {
       console.log("BROOOOO:", loginResponse)
 
       const loginData = await loginResponse.json();
-      const jwtToken = await get_cookie()
+      const jwtToken = await example()
 
       console.log(data)
       
@@ -385,6 +398,7 @@ async function login(event) {
   }
 }
 
+
 async function continueRegularLogin(formData) {
   // Perform additional steps for regular login if needed
   const response = await fetch('http://localhost:3000/get_account2', {
@@ -414,7 +428,7 @@ async function getEmailFromSessionStorage() {
     otp: otpValue
   };
 
-  const jwtToken = await get_cookie()
+  const jwtToken = await example();
 
   // Make an HTTP POST request to your backend endpoint
   fetch('http://localhost:5000/verify_2fa', {
@@ -443,7 +457,7 @@ async function getEmailFromSessionStorage() {
   return email;
 }
 
-  async function verifyTOTP(event) {
+ async function verifyTOTP(event) {
     event.preventDefault();
   
     // Get the OTP value from the input field
@@ -519,7 +533,7 @@ async function getEmailFromSessionStorage() {
   }
 
 
-  function checkEmail() {
+  export function checkEmail() {
     var email = document.getElementById('email-field').value;
 
     if (email.trim() !== "") {

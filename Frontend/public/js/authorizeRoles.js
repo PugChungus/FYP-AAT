@@ -1,3 +1,6 @@
+import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
+
 export let keys = {
     secretJwtKey: "ACB725326D68397E743DFC9F3FB64DA50CE7FB135721794C355B0DB219C449B3",
     secret_key: '\xc2\x99~t\xe52\xcbo\xaa\xe8\x93dX\x04\x14\xa8\xa8\x9a\xd8P\x90\xd9"\xd0|\x1cO\xe5\xcbE\x06n',
@@ -55,3 +58,15 @@ export async function decryptData(encryptedData) {
     const decipher = crypto.createDecipheriv(keys.encryption_method, key, encryptionIV);
     return decipher.update(buff.toString('hex'), 'hex', 'utf8') + decipher.final('utf8');
 }
+
+const key = crypto
+    .createHash('sha512')
+    .update(keys.secret_key)
+    .digest('hex')
+    .substring(0, 32);
+
+const encryptionIV = crypto
+    .createHash('sha512')
+    .update(keys.secret_iv)
+    .digest('hex')
+    .substring(0, 16);
