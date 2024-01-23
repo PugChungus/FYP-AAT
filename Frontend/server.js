@@ -5,13 +5,13 @@ import multer from 'multer';
 import argon2 from 'argon2-browser';
 import path from 'path';
 import crypto from 'crypto';
-import cron from 'node-cron';
 import { pool } from './db-connection.js';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { OAuth2Client } from "google-auth-library";
 import jwt from 'jsonwebtoken';
 
+const secretJwtKey = "ACB725326D68397E743DFC9F3FB64DA50CE7FB135721794C355B0DB219C449B3" //key rotation?
 const app = express();
 const port = 3000;
 
@@ -27,45 +27,17 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'public', 'pages'));
 
-let keys = {
-    secretJwtKey: "ACB725326D68397E743DFC9F3FB64DA50CE7FB135721794C355B0DB219C449B3",
-    secret_key: '\xc2\x99~t\xe52\xcbo\xaa\xe8\x93dX\x04\x14\xa8\xa8\x9a\xd8P\x90\xd9"\xd0|\x1cO\xe5\xcbE\x06n',
-    secret_iv: '\xb1\xe1z9\xcf\xc7\x94\x14\xb7u\xa9C\x0f\xf6\x8c\xbc\xc0\x0b\xff\xc4X@\xa4\xb0\x05\x95Ni[\xc8\xdfg',
-    encryption_method: 'aes-256-cbc'
-};
-
-const rotateKeys = () => {
-    // Generate new keys
-    keys.secretJwtKey = crypto.randomBytes(32).toString('hex');
-    keys.secret_key = crypto.randomBytes(32).toString('hex');
-    keys.secret_iv = crypto.randomBytes(16).toString('hex');
-
-    console.log('Keys rotated:', keys.secretJwtKey);
-};
-
-// Schedule the key rotation at 00:00 every day
-cron.schedule('0 0 * * *', rotateKeys);
-
-// Example: Log the keys every minute for testing
-cron.schedule('* * * * *', () => {
-    console.log('Current Keys:', keys.secretJwtKey, keys.secret_key, keys.secret_iv);
-});
-
-function checkTokenValidity(authorizationHeader) {
-    if (!authorizationHeader) {
+function checkTokenValidity(req) {
+    const jwtToken = req.cookies.jwtToken;
+    
+    if (!jwtToken) {
         // If there's no token, it's considered invalid
         return false;
     }
 
-    // Ensure authorizationHeader is a string
-    const headerString = authorizationHeader.toString();
-
-    // Extract the token from the Authorization header
-    const token = headerString.split(' ')[1];
-
     try {
         // Decode the JWT token to check its validity
-        jwt.verify(token, keys.secretJwtKey);
+        jwt.verify(jwtToken, secretJwtKey);
         return true;
     } catch (error) {
         // Handle token verification errors (e.g., expired token)
@@ -164,10 +136,10 @@ function authorizeRoles() {
             const jwtToken = req.cookies?.jwtToken;
 
             if (!jwtToken) {
-                return res.status(401).json({ message: 'Please return to the login page to renew your token.' });
+                res.status(401).render('accessdenied');
             }
 
-            const decodedToken = jwt.verify(jwtToken, keys.secretJwtKey);
+            const decodedToken = jwt.verify(jwtToken, secretJwtKey);
             const encryptedUserData = decodedToken.encryptedUserData;
 
             decryptData(encryptedUserData)
@@ -177,44 +149,50 @@ function authorizeRoles() {
                     if (role === 'user') {
                         next();
                     } else {
-                        res.status(403).json({ message: 'Insufficient permissions' });
+                        res.status(401).render('accessdenied');
                     }
                 })
                 .catch(error => {
                     console.error('Error during decryption:', error);
-                    res.status(500).json({ message: 'Internal Server Error' });
+                    res.status(401).render('accessdenied');
                 });
         } catch (error) {
             if (error.name === 'TokenExpiredError') {
-                return res.status(401).json({ message: 'Token has expired. Please log in again.' });
+                res.status(401).render('accessdenied');
             }
 
-            res.status(401).json({ message: 'Unauthorized' });
+            res.status(401).render('accessdenied');
         }
     };
 }
 
+const { secret_key, secret_iv, encryption_method } = { 
+    secret_key: '\xc2\x99~t\xe52\xcbo\xaa\xe8\x93dX\x04\x14\xa8\xa8\x9a\xd8P\x90\xd9"\xd0|\x1cO\xe5\xcbE\x06n', 
+    secret_iv: '\xb1\xe1z9\xcf\xc7\x94\x14\xb7u\xa9C\x0f\xf6\x8c\xbc\xc0\x0b\xff\xc4X@\xa4\xb0\x05\x95Ni[\xc8\xdfg',
+    encryption_method: 'aes-256-cbc' 
+};
+
 //use hash to convert into valid key and iv
 const key = crypto
     .createHash('sha512')
-    .update(keys.secret_key)
+    .update(secret_iv)
     .digest('hex')
     .substring(0, 32);
 
 const encryptionIV = crypto
     .createHash('sha512')
-    .update(keys.secret_iv)
+    .update(secret_iv)
     .digest('hex')
     .substring(0, 16);
 
 async function encryptData(data) {
-    const cipher = crypto.createCipheriv(keys.encryption_method, key, encryptionIV);
+    const cipher = crypto.createCipheriv(encryption_method, key, encryptionIV);
     return Buffer.from(cipher.update(data, 'utf8', 'hex') + cipher.final('hex'), 'hex').toString('base64');
 }
 
 async function decryptData(encryptedData) {
     const buff = Buffer.from(encryptedData, 'base64');
-    const decipher = crypto.createDecipheriv(keys.encryption_method, key, encryptionIV);
+    const decipher = crypto.createDecipheriv(encryption_method, key, encryptionIV);
     return decipher.update(buff.toString('hex'), 'hex', 'utf8') + decipher.final('utf8');
 }
 
@@ -268,7 +246,7 @@ app.get('/checkTokenValidity', (req, res) => {
   
     try {
       // Decode the JWT token to check its validity
-      jwt.verify(jwtToken, keys.secretJwtKey);
+      jwt.verify(jwtToken, secretJwtKey);
       console.log("Token exists")
       res.status(200).json({ isValid: true });
     } catch (error) {
@@ -276,7 +254,7 @@ app.get('/checkTokenValidity', (req, res) => {
       // Handle token verification errors (e.g., expired token)
       res.status(401).json({ isValid: false });
     }
-});  
+  });  
 
 app.post('/get_data_from_cookie', async (req, res) => {
     try {
@@ -291,7 +269,7 @@ app.post('/get_data_from_cookie', async (req, res) => {
             return res.status(401).json({ message: 'Unauthorized' });
         }
         else {
-            const decodedToken = jwt.verify(jwtToken, keys.secretJwtKey);
+            const decodedToken = jwt.verify(jwtToken, secretJwtKey);
             const encryptedUserData = decodedToken.encryptedUserData;
             decryptData(encryptedUserData)
                 .then(decryptedUserData => {
@@ -391,11 +369,11 @@ app.post('/create_pubkey', async (req, res) => {
 app.post('/update_pubkey', async (req, res) => {
     try {
         const public_key = req.body.public_key;
-        const id = req.body.id;
+        const email = req.body.email;
         console.log(public_key)
 
         // Now, you have the account_id, and you can use it in the next INSERT statement
-        const publicKeyResult = await pool.execute('CALL UpdatePublicKey(?, ?)', [public_key, id]);
+        const publicKeyResult = await pool.execute('CALL UpdatePublicKey(?, ?)', [public_key, email]);
 
 
         return res.status(200).json({ message: 'Public Key updated successfully' });
@@ -486,100 +464,96 @@ app.post('/login', async (req, res) => {
     }
 
     try {
+        // const [tables] = await pool.execute(
+        //     'SELECT password, is_2fa_enabled, FROM user_account WHERE email_address = ?;',
+        //     [email]
+        // );
 
-        console.log(email)
-        console.log("YEPP")
+        console.log(email);
+        console.log("YEPP");
         const [tables] = await pool.execute('CALL check2FA(?)', [email]);
 
-
-
-        console.log("Tables:", tables)
 
         const pass_db = tables[0][0].password;
         console.log(password);
         console.log(pass_db);
 
-        verificationResult = await verifyPassword(password, pass_db)
-        //Generation of JWT token
+        verificationResult = await verifyPassword(password, pass_db);
+
+        // Generation of JWT token
 
         if (verificationResult == true) {
-            
-            
             const [result] = await pool.execute('CALL ValidateUserCredentials(?, ?)', [email, pass_db]);
 
-            
             if (result[0][0].user_count == 1) {
-                
-                const JWTtoken = jwt.sign({ email }, keys.secretJwtKey, { expiresIn: '1h' });
+                const JWTtoken = jwt.sign({ email }, secretJwtKey, { expiresIn: '1h' });
                 res.cookie('jwtToken', JWTtoken, {
-                    httpOnly: true, // Ensure the cookie is accessible only by the server
-                    sameSite: 'Lax', // or 'Lax' or 'None' based on your requirements
-                    secure: true, // Ensure the cookie is sent only over HTTPS
-                    maxAge: 3600000, // Expiry time in milliseconds (1 hour in this case)
-                    // Add other cookie configurations like 'domain', 'path', etc. if needed
+                    httpOnly: true,
+                    sameSite: 'Lax',
+                    secure: true,
+                    maxAge: 3600000,
                 });
-                
-            
-            const [result] = await pool.execute(
-                'SELECT count(*) FROM user_account WHERE email_address = ? AND password = ?;',
-                [email, pass_db]
 
-            );
-
-            if (result[0]['count(*)'] == 1) {
-
-                const [tables_accountData] = await pool.execute(
-                    'SELECT * FROM user_account WHERE email_address = ?;',
-                    [email]
+                const [result] = await pool.execute(
+                    'SELECT count(*) FROM user_account WHERE email_address = ? AND password = ?;',
+                    [email, pass_db]
                 );
-                
-                const account_id = tables_accountData[0]['account_id']
-                const username = tables_accountData[0]['username']
 
-                const userData = {
-                    id: account_id,
-                    username: username,
-                    role: 'user',
-                };
+                if (result[0]['count(*)'] == 1) {
+                    const [tables_accountData] = await pool.execute(
+                        'SELECT * FROM user_account WHERE email_address = ?;',
+                        [email]
+                    );
 
-                const userDataString = JSON.stringify(userData);
+                    const account_id = tables_accountData[0]['account_id'];
+                    const username = tables_accountData[0]['username'];
 
-                const encryptedUserData = await encryptData(userDataString)
+                    const userData = {
+                        id: account_id,
+                        username: username,
+                        role: 'user',
+                    };
 
-                console.log("WHAT THE HELL!!!:", encryptedUserData)
-                
-                // if (tables['activated'] === 0) {
-                //     window.location.href = 'http://localhost:3000/activation_failure' 
-                // }else {
+                    const userDataString = JSON.stringify(userData);
 
-                if (tables["is_2fa_enabled"] === 1) {
-                    console.log("2FA_enabled: True")
+                    const encryptedUserData = await encryptData(userDataString);
+
+                    console.log("WHAT THE HELL!!!:", encryptedUserData);
+
+
+                        if (tables["is_2fa_enabled"] === 1) {
+                            console.log("2FA_enabled: True");
+                        } else {
+                            const jwtToken = jwt.sign({ encryptedUserData }, secretJwtKey, {
+                                algorithm: 'HS512',
+                                expiresIn: '1h',
+                            });
+
+                            // Set the JWE in a cookie
+                            res.cookie('jwtToken', jwtToken, {
+                                httpOnly: true,
+                                sameSite: 'Strict',
+                                secure: true,
+                                maxAge: 3600000,
+                            });
+                        }
+
+                        return res.status(200).json({ message: 'Account Login Success', result });
+                    
                 } else {
-                    const jwtToken = jwt.sign({ encryptedUserData }, keys.secretJwtKey, { algorithm: 'HS512', expiresIn: '1h' });
-
-                    // Set the JWE in a cookie
-                    res.cookie('jwtToken', jwtToken, {
-                      httpOnly: true,
-                      sameSite: 'Strict',
-                      secure: true,
-                      maxAge: 3600000,
-                    });
+                    return res.status(200).json({ message: 'Account Login Failed', result });
                 }
-        
-                return res.status(200).json({ message: 'Account Login Success', result });
-            }
             } else {
-                return res.status(200).json({ message: 'Account Login Failed', result });
+                return res.status(200).json({ message: 'Account Login Failed' });
             }
-        }
-        else {
-            return res.status(200).json({ message: 'Account Login Failed'});
         }
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
+
 
 app.get('/logout', (req, res) => {
     // Clear the JWT token cookie
@@ -628,21 +602,21 @@ app.post('/get_account2', async (req, res) => {
 
 app.post('/enable2fa', async (req, res) => {
     try {
-        const cookie_from_frontend =  req.headers.authorization
-        const isValid = checkTokenValidity(cookie_from_frontend)
+        const cookie_from_frontend =    req.header['authorization']
+        const isValid = checkTokenValidity( cookie_from_frontend)
        
         if (!isValid) {
-            console.log("Error Validating Key")
+               print("Error Validating KEy")
         } else {
-            const { id } = req.body;
-        
-            const sql = 'UPDATE user_account SET is_2fa_enabled = 1 WHERE account_id = ?';
-            const values = [id];
-        
-            await pool.query(sql, values);
-        
-            res.json({ message: '2FA Enabled' });
-        }
+      const { email } = req.body;
+  
+      const sql = 'UPDATE user_account SET is_2fa_enabled = 1 WHERE email_address = ?';
+      const values = [email];
+  
+      await pool.query(sql, values);
+  
+      res.json({ message: '2FA Enabled' });
+    }
     } catch (error) {
       console.error('Error enabling 2FA:', error);
       res.status(500).json({ error: 'Internal Server Error' });
@@ -651,10 +625,10 @@ app.post('/enable2fa', async (req, res) => {
 
 app.post('/disable2fa', async (req, res) => {
     try {
-        const { id } = req.body;
+        const { email } = req.body;
 
-        const sql = 'UPDATE user_account SET is_2fa_enabled = 0 WHERE account_id = ?'
-        const values = [id];
+        const sql = 'UPDATE user_account SET is_2fa_enabled = 0 WHERE email_address = ?'
+        const values = [email];
         await pool.query(sql, values);
         res.json({ message: '2FA Disabled'});
     } catch (error) {
@@ -665,10 +639,10 @@ app.post('/disable2fa', async (req, res) => {
 
 app.post('/get2faStatus', async (req, res) => {
     try {
-        const { id } = req.body;
+        const { email } = req.body;
 
-        const sql = 'SELECT is_2fa_enabled, tfa_secret FROM user_account WHERE account_id =?';
-        const values = [id];
+        const sql = 'SELECT is_2fa_enabled, tfa_secret FROM user_account WHERE email_address =?';
+        const values = [email];
 
         const result = await pool.query(sql, values);
         console.log("Result: ", result)
@@ -679,7 +653,7 @@ app.post('/get2faStatus', async (req, res) => {
 
             console.log('is_2fa_enabled:', is2FAEnabled);
             console.log("TFASecret:", tfasecret)
-            res.json({ is_2fa_enabled: is2FAEnabled, secret: tfasecret});
+            res.json({ is_2fa_enabled: is2FAEnabled, secret: tfasecret, email: email });
         } else {
             res.status(404).json({ error: 'User not found '});
         }
