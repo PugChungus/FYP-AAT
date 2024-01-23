@@ -300,8 +300,8 @@ async function login(event) {
       if (loginData.result) {
         console.log(data.result)
         // document.cookie = `jwtToken=${data.JWTtoken}; SameSite=Strict; Secure`;
-        const count = loginData.result[0][0].user_count;
-  console.log(count)
+        const count = loginData.result[0]['count(*)']
+        console.log(count)
         if (count === 1) {
 
           // Check if 2FA is required
@@ -387,7 +387,7 @@ async function login(event) {
 
 async function continueRegularLogin(formData) {
   // Perform additional steps for regular login if needed
-  const response = await fetch('http://localhost:3000/get_account', {
+  const response = await fetch('http://localhost:3000/get_account2', {
     method: 'POST',
     body: formData,
   });

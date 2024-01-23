@@ -176,7 +176,8 @@ document.addEventListener('DOMContentLoaded', async function () {
   async function check2FAStatus() {
     try {
       const formData = new FormData();
-      formData.append('id', id)
+      const email = get_email_via_id()
+      formData.append('email', email)
 
       const response = await fetch('http://localhost:3000/get2faStatus', {
         method: 'POST',
@@ -196,6 +197,7 @@ document.addEventListener('DOMContentLoaded', async function () {
       console.error('Error making request: ', error);
     }
   }
+
   enable2FASwitch.addEventListener('click',  async function () {
 
     const currentState = enable2FASwitch.checked;
@@ -342,7 +344,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   check2FAStatus();
 
   const rotationButton = document.getElementById('rotationButton');
-rotationButton.addEventListener('click', async function () {
+  rotationButton.addEventListener('click', async function () {
   const cardDiv = document.createElement('div');
   cardDiv.className = 'card';
   cardDiv.innerHTML = `
@@ -372,6 +374,8 @@ rotationButton.addEventListener('click', async function () {
     const jwk_private = await exportPrivateKey(private_key);
 
     const formData = new FormData();
+    const email = get_email_via_id()
+    console.log(email)
     formData.append('email', email);
     formData.append('public_key', pem_public);
 

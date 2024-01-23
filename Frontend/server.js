@@ -46,10 +46,10 @@ const rotateKeys = () => {
 // Schedule the key rotation at 00:00 every day
 cron.schedule('0 0 * * *', rotateKeys);
 
-// Example: Log the keys every minute for testing
-cron.schedule('* * * * *', () => {
-    console.log('Current Keys:', keys.secretJwtKey, keys.secret_key, keys.secret_iv);
-});
+// // Example: Log the keys every minute for testing
+// cron.schedule('* * * * *', () => {
+//     console.log('Current Keys:', keys.secretJwtKey, keys.secret_key, keys.secret_iv);
+// });
 
 function checkTokenValidity(authorizationHeader) {
     if (!authorizationHeader) {
@@ -158,41 +158,41 @@ app.get('/settings', authorizeRoles(), (req, res) => {
     res.render('settings', { user: req.user });
 });
   
-function authorizeRoles() {
-    return (req, res, next) => {
-        try {
-            const jwtToken = req.cookies?.jwtToken;
+// function authorizeRoles() {
+//     return (req, res, next) => {
+//         try {
+//             const jwtToken = req.cookies?.jwtToken;
 
-            if (!jwtToken) {
-                return res.status(401).json({ message: 'Please return to the login page to renew your token.' });
-            }
+//             if (!jwtToken) {
+//                 res.status(401).render('accessdenied');
+//             }
 
-            const decodedToken = jwt.verify(jwtToken, keys.secretJwtKey);
-            const encryptedUserData = decodedToken.encryptedUserData;
+//             const decodedToken = jwt.verify(jwtToken, keys.secretJwtKey);
+//             const encryptedUserData = decodedToken.encryptedUserData;
 
-            decryptData(encryptedUserData)
-                .then(decryptedUserData => {
-                    const originalObject = JSON.parse(decryptedUserData)
-                    const role = originalObject.role
-                    if (role === 'user') {
-                        next();
-                    } else {
-                        res.status(403).json({ message: 'Insufficient permissions' });
-                    }
-                })
-                .catch(error => {
-                    console.error('Error during decryption:', error);
-                    res.status(500).json({ message: 'Internal Server Error' });
-                });
-        } catch (error) {
-            if (error.name === 'TokenExpiredError') {
-                return res.status(401).json({ message: 'Token has expired. Please log in again.' });
-            }
+//             decryptData(encryptedUserData)
+//                 .then(decryptedUserData => {
+//                     const originalObject = JSON.parse(decryptedUserData)
+//                     const role = originalObject.role
+//                     if (role === 'user') {
+//                         next();
+//                     } else {
+//                         res.status(401).render('accessdenied');
+//                     }
+//                 })
+//                 .catch(error => {
+//                     console.error('Error during decryption:', error);
+//                     res.status(401).render('accessdenied');
+//                 });
+//         } catch (error) {
+//             if (error.name === 'TokenExpiredError') {
+//                 res.status(401).render('accessdenied');
+//             }
 
-            res.status(401).json({ message: 'Unauthorized' });
-        }
-    };
-}
+//             res.status(401).render('accessdenied');
+//         }
+//     };
+// }
 
 //use hash to convert into valid key and iv
 const key = crypto
@@ -510,16 +510,6 @@ app.post('/login', async (req, res) => {
             
             if (result[0][0].user_count == 1) {
                 
-                const JWTtoken = jwt.sign({ email }, keys.secretJwtKey, { expiresIn: '1h' });
-                res.cookie('jwtToken', JWTtoken, {
-                    httpOnly: true, // Ensure the cookie is accessible only by the server
-                    sameSite: 'Lax', // or 'Lax' or 'None' based on your requirements
-                    secure: true, // Ensure the cookie is sent only over HTTPS
-                    maxAge: 3600000, // Expiry time in milliseconds (1 hour in this case)
-                    // Add other cookie configurations like 'domain', 'path', etc. if needed
-                });
-                
-            
             const [result] = await pool.execute(
                 'SELECT count(*) FROM user_account WHERE email_address = ? AND password = ?;',
                 [email, pass_db]
@@ -665,10 +655,10 @@ app.post('/disable2fa', async (req, res) => {
 
 app.post('/get2faStatus', async (req, res) => {
     try {
-        const { id } = req.body;
+        const { email } = req.body.email;
 
-        const sql = 'SELECT is_2fa_enabled, tfa_secret FROM user_account WHERE account_id =?';
-        const values = [id];
+        const sql = 'SELECT is_2fa_enabled, tfa_secret FROM user_account WHERE email_address = ?';
+        const values = [email];
 
         const result = await pool.query(sql, values);
         console.log("Result: ", result)
