@@ -359,7 +359,7 @@ async function login(event) {
           
           // document.cookie = `jwtToken=${token}; SameSite=Strict; Secure`;
 
-        window.location.href = 'http://localhost:3000/pages/home.html';
+          window.location.href = 'http://localhost:3000/home';
         } else {
           alert("Login Failed");
         }
