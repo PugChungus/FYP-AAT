@@ -16,6 +16,7 @@ import { keys, decryptData } from './routes/keyRoute.js';
 import loginRouter from './routes/loginroute.js'
 import accountRouter from './routes/accountRoute.js'
 import cookieRouter from './routes/cookieRoute.js';
+import tfaRouter from './routes/tfaRoute.js';
 
 const app = express();
 const port = 3000;
@@ -28,6 +29,7 @@ app.use(cookieParser());
 app.use('/', loginRouter);
 app.use('/', accountRouter);
 app.use('/', cookieRouter);
+app.use('/', tfaRouter);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

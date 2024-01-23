@@ -198,148 +198,152 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
   }
 
-  enable2FASwitch.addEventListener('click',  async function () {
+  enable2FASwitch.addEventListener('click', async function () {
 
     const currentState = enable2FASwitch.checked;
 
     if (currentState) {
-      const confirmation = window.confirm(
-        'Before continuing, please make sure that your phone number, email address, ' +
-        'and mailing/physical address under "Account Details" are true and correct. ' +
-        'Valid information is required for account recovery should you become locked out.' +
-        ' Do you wish to proceed?'
-      );
-      if (!confirmation) {
-        enable2FASwitch.checked = false;
-        return
-      }
+        const confirmation = window.confirm(
+            'Before continuing, please make sure that your phone number, email address, ' +
+            'and mailing/physical address under "Account Details" are true and correct. ' +
+            'Valid information is required for account recovery should you become locked out.' +
+            ' Do you wish to proceed?'
+        );
+        if (!confirmation) {
+            enable2FASwitch.checked = false;
+            return;
+        }
 
-      try {
-        const formData = new FormData();
-        formData.append('id', id)
-        const cookie = await get_cookie()
-        const response = await fetch('http://localhost:3000/enable2fa', {
-          method: 'POST',
-          body: formData,
-          headers: {
-            'authorization': `Bearer: ${cookie}`
-          },
-        });
+        try {
+            const formData = new FormData();
+            formData.append('id', id);
+            const cookie = await get_cookie();
 
-        if (response.ok){
-          console.log('2FA Enabled Succesfully');
-          
-          const jwtToken = get_cookie()
+            const jwtToken = get_cookie();
 
-          const qrResponse = await fetch('http://localhost:5000/generate_2fa_qr_code', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer: ${jwtToken}`
-            },
-            body: formData,
-          });
-
-        if (qrResponse.ok) {
-          const qrData = await qrResponse.json();
-          console.log("Received QR Data:", qrData)
-          const qrCodeUrl = qrData.qr_code_url;
-          const otp = qrData.otp !== undefined ? qrData.otp : 'N/A';
-
-          console.log("QR Code URL: ", qrCodeUrl)
-          console.log("OTP: ", otp)
-
-          // Create a new card div for displaying QR Code
-          const qrCodeCardDiv = document.createElement('div');
-          qrCodeCardDiv.className = 'card2fa';
-          qrCodeCardDiv.innerHTML = `
-          <div class="card-header">
-            <button type="button" class="close" aria-label="Close" id="closeCard">&times;</button>
-          </div>
-          <div class="card-body">
-            <h5 class="card-title">Two-Factor Authentication Setup</h5>
-            <p class="card-text">Scan the QR code using the Google Authenticator app.</p>
-            <div id="qrcode"></div>
-            <label for="otpInput">Enter OTP:</label>
-            <input type="text" autocomplete="off" id="otpInput" name="otpInput">
-            <button type="button" class="btn btn-secondary" id="cancelButton">Cancel</button>
-            <button type="button" class="btn btn-primary" id="submitOTP">Submit OTP</button>
-          </div>`;
-
-            const qrCodeCanvas = qrCodeCardDiv.querySelector('#qrcode');
-            new QRCode(qrCodeCanvas, {
-              text: qrCodeUrl,
-              width: 128,
-              height: 128,
+            const qrResponse = await fetch('http://localhost:5000/generate_2fa_qr_code', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer: ${jwtToken}`
+                },
+                body: formData,
             });
 
-            const closeCardButton = qrCodeCardDiv.querySelector('#closeCard');
-            closeCardButton.addEventListener('click', function() {
-              qrCodeCardDiv.style.display = 'none';
-              enable2FASwitch.checked = false
-            })
+            if (qrResponse.ok) {
+                const qrData = await qrResponse.json();
+                console.log("Received QR Data:", qrData)
+                const qrCodeUrl = qrData.qr_code_url;
+                const otp = qrData.otp !== undefined ? qrData.otp : 'N/A';
 
-            const cancelButton = qrCodeCardDiv.querySelector('#cancelButton');
-            cancelButton.addEventListener('click', function() {
-              qrCodeCardDiv.style.display = 'none';
-              enable2FASwitch.checked = false;
-            })
+                console.log("QR Code URL: ", qrCodeUrl)
+                console.log("OTP: ", otp)
 
-            const submitOTPButton = qrCodeCardDiv.querySelector('#submitOTP')
-            submitOTPButton.addEventListener('click', async function() {
-              const enteredOTP = qrCodeCardDiv.querySelector('#otpInput').value;
+                // Create a new card div for displaying QR Code
+                const qrCodeCardDiv = document.createElement('div');
+                qrCodeCardDiv.className = 'card2fa';
+                qrCodeCardDiv.innerHTML = `
+                    <div class="card-header">
+                        <button type="button" class="close" aria-label="Close" id="closeCard">&times;</button>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Two-Factor Authentication Setup</h5>
+                        <p class="card-text">Scan the QR code using the Google Authenticator app.</p>
+                        <div id="qrcode"></div>
+                        <label for="otpInput">Enter OTP:</label>
+                        <input type="text" autocomplete="off" id="otpInput" name="otpInput">
+                        <button type="button" class="btn btn-secondary" id="cancelButton">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="submitOTP">Submit OTP</button>
+                    </div>`;
 
-              if (/^\d{6}$/.test(enteredOTP)) {
-                console.log('Submitted OTP:', enteredOTP);
-                const isValidOTP = await verifyOTP(email, enteredOTP);
+                const qrCodeCanvas = qrCodeCardDiv.querySelector('#qrcode');
+                new QRCode(qrCodeCanvas, {
+                    text: qrCodeUrl,
+                    width: 128,
+                    height: 128,
+                });
 
-                if (isValidOTP) {
-                  console.log('OTP is valid. Proceed with enabling 2FA.');
-                qrCodeCardDiv.style.display = 'none'
+                const closeCardButton = qrCodeCardDiv.querySelector('#closeCard');
+                closeCardButton.addEventListener('click', function () {
+                    qrCodeCardDiv.style.display = 'none';
+                    enable2FASwitch.checked = false;
+                });
 
-                } else {
-                  alert('Invalid OTP. Please enter a valid 6-digit numeric OTP.');
-                }
-              } else {
-                alert('Invalid OTP. Please enter a valid 6-digit numeric OTP.')
-              }
-            });
-            
-            // Append the QR Code card div to the body
-            document.body.appendChild(qrCodeCardDiv);
-        } else {
-          console.error('Error generating QR code:', qrResponse.statusText);
+                const cancelButton = qrCodeCardDiv.querySelector('#cancelButton');
+                cancelButton.addEventListener('click', function () {
+                    qrCodeCardDiv.style.display = 'none';
+                    enable2FASwitch.checked = false;
+                });
+
+                const submitOTPButton = qrCodeCardDiv.querySelector('#submitOTP');
+                submitOTPButton.addEventListener('click', async function () {
+                    const enteredOTP = qrCodeCardDiv.querySelector('#otpInput').value;
+
+                    if (/^\d{6}$/.test(enteredOTP)) {
+                        console.log('Submitted OTP:', enteredOTP);
+                        const isValidOTP = await verifyOTP(email, enteredOTP);
+
+                        if (isValidOTP) {
+                            console.log('OTP is valid. Proceed with enabling 2FA.');
+
+                            try {
+                                // Move the enable2faRoute request here
+                                const enable2faResponse = await fetch('http://localhost:3000/enable2faRoute', {
+                                    method: 'POST',
+                                    body: formData,
+                                    headers: {
+                                        'authorization': `Bearer: ${cookie}`
+                                    },
+                                });
+
+                                if (enable2faResponse.ok) {
+                                    console.log('enable2faRoute Successfully Called');
+                                } else {
+                                    console.error('Error calling enable2faRoute:', enable2faResponse.statusText);
+                                }
+                            } catch (error) {
+                                console.error('Error calling enable2faRoute:', error);
+                            }
+
+                            qrCodeCardDiv.style.display = 'none';
+                        } else {
+                            alert('Invalid OTP. Please enter a valid 6-digit numeric OTP.');
+                        }
+                    } else {
+                        alert('Invalid OTP. Please enter a valid 6-digit numeric OTP.');
+                    }
+                });
+
+                // Append the QR Code card div to the body
+                document.body.appendChild(qrCodeCardDiv);
+            } else {
+                console.error('Error generating QR code:', qrResponse.statusText);
+            }
+        } catch (error) {
+            console.error('Error Making request: ', error);
+            enable2FASwitch.checked = false;
         }
-        } else {
-          console.error('Error enabling 2FA:', response.statusText);
-          enable2FASwitch.checked = false;
-        }
-      } catch (error) {
-          console.error('Error Making request: ', error)
-          enable2FASwitch.checked = false
-      }
     } else {
-      try {
-        const formData = new FormData();
-        formData.append('id', id);
+        try {
+            const formData = new FormData();
+            formData.append('id', id);
 
-        const response = await fetch('http://localhost:3000/disable2fa', {
-          method: 'POST',
-          body: formData,
-        });
+            const response = await fetch('http://localhost:3000/disable2fa', {
+                method: 'POST',
+                body: formData,
+            });
 
-        if (response.ok) {
-          console.log('2FA Disabled Succesfully')
-        } else {
-          console.error('Error disabling 2FA:', response.statusText);
-          enable2FASwitch.checked = true;
+            if (response.ok) {
+                console.log('2FA Disabled Successfully');
+            } else {
+                console.error('Error disabling 2FA:', response.statusText);
+                enable2FASwitch.checked = true;
+            }
+        } catch (error) {
+            console.error('Error making request:', error);
+            enable2FASwitch.checked = true;
         }
-      } catch (error) {
-        console.error('Error making request:', error)
-        enable2FASwitch.checked = true;
-      }
     }
-
-  });
+});
 
   check2FAStatus();
 
