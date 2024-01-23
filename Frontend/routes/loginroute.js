@@ -96,6 +96,19 @@ loginRouter.post('/login', async (req, res) => {
     }
 });
 
+loginRouter.get('/logout', (req, res) => {
+    // Clear the JWT token cookie
+    res.cookie('jwtToken', '', {
+        expires: new Date(0),  // Set expiration to a past date
+        httpOnly: true,
+        sameSite: 'Strict',
+        secure: true,
+    });
+
+    // Redirect or respond as needed
+    return res.redirect('/');
+});
+
 async function verifyPassword(password, pass_db) {
     try {
         await argon2.verify({ pass: password, encoded: pass_db });

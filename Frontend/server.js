@@ -12,11 +12,12 @@ import { OAuth2Client } from "google-auth-library";
 import jwt from 'jsonwebtoken';
 
 import { authorizeRoles, checkTokenValidity } from './routes/authorizeRolesRoute.js';
-import { keys, decryptData } from './routes/keyRoute.js';
 import loginRouter from './routes/loginroute.js'
 import accountRouter from './routes/accountRoute.js'
 import cookieRouter from './routes/cookieRoute.js';
 import tfaRouter from './routes/tfaRoute.js';
+import accountDataRouter from './routes/accountDataRoute.js';
+import rsaRouter from './routes/rsaRoute.js';
 
 const app = express();
 const port = 3000;
@@ -28,6 +29,8 @@ app.use(cors());
 app.use(cookieParser());
 app.use('/', loginRouter);
 app.use('/', accountRouter);
+app.use('/', accountDataRouter);
+app.use('/', rsaRouter);
 app.use('/', cookieRouter);
 app.use('/', tfaRouter);
 
@@ -107,224 +110,68 @@ app.get('/settings', authorizeRoles(), (req, res) => {
     res.render('settings', { user: req.user });
 });
 
-app.post('/create_pubkey', async (req, res) => {
-    try {
-        const public_key = req.body.public_key;
-        console.log(public_key)
-
-        const accountIdResult = await pool.execute(
-            'SELECT LAST_INSERT_ID() as account_id'
-        );
-
-        const accountId = accountIdResult[0][0].account_id;
-
-        // Now, you have the account_id, and you can use it in the next INSERT statement
-        const publicKeyResult = await pool.execute('CALL InsertPublicKey(?, ?)', [public_key, accountId]);
-
-
-        return res.status(200).json({ message: 'Public Key created successfully' });
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({ error: 'Internal Server Error' });
-    }
-})
-
-app.post('/update_pubkey', async (req, res) => {
-    try {
-        const public_key = req.body.public_key;
-        const id = req.body.id;
-        console.log(public_key)
-
-        // Now, you have the account_id, and you can use it in the next INSERT statement
-        const publicKeyResult = await pool.execute('CALL UpdatePublicKey(?, ?)', [public_key, id]);
-
-
-        return res.status(200).json({ message: 'Public Key updated successfully' });
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({ error: 'Internal Server Error' });
-    }
-})
-
-app.post('/create_pubkey', async (req, res) => {
-    try {
-        const public_key = req.body.public_key;
-        console.log(public_key)
-
-        const accountIdResult = await pool.execute(
-            'SELECT LAST_INSERT_ID() as account_id'
-        );
-
-        const accountId = accountIdResult[0][0].account_id;
-
-        // Now, you have the account_id, and you can use it in the next INSERT statement
-        const publicKeyResult = await pool.execute(
-            'INSERT INTO public_key (public_key, account_id, date_created) VALUES (?, ?, NOW())',
-            [public_key, accountId]
-        );
-
-        return res.status(200).json({ message: 'Public Key created successfully' });
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({ error: 'Internal Server Error' });
-    }
-})
-
-app.post('/update_pubkey', async (req, res) => {
-    try {
-        const public_key = req.body.public_key;
-        const email = req.body.email;
-        console.log(public_key)
-
-        // Now, you have the account_id, and you can use it in the next INSERT statement
-        const publicKeyResult = await pool.execute(
-            'UPDATE public_key ' +
-            'INNER JOIN user_account ON public_key.account_id = user_account.account_id ' +
-            'SET public_key.public_key = ?, public_key.date_created = NOW() ' +
-            'WHERE user_account.email_address = ?',
-            [public_key, email]
-        );
-
-        return res.status(200).json({ message: 'Public Key updated successfully' });
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({ error: 'Internal Server Error' });
-    }
-})
-
-app.post('/check_account', async (req, res) => {
-    const email = req.body.email;
-    console.log("EMAIL REQUEST:", email)
-    const emailRegex = /^[\w-]+(\.[\w-]+)*@[A-Za-z0-9]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$/;
-
-    if (!emailRegex.test(email)) {
-        return res.status(400).json({ error: 'Invalid email format' });
-    }
-
-    try {
-        const [result] = await pool.execute('CALL Check_account(?)', [email]);
-        console.log("RESULT:", result)
-        const count = result[0]['count(*)'] || 0;
-        if (result[0][0]['count(*)'] == 1) {
-            
-            return res.status(200).json({ message: 'Email Exists', result });
-        } else {
-            return res.status(200).json({ message: 'Email Does Not Exist', result });
-        }
-    }
-    catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
-
-app.get('/logout', (req, res) => {
-    // Clear the JWT token cookie
-    res.cookie('jwtToken', '', {
-        expires: new Date(0),  // Set expiration to a past date
-        httpOnly: true,
-        sameSite: 'Strict',
-        secure: true,
-    });
-
-    // Redirect or respond as needed
-    return res.redirect('/');
-});
-
-app.post('/get_account', async (req, res) => {
-    const id = req.body.id;
-
-    try {
-        const [tables] = await pool.execute(
-            'SELECT * FROM user_account WHERE account_id = ?;',
-            [id]
-        );
-
-        return res.status(200).json({ message: 'Account Data', tables });
+// app.post('/enable2fa', async (req, res) => {
+//     try {
+//         const cookie_from_frontend =  req.headers.authorization
+//         const isValid = checkTokenValidity(cookie_from_frontend)
        
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
-
-app.post('/get_account2', async (req, res) => {
-    const email = req.body.email;
-    
-    try {
-        const [tables] = await pool.execute('CALL GetUserAccountByEmail(?)', [email]);
+//         if (!isValid) {
+//             console.log("Error Validating Key")
+//         } else {
+//             const { id } = req.body;
         
-        return res.status(200).json({ message: 'Account Data', tables });
-       
-    } catch (error) {
-        console.log("error here")
-        console.error(error);
-        return res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
-
-app.post('/enable2fa', async (req, res) => {
-    try {
-        const cookie_from_frontend =  req.headers.authorization
-        const isValid = checkTokenValidity(cookie_from_frontend)
-       
-        if (!isValid) {
-            console.log("Error Validating Key")
-        } else {
-            const { id } = req.body;
+//             const sql = 'UPDATE user_account SET is_2fa_enabled = 1 WHERE account_id = ?';
+//             const values = [id];
         
-            const sql = 'UPDATE user_account SET is_2fa_enabled = 1 WHERE account_id = ?';
-            const values = [id];
+//             await pool.query(sql, values);
         
-            await pool.query(sql, values);
-        
-            res.json({ message: '2FA Enabled' });
-        }
-    } catch (error) {
-      console.error('Error enabling 2FA:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
-    }
-  });
+//             res.json({ message: '2FA Enabled' });
+//         }
+//     } catch (error) {
+//       console.error('Error enabling 2FA:', error);
+//       res.status(500).json({ error: 'Internal Server Error' });
+//     }
+//   });
 
-app.post('/disable2fa', async (req, res) => {
-    try {
-        const { id } = req.body;
+// app.post('/disable2fa', async (req, res) => {
+//     try {
+//         const { id } = req.body;
 
-        const sql = 'UPDATE user_account SET is_2fa_enabled = 0 WHERE account_id = ?'
-        const values = [id];
-        await pool.query(sql, values);
-        res.json({ message: '2FA Disabled'});
-    } catch (error) {
-        console.error('Error Disabling 2FA:', error)
-        res.status(500).json({error: 'Internal Server Error'})
-    }
-})
+//         const sql = 'UPDATE user_account SET is_2fa_enabled = 0 WHERE account_id = ?'
+//         const values = [id];
+//         await pool.query(sql, values);
+//         res.json({ message: '2FA Disabled'});
+//     } catch (error) {
+//         console.error('Error Disabling 2FA:', error)
+//         res.status(500).json({error: 'Internal Server Error'})
+//     }
+// })
 
-app.post('/get2faStatus', async (req, res) => {
-    try {
-        const { email } = req.body.email;
+// app.post('/get2faStatus', async (req, res) => {
+//     try {
+//         const { email } = req.body.email;
 
-        const sql = 'SELECT is_2fa_enabled, tfa_secret FROM user_account WHERE email_address = ?';
-        const values = [email];
+//         const sql = 'SELECT is_2fa_enabled, tfa_secret FROM user_account WHERE email_address = ?';
+//         const values = [email];
 
-        const result = await pool.query(sql, values);
-        console.log("Result: ", result)
+//         const result = await pool.query(sql, values);
+//         console.log("Result: ", result)
 
-        if (result.length > 0 && result[0].length) {
-            const is2FAEnabled = result[0][0].is_2fa_enabled;
-            const tfasecret = result[0][0].tfa_secret;
+//         if (result.length > 0 && result[0].length) {
+//             const is2FAEnabled = result[0][0].is_2fa_enabled;
+//             const tfasecret = result[0][0].tfa_secret;
 
-            console.log('is_2fa_enabled:', is2FAEnabled);
-            console.log("TFASecret:", tfasecret)
-            res.json({ is_2fa_enabled: is2FAEnabled, secret: tfasecret});
-        } else {
-            res.status(404).json({ error: 'User not found '});
-        }
-    } catch (error) {
-        console.error('Error getting 2FA status: ', error);
-        res.status(500).json({ error: 'Internal Server Error'});
-    };
-});
+//             console.log('is_2fa_enabled:', is2FAEnabled);
+//             console.log("TFASecret:", tfasecret)
+//             res.json({ is_2fa_enabled: is2FAEnabled, secret: tfasecret});
+//         } else {
+//             res.status(404).json({ error: 'User not found '});
+//         }
+//     } catch (error) {
+//         console.error('Error getting 2FA status: ', error);
+//         res.status(500).json({ error: 'Internal Server Error'});
+//     };
+// });
 
 app.get('/get-access-token', async (req, res) => {
     try {

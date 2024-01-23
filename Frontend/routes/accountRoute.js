@@ -66,4 +66,30 @@ accountRouter.post('/create_account', async (req, res) => {
     }
 });
 
+accountRouter.post('/check_account', async (req, res) => {
+    const email = req.body.email;
+    console.log("EMAIL REQUEST:", email)
+    const emailRegex = /^[\w-]+(\.[\w-]+)*@[A-Za-z0-9]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$/;
+
+    if (!emailRegex.test(email)) {
+        return res.status(400).json({ error: 'Invalid email format' });
+    }
+
+    try {
+        const [result] = await pool.execute('CALL Check_account(?)', [email]);
+        console.log("RESULT:", result)
+        const count = result[0]['count(*)'] || 0;
+        if (result[0][0]['count(*)'] == 1) {
+            
+            return res.status(200).json({ message: 'Email Exists', result });
+        } else {
+            return res.status(200).json({ message: 'Email Does Not Exist', result });
+        }
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 export default accountRouter;
