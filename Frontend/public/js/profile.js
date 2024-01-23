@@ -38,6 +38,30 @@ async function exportPrivateKey(key) {
   return jwkString;
 }
 
+
+async function get_email_via_id() {
+  const newResponse = await fetch('http://localhost:3000/get_data_from_cookie', {
+    method: 'POST'
+  });
+
+  const data = await newResponse.json(); // await here
+  const id = data['id_username']['id'];
+
+  const formData = new FormData();
+  formData.append('id', id);
+
+  const response = await fetch('http://localhost:3000/get_account', {
+    method: 'POST',
+    body: formData,
+  });
+
+  const data2 = await response.json();
+  var email_addr = data2["tables"][0]["email_address"];
+
+  return email_addr
+}
+
+
 async function keygen() {
   try {
     const keyPair = await window.crypto.subtle.generateKey(
@@ -101,13 +125,15 @@ async function verifyOTP(email, otp) {
   }
 }
 
+let id
+
 document.addEventListener('DOMContentLoaded', async function () {
   const newResponse = await fetch('http://localhost:3000/get_data_from_cookie', {
     method: 'POST'
   });
 
   const data1 = await newResponse.json(); // await here
-  const id = data1['id_username']['id'];
+  id = data1['id_username']['id'];
 
   const formData = new FormData();
   formData.append('id', id);
@@ -150,7 +176,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   async function check2FAStatus() {
     try {
       const formData = new FormData();
-      formData.append('email', email)
+      formData.append('id', id)
 
       const response = await fetch('http://localhost:3000/get2faStatus', {
         method: 'POST',
@@ -188,12 +214,14 @@ document.addEventListener('DOMContentLoaded', async function () {
 
       try {
         const formData = new FormData();
-        formData.append('email', email)
+        formData.append('id', id)
         const cookie = await get_cookie()
         const response = await fetch('http://localhost:3000/enable2fa', {
           method: 'POST',
           body: formData,
-          headers: {'Authorization':  `Bearer: ${cookie}`}
+          headers: {
+            'authorization': `Bearer: ${cookie}`
+          },
         });
 
         if (response.ok){
@@ -290,7 +318,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     } else {
       try {
         const formData = new FormData();
-        formData.append('email', email);
+        formData.append('id', id);
 
         const response = await fetch('http://localhost:3000/disable2fa', {
           method: 'POST',
@@ -314,61 +342,69 @@ document.addEventListener('DOMContentLoaded', async function () {
   check2FAStatus();
 
   const rotationButton = document.getElementById('rotationButton');
-  rotationButton.addEventListener('click', function () {
-    const cardDiv = document.createElement('div');
-    cardDiv.className = 'card';
-    cardDiv.innerHTML = `
-      <div class="card-body">
-        <h5 class="card-title">Key Rotation Warning</h5>
-        <p class="card-text">This will destroy all your old public and private keys and create new ones. Old messages encrypted with your public key will not be retrievable. Do you wish to proceed?</p>
-        <button type="button" class="btn btn-danger" id="denyRotation">Deny</button>
-        <button type="button" class="btn btn-success" id="confirmRotation">Confirm</button>
-      </div>`;
+rotationButton.addEventListener('click', async function () {
+  const cardDiv = document.createElement('div');
+  cardDiv.className = 'card';
+  cardDiv.innerHTML = `
+    <div class="card-body">
+      <h5 class="card-title">Key Rotation Warning</h5>
+      <p class="card-text">This will destroy all your old public and private keys and create new ones. Old messages encrypted with your public key will not be retrievable. Do you wish to proceed?</p>
+      <button type="button" class="btn btn-danger" id="denyRotation">Deny</button>
+      <button type="button" class="btn btn-success" id="confirmRotation">Confirm</button>
+    </div>`;
 
-    const denyRotationButton = document.getElementById('denyRotation');
-    denyRotationButton.addEventListener('click', function () {
-      cardDiv.style.display = 'none';
-    });
+  // Append cardDiv to the document
+  document.body.appendChild(cardDiv);
 
-    const confirmRotationButton = document.getElementById('confirmRotation')
-    confirmRotationButton.addEventListener('click', async function () {
-      keypair = await keygen();
-      public_key = keypair.publicKey;
-      private_key = keypair.privateKey;
-
-      pem_public = await exportPublicKey(public_key);
-      jwk_private = await exportPrivateKey(private_key);
-
-      const formData = new FormData();
-      formData.append('email', email);
-      formData.append('public_key', pem_public);
-
-      const response = await fetch('http://localhost:3000/update_pubkey', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (response.ok) {
-        const newData = {
-          privateKey: jwk_private,
-          email: email,
-          dateCreated: getCurrentTime(),
-          name: 'private_key'
-        };
-
-        updateData(email, newData);
-      }
-    });
-
-    cardDiv.style.position = 'fixed';
-    cardDiv.style.top = '0';
-    cardDiv.style.left = '50%';
-    cardDiv.style.transform = 'translateX(-50%)';
-    cardDiv.style.width = '300px';
-    cardDiv.style.margin = '20px';
-    cardDiv.style.border = '1px solid #ccc';
-    cardDiv.style.borderRadius = '8px';
-    cardDiv.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
-    document.body.appendChild(cardDiv);
+  // Retrieve the elements and add event listeners after appending to the DOM
+  const denyRotationButton = document.getElementById('denyRotation');
+  denyRotationButton.addEventListener('click', function () {
+    cardDiv.style.display = 'none';
   });
+
+  const confirmRotationButton = document.getElementById('confirmRotation');
+  confirmRotationButton.addEventListener('click', async function () {
+    const keypair = await keygen();
+    const public_key = keypair.publicKey;
+    const private_key = keypair.privateKey;
+
+    const pem_public = await exportPublicKey(public_key);
+    const jwk_private = await exportPrivateKey(private_key);
+
+    const formData = new FormData();
+    formData.append('email', email);
+    formData.append('public_key', pem_public);
+
+    const response = await fetch('http://localhost:3000/update_pubkey', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (response.ok) {
+      const newData = {
+        privateKey: jwk_private,
+        email: email,
+        dateCreated: getCurrentTime(),
+        name: 'private_key',
+      };
+
+      updateData(email, newData);
+    }
+
+    // Hide the cardDiv after confirmation
+    cardDiv.style.display = 'none';
+  });
+
+  // Style cardDiv
+  cardDiv.style.position = 'fixed';
+  cardDiv.style.top = '0';
+  cardDiv.style.left = '50%';
+  cardDiv.style.transform = 'translateX(-50%)';
+  cardDiv.style.width = '300px';
+  cardDiv.style.margin = '20px';
+  cardDiv.style.border = '1px solid #ccc';
+  cardDiv.style.borderRadius = '8px';
+  cardDiv.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
+});
+
 });

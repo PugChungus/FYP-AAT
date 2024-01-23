@@ -199,12 +199,25 @@ async function register() {
           });
           
           if (newResponse.ok) {
-            openIndexDB(jwk_private, email);
+            const verificationFormData = new FormData();
+            verificationFormData.append('email', email)
+            console.log('Am I getting it lmao?:', verificationFormData)
 
-            alert("Registeration Successful.")
-            window.location.href = 'http://localhost:3000'
+            const verificationResponse = await fetch('http://localhost:5000/email_verification', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(Object.fromEntries(verificationFormData.entries())),
+          });
+          if (verificationResponse.ok) {
+            openIndexDB(jwk_private, email);
+            alert("Registration Successful. Please Check your Email to activate your account. Mail Might take up to 5 Minutes. Might wanna check Junk or Spam folder ;)");
+            window.location.href = 'http://localhost:3000';
+          } else {
+            alert("Email verification failed. Please try again.");
           }
-          else{
+        }else{
             alert("Registeration Failed.")
           }
         }
@@ -286,10 +299,8 @@ async function login(event) {
       
       if (loginData.result) {
         console.log(data.result)
-        console.log(loginData.result)
         // document.cookie = `jwtToken=${data.JWTtoken}; SameSite=Strict; Secure`;
-        //const count = loginData[0]['count(*)'];
-        const count = loginData.result[0]['count(*)'];
+        const count = loginData.result[0][0].user_count;
   console.log(count)
         if (count === 1) {
 
@@ -376,7 +387,7 @@ async function login(event) {
 
 async function continueRegularLogin(formData) {
   // Perform additional steps for regular login if needed
-  const response = await fetch('http://localhost:3000/get_account2', {
+  const response = await fetch('http://localhost:3000/get_account', {
     method: 'POST',
     body: formData,
   });
