@@ -1,5 +1,6 @@
 
-document.getElementById("launchPicker").onclick = launchPicker;
+    document.getElementById("launchPicker").onclick = launchPicker;
+
 
 const msalParams = {
     auth: {

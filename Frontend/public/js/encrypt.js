@@ -687,21 +687,21 @@ async function sendFileToBackend(file) {
     }
 }
 
-async function performScan(formData) {
-    try {
-        const response = await fetch('http://localhost:5000/upload_file', {
-            method:'POST',
-            body: formData,
-        });
+// async function performScan(formData) {
+//     try {
+//         const response = await fetch('http://localhost:5000/upload_file', {
+//             method:'POST',
+//             body: formData,
+//         });
 
-        const data = await response.json()
-        console.log(data);
-        return data;
-    } catch (error) {
-        console.error('Error during scan:', error);
-        return {isValid:false, error: 'Error during scan'};
-    }
-}
+//         const data = await response.json()
+//         console.log(data);
+//         return data;
+//     } catch (error) {
+//         console.error('Error during scan:', error);
+//         return {isValid:false, error: 'Error during scan'};
+//     }
+// }
 
 async function clearEncryptedFolder() {
     try {
@@ -896,7 +896,7 @@ async function uploadtoGoogle (type,name){
         const accessToken = await getGoogleToken();
         console.log(accessToken)
         const headers = new Headers();
-        headers.append('Authorization', `Bearer'${accessToken}`);
+        headers.append('Authorization', `Bearer ${accessToken}`);
         console.log(headers)
         const formData = new FormData();
         const fileNameOnDrive = `${name}.zip`;
