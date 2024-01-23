@@ -96,15 +96,7 @@ async function sendAccessTokenToServer(accessToken) {
   }
 }
 
-function auth(){
-    const width = 600;
-    const height = 600;
-    const left = window.screenX + (window.outerWidth - width) / 2;
-    const top = window.screenY + (window.outerHeight - height) / 2;
-    const url = '/get-access-token'; // Endpoint to start authentication
 
-    window.open(url, 'Google Auth', `width=${width},height=${height},left=${left},top=${top}`);
-  }
 
 
 async function sendAccessTokenToServer(accessToken) {
@@ -465,34 +457,3 @@ fileInput.addEventListener('change', function () {
         document.getElementById('selected-file-name').textContent = 'No file selected';
     }
 });
-
-
-//download.html \/
-function loaddata() {
-  console.log(global_data)
-}
-
-
-
-function createFileList(global_data) {
-  encrypted_data = global_data
-  console.log(global_data)
-  console.log(encrypted_data)
-  // Assuming encrypted_data is an array of objects
-  // For example: encrypted_data = [{ "encrypted_data": "...", "filename": "file1.txt" }, { "encrypted_data": "...", "filename": "file2.txt" }];
-  
-  const tableBody = document.querySelector('#fileTable tbody');
-
-  // Clear existing table rows
-  tableBody.innerHTML = '';
-
-  // Loop through the encrypted_data array and populate the table
-  encrypted_data.forEach(dataItem => {
-    const row = tableBody.insertRow();
-    const filenameCell = row.insertCell(0);
-    const encryptedCell = row.insertCell(1);
-
-    filenameCell.textContent = dataItem.filename;
-    encryptedCell.textContent = dataItem.encrypted_data;
-  });
-}
