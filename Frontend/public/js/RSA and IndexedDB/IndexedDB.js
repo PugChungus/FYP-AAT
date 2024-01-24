@@ -1,45 +1,49 @@
-let db;
-
 export function openIndexDB(jwk_private, user_email) {
     //open specific to user email
     const DBOpenRequest = window.indexedDB.open(`${user_email}_db`, 4);
     DBOpenRequest.onupgradeneeded = (event) => {
         console.log("Database upgrade needed");
         db = event.target.result;
-    
-        if (!db.objectStoreNames.contains(`${user_email}__Object_Store`)) {
-          const objectStore = db.createObjectStore(`${user_email}__Object_Store`, {
-            keyPath: "Private Key",
-          });
-    
-          // // define what data items the objectStore will contain
-          objectStore.createIndex("privateKey", "privateKey", { unique: false });
-          objectStore.createIndex("email", "email", { unique: false });
-          objectStore.createIndex("dateCreated", "dateCreated", { unique: false });
-          addData(jwk_private, user_email)
-        }
-    };
+        const objectStore = db.createObjectStore(`${user_email}__Object_Store`, {
+          keyPath: "Private Key",
+        });
+  
+        // // define what data items the objectStore will contain
+        objectStore.createIndex("privateKey", "privateKey", { unique: false });
+        objectStore.createIndex("email", "email", { unique: false });
+        objectStore.createIndex("dateCreated", "dateCreated", { unique: false });
+        addData(jwk_private, user_email)
+        console.log("working")
+      }
 }
 
-function addData(user_email) {
-  const transaction = db.transaction([`${user_email}__Object_Store`], "readwrite");
-  const objectStore = transaction.objectStore(`${user_email}__Object_Store`);
+function addData(jwk_private, user_email) {
+  const DBOpenRequest = window.indexedDB.open(`${user_email}_db`, 4);
+  DBOpenRequest.onsuccess = (event) => {
+    db = event.target.result;
+    const transaction = db.transaction([`${user_email}__Object_Store`], "readwrite");
+    const objectStore = transaction.objectStore(`${user_email}__Object_Store`);
 
-  const newItem = {
-    privateKey: jwk_private,
-    email: user_email,
-    dateCreated: getCurrentTime(),
-  };
+    const newItem = {
+      "Private Key": jwk_private,
+      email: user_email,
+      dateCreated: getCurrentTime(),
+    };
 
-  const addRequest = objectStore.add(newItem);
+    const putRequest = objectStore.put(newItem);
 
-  addRequest.onsuccess = () => {
-    console.log("Data added successfully");
-  };
+    transaction.oncomplete = () => {
+      console.log("Transaction completed");
+    };
 
-  addRequest.onerror = (error) => {
-    console.error("Error adding data: ", error);
-  };
+    putRequest.onsuccess = () => {
+      console.log("Data added or updated successfully");
+    };
+
+    putRequest.onerror = (error) => {
+      console.error("Error adding or updating data: ", error);
+    };
+  }
 }
 
 export async function updateData(user_email, newData) {
@@ -77,7 +81,6 @@ export function getCurrentTime() {
 
   return currentTime;
 }
-
 
 // function addData(user_email) {
 //     const transaction = db.transaction([`${user_email}__Object_Store`], "readwrite");
