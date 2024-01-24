@@ -44,10 +44,10 @@ async function rotateKeys() {
 
   if (response.ok) {
     const newData = {
+      keyName: 'Private Key',
       privateKey: jwk_private,
       email: email,
       dateCreated: getCurrentTime(),
-      name: 'private_key',
     };
 
     await updateData(email, newData);
