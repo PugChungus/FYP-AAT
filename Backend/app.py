@@ -655,7 +655,9 @@ def encrypt_history():
         account_id = request.form['id']  # Use request.form for form data
         # Assuming you have a function to retrieve account_id based on email
         key_name = request.form['key_name']
+        print("KEY NAMEZ:", key_name)
         type_of_encryption = request.form['type']  # Use request.form for form data
+        print("TYPEZZZ:", type_of_encryption)
 
         # Proceed with the database update for username only
         sql = "INSERT INTO history (time, file_name, file_size, account_id, type, key_name) VALUES (%s, %s, %s, %s, %s, %s);"
