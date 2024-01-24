@@ -24,13 +24,15 @@ async function get_email_via_id() {
   return email_addr
 }
 
-async function verifyOTP(email, otp) {
+async function verifyOTP(email, otp, secret) {
   try {
     const formData = new FormData();
     formData.append('email', email);
     formData.append('otp', otp);
-
+    formData.append('secret', secret)
+    console.log("im in your pants:", secret)
     const jwtToken = await get_cookie()
+    console.log("ahdjoasd:", formData)
 
     const response = await fetch('http://localhost:5000/verify_otp', {
       method: 'POST',
@@ -39,6 +41,8 @@ async function verifyOTP(email, otp) {
       },
       body: formData,
     });
+
+    print("NATYYYAY:" ,response)
 
     if (response.ok) {
       const data = await response.json();
@@ -142,7 +146,9 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         try {
             const formData = new FormData();
-            formData.append('id', id);
+            
+            let email = await get_email_via_id()
+            formData.append('email', email);
             const cookie = await get_cookie();
 
             const jwtToken = await get_cookie();
@@ -205,15 +211,19 @@ document.addEventListener('DOMContentLoaded', async function () {
                     const enteredOTP = qrCodeCardDiv.querySelector('#otpInput').value;
 
                     if (/^\d{6}$/.test(enteredOTP)) {
+                        const email = await get_email_via_id()
+                        console.log("line 209 email:", email)
                         console.log('Submitted OTP:', enteredOTP);
-                        const isValidOTP = await verifyOTP(email, enteredOTP);
+                        console.log('Secret Key', qrData.secret)
+                        let secret = qrData.secret
+                        const isValidOTP = await verifyOTP(email, enteredOTP, secret);
 
                         if (isValidOTP) {
                             console.log('OTP is valid. Proceed with enabling 2FA.');
 
                             try {
                                 // Move the enable2faRoute request here
-                                const enable2faResponse = await fetch('http://localhost:3000/enable2faRoute', {
+                                const enable2faResponse = await fetch('http://localhost:3000/enable2fa', {
                                     method: 'POST',
                                     body: formData,
                                     headers: {
