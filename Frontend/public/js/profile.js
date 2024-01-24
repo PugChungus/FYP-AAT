@@ -1,3 +1,5 @@
+import { get_cookie } from "./cookie.js";
+
 function getCurrentTime() {
   const now = new Date();
   const year = now.getFullYear().toString();
@@ -14,15 +16,6 @@ function ab2str(buf) {
   return String.fromCharCode.apply(null, new Uint8Array(buf));
 }
 
-async function get_cookie() {
-  const cookie_response = await fetch('http://localhost:3000/api/getCookie', {
-      method: 'GET',
-  });
-
-  const cookie_data = await cookie_response.json()
-  const token = cookie_data.token.jwtToken
-  return token
-}
 
 async function exportPublicKey(key) {
   const exported = await window.crypto.subtle.exportKey("spki", key);
@@ -102,7 +95,7 @@ async function verifyOTP(email, otp) {
     formData.append('email', email);
     formData.append('otp', otp);
 
-    const jwtToken = get_cookie()
+    const jwtToken = await get_cookie()
 
     const response = await fetch('http://localhost:5000/verify_otp', {
       method: 'POST',
@@ -220,7 +213,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             formData.append('id', id);
             const cookie = await get_cookie();
 
-            const jwtToken = get_cookie();
+            const jwtToken = await get_cookie();
 
             const qrResponse = await fetch('http://localhost:5000/generate_2fa_qr_code', {
                 method: 'POST',
