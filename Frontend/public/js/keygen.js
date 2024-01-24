@@ -1,3 +1,5 @@
+import { get_cookie } from "./cookie.js";
+
 function openKeyCard() {
     document.getElementById('keyCard').style.display = 'block';
 }
@@ -10,16 +12,6 @@ function isValidKeyName(keyName) {
     // Use a regex pattern to match only alphanumeric characters and underscores
     const pattern = /^[a-zA-Z0-9_]+$/;
     return pattern.test(keyName);
-}
-
-async function get_cookie() {
-    const cookie_response = await fetch('http://localhost:3000/api/getCookie', {
-        method: 'GET',
-    });
-  
-    const cookie_data = await cookie_response.json()
-    const token = cookie_data.token.jwtToken
-    return token
 }
 
 function generateKey() {
@@ -96,7 +88,7 @@ async function importKey() {
         const formData = new FormData();
         formData.append('file', file);
 
-        const jwtToken = get_cookie()
+        const jwtToken = await get_cookie()
 
         const response = await fetch('http://localhost:5000/check_key', {
             method: 'POST',

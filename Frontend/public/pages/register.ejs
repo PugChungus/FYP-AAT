@@ -40,18 +40,26 @@
                               </div>
                           </form>
                           <div class="social d-flex text-center">
-                              <button class="px-2 py-2 mr-md-1 rounded" onclick="register()"><span class="ion-logo-facebook mr-2"></span>Next</button>
+                              <button class="px-2 py-2 mr-md-1 rounded" onclick="module.register()"><span class="ion-logo-facebook mr-2"></span>Next</button>
                           </div>
                       </div>
                   </div>
               </div>              
             </div>
         </section>
-        
+    
+    <script type="text/javascript">
+        const module = {};
+    </script>
+
     <script src="/js/bootstrap.min.js"></script>
     <script src="/js/jquery.min.js"></script>
     <script src="/js/main.js"></script>
     <script src="/js/popper.js"></script>
-    <script src="/js/account.js"></script>
+    <script type="module">
+        import { register } from '/js/account.js';
+
+        module.register = register        
+    </script>
 </body>
 </html>

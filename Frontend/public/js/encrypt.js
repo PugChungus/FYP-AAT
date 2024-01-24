@@ -1,3 +1,5 @@
+import { get_cookie } from "./cookie.js";
+
 const selectedFiles = {
     files: []
 };
@@ -6,15 +8,6 @@ const seen = new Set();
 const keyDropdown = document.getElementById('key-dropdown');
 let selectedKey = keyDropdown.value;
 
-async function get_cookie() {
-    const cookie_response = await fetch('http://localhost:3000/api/getCookie', {
-        method: 'GET',
-    });
-
-    const cookie_data = await cookie_response.json()
-    const token = cookie_data.token.jwtToken
-    return token
-}
 
 function getAllKeyData() {
     const keyData = [];
@@ -214,7 +207,7 @@ async function sendFileToBackend(file) {
 }
 
 async function performScan(formData) {
-    const jwtToken = get_cookie()
+    const jwtToken =  await get_cookie()
     try {
         const response = await fetch('http://localhost:5000/upload_file', {
             method:'POST',
@@ -274,7 +267,7 @@ async function encrypt(file, i) {
     console.log(formData)
 
     try {
-        const jwtToken = get_cookie()
+        const jwtToken = await get_cookie()
         const response = await fetch('http://localhost:5000/encrypt', {
             method: 'POST',
             headers: {
@@ -303,7 +296,7 @@ async function encrypt(file, i) {
             formData2.append('type', 'encryption')
             formData2.append('id', id)
 
-            const jwtToken = get_cookie()
+            const jwtToken = await get_cookie()
 
             const response2 = await fetch('http://localhost:5000/add_to_encryption_history', {
                 method: 'POST',

@@ -1,12 +1,4 @@
-async function get_cookie() {
-  const cookie_response = await fetch('http://localhost:3000/api/getCookie', {
-      method: 'GET',
-  });
-
-  const cookie_data = await cookie_response.json()
-  const token = cookie_data.token.jwtToken
-  return token
-}
+import { get_cookie } from "./cookie.js";
 
 document.addEventListener('DOMContentLoaded', async function() {
   const newResponse = await fetch('http://localhost:3000/get_data_from_cookie', {
@@ -57,7 +49,7 @@ async function cookie_login() {
     const formData = new FormData();
     formData.append('id', id)
 
-    const jwtToken = get_cookie()
+    const jwtToken = await get_cookie()
 
     const response = await fetch('http://localhost:5000/create_user_dict', {
       method: 'POST',

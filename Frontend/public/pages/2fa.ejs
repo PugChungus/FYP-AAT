@@ -17,7 +17,7 @@
                 <div class="col-md-6 col-lg-4">
                     <div class="login-wrap p-0">
                         <h3 class="mb-4 text-center">Two-Factor Authentication</h3>
-                        <form action="#" class="signin-form" onsubmit="verifyTOTP(event)">
+                        <form action="#" class="signin-form" onsubmit="module.verifyTOTP(event)">
                             <div class="form-group">
                                 <label for="otp-field">Enter OTP:</label>
                                 <input type="text" autocomplete="off" id="otp-field" class="form-control" placeholder="6-digit OTP" required>
@@ -32,11 +32,17 @@
         </div>
     </section>
 
+    <script type="text/javascript">
+        const module = {};
+    </script>
     <script src="/js/bootstrap.min.js"></script>
     <script src="/js/jquery.min.js"></script>
     <script src="/js/main.js"></script>
     <script src="/js/popper.js"></script>
-    <script src="/js/account.js"></script>
+    <script type="module">
+        import { verifyTOTP } from '/js/account.js';
+
+        module.verifyTOTP = verifyTOTP       </script>
     <script src="https://unpkg.com/@otplib/preset-browser@^12.0.0/buffer.js"></script>
     <script src="https://unpkg.com/@otplib/preset-browser@^12.0.0/index.js"></script>
 

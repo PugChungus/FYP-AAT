@@ -51,7 +51,6 @@ accountRouter.post('/create_account', async (req, res) => {
 
         const [result] = await pool.execute('CALL create_account(?, ?, ?)', [username, encodedHash, email]);
         
-
         res.cookie('jwtToken', '', {
             expires: new Date(0),  // Set expiration to a past date
             httpOnly: true,
