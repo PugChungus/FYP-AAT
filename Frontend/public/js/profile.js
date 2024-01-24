@@ -90,12 +90,11 @@ document.addEventListener('DOMContentLoaded', async function () {
       </label>
       <span>Enable Two-Factor Authentication</span>
     </div>
-    <button type="button" class="btn btn-danger" id="rotationButton">Key Rotation</button>
+    <button type="button" class="btn btn-danger" id="rotationButton" onclick="module.showKeyRotationWarning()">Key Rotation</button>
   `;
 
   const imgElement = document.getElementById('profile-picture');
   imgElement.src = objectURL;
-
 
   const enable2FASwitch = document.getElementById('2faToggle');
 

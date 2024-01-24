@@ -11,7 +11,7 @@ import { dirname } from 'path';
 import { OAuth2Client } from "google-auth-library";
 import jwt from 'jsonwebtoken';
 
-import { authorizeRoles, checkTokenValidity } from './routes/authorizeRolesRoute.js';
+import { authorizeRoles, checkJwtToken } from './routes/authorizeRolesRoute.js';
 import loginRouter from './routes/loginroute.js'
 import accountRouter from './routes/accountRoute.js'
 import cookieRouter from './routes/cookieRoute.js';
@@ -42,7 +42,7 @@ app.set('views', path.join(__dirname, 'public', 'pages'));
 
 // Set up a route to render your HTML file
 app.get('/', (req, res) => {
-    const isTokenValid = checkTokenValidity(req);
+    const isTokenValid = checkJwtToken(req.cookies.jwtToken);
 
     if (isTokenValid) {
         return res.redirect('/home');
@@ -109,69 +109,6 @@ app.get('/profile', authorizeRoles(), (req, res) => {
 app.get('/settings', authorizeRoles(), (req, res) => {
     res.render('settings', { user: req.user });
 });
-
-// app.post('/enable2fa', async (req, res) => {
-//     try {
-//         const cookie_from_frontend =  req.headers.authorization
-//         const isValid = checkTokenValidity(cookie_from_frontend)
-       
-//         if (!isValid) {
-//             console.log("Error Validating Key")
-//         } else {
-//             const { id } = req.body;
-        
-//             const sql = 'UPDATE user_account SET is_2fa_enabled = 1 WHERE account_id = ?';
-//             const values = [id];
-        
-//             await pool.query(sql, values);
-        
-//             res.json({ message: '2FA Enabled' });
-//         }
-//     } catch (error) {
-//       console.error('Error enabling 2FA:', error);
-//       res.status(500).json({ error: 'Internal Server Error' });
-//     }
-//   });
-
-// app.post('/disable2fa', async (req, res) => {
-//     try {
-//         const { id } = req.body;
-
-//         const sql = 'UPDATE user_account SET is_2fa_enabled = 0 WHERE account_id = ?'
-//         const values = [id];
-//         await pool.query(sql, values);
-//         res.json({ message: '2FA Disabled'});
-//     } catch (error) {
-//         console.error('Error Disabling 2FA:', error)
-//         res.status(500).json({error: 'Internal Server Error'})
-//     }
-// })
-
-// app.post('/get2faStatus', async (req, res) => {
-//     try {
-//         const { email } = req.body.email;
-
-//         const sql = 'SELECT is_2fa_enabled, tfa_secret FROM user_account WHERE email_address = ?';
-//         const values = [email];
-
-//         const result = await pool.query(sql, values);
-//         console.log("Result: ", result)
-
-//         if (result.length > 0 && result[0].length) {
-//             const is2FAEnabled = result[0][0].is_2fa_enabled;
-//             const tfasecret = result[0][0].tfa_secret;
-
-//             console.log('is_2fa_enabled:', is2FAEnabled);
-//             console.log("TFASecret:", tfasecret)
-//             res.json({ is_2fa_enabled: is2FAEnabled, secret: tfasecret});
-//         } else {
-//             res.status(404).json({ error: 'User not found '});
-//         }
-//     } catch (error) {
-//         console.error('Error getting 2FA status: ', error);
-//         res.status(500).json({ error: 'Internal Server Error'});
-//     };
-// });
 
 app.get('/get-access-token', async (req, res) => {
     try {
