@@ -90,7 +90,7 @@ export async function register() {
           if (verificationResponse.ok) {
             openIndexDB(jwk_private, email);
             alert("Registration Successful. Please Check your Email to activate your account. Mail Might take up to 5 Minutes. Might wanna check Junk or Spam folder ;)");
-            window.location.href = 'http://localhost:3000';
+            // window.location.href = 'http://localhost:3000';
           } else {
             alert("Email verification failed. Please try again.");
           }
