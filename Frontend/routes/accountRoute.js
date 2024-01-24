@@ -77,10 +77,8 @@ accountRouter.post('/check_account', async (req, res) => {
 
     try {
         const [result] = await pool.execute('CALL Check_account(?)', [email]);
-        console.log("RESULT:", result)
-        const count = result[0]['count(*)'] || 0;
-        if (result[0][0]['count(*)'] == 1) {
-            
+        
+        if (result[0][0]['count'] == 1) {
             return res.status(200).json({ message: 'Email Exists', result });
         } else {
             return res.status(200).json({ message: 'Email Does Not Exist', result });

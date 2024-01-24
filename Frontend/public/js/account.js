@@ -380,10 +380,6 @@ export async function login(event) {
             // Continue with regular login process
             await continueRegularLogin(formData);
           }
-          
-          // document.cookie = `jwtToken=${token}; SameSite=Strict; Secure`;
-
-          window.location.href = 'http://localhost:3000/home';
         } else {
           alert("Login Failed");
         }
