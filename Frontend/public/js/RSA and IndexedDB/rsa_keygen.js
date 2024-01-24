@@ -1,4 +1,4 @@
-function ab2str(buf) {
+export function ab2str(buf) {
     return String.fromCharCode.apply(null, new Uint8Array(buf));
 }
 
@@ -44,7 +44,6 @@ export async function keygen() {
         console.error("Error generating key pair:", error);
     }
 }
-
 
 // async function exportPublicKey(key) {
 //     const exported = await window.crypto.subtle.exportKey("spki", key);

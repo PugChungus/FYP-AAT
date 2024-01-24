@@ -45,6 +45,9 @@ async function hideDropZoneAndFileDetails() {
     const dropZoneEncasement = document.querySelector('.encasement-container');
     const decryptButton = document.getElementById('decryptButton');
     const downloadButton = document.createElement('button');
+    const googleButton = document.createElement('button');
+    const onedriveButton = document.createElement('button');
+
     downloadButton.id = 'downloadButton';
     downloadButton.textContent = 'Download Encrypted Files';
 
@@ -81,8 +84,27 @@ async function hideDropZoneAndFileDetails() {
                 div.innerHTML = "";
                 seen.clear();
             }
-        });
 
+        });
+         // Create Google Button
+         const googlebutton = document.createElement('button');
+         googlebutton.textContent ="Download Zip to google";
+         googlebutton.addEventListener('click', async () => {
+             const googleFolderName = window.prompt('Enter the name for the zip folder (without extension)');
+             if (googleFolderName) {
+                 uploadtoGoogle('zip', googleFolderName);
+             }
+         })
+         //Create One Drive
+         const onedrivebutton = document.createElement('button');
+         onedrivebutton.textContent ="Download Zip to onedrive";
+         onedrivebutton.addEventListener('click', async () => {
+             const onedriveFolderName = window.prompt('Enter the name for the zip folder (without extension)');
+             if (onedriveFolderName) {
+                 uploadtoOneDrive('zip', onedriveFolderName);
+             }
+         })
+        
         const individualButton = document.createElement('button');
         individualButton.textContent = 'Download Decrypted Files Individually';
         individualButton.addEventListener('click', async () => {
@@ -99,10 +121,25 @@ async function hideDropZoneAndFileDetails() {
             div.innerHTML = "";
             seen.clear();
         });
+        const individualGoogle = document.createElement('button');
+        individualGoogle.textContent = 'Upload Files To Google Individually';
+        individualGoogle.addEventListener('click', async () => {
+            uploadtoGoogle('individual');
+        });
 
+        const individualOnedrive = document.createElement('button');
+        individualOnedrive.textContent = 'Upload Files To OneDrive Individually';
+        individualOnedrive.addEventListener('click', async () => {
+            uploadtoOneDrive('individual');
+        });
         // Append buttons to the card div
+        cardDiv.appendChild(googlebutton)
+        cardDiv.appendChild(onedrivebutton)
         cardDiv.appendChild(zipButton);
         cardDiv.appendChild(individualButton);
+        cardDiv.appendChild(individualGoogle);
+        cardDiv.appendChild(individualOnedrive);
+
 
         // Append the card div to the document or display it wherever needed
         document.body.appendChild(cardDiv);
@@ -124,9 +161,28 @@ async function hideDropZoneAndFileDetails() {
             div.innerHTML = "";
             seen.clear();
         });
+        // If there is only one file, create a simple download button
+        googleButton.style.display = 'block';
+        googleButton.textContent = 'Upload File To Google';  // Reuse the existing variable
+        
+        // Add click event listener to the download button
+        googleButton.addEventListener('click', async () => {
+            uploadtoGoogle('individual', decryptedExtension);
+        });
+
+        // If there is only one file, create a simple download button
+        onedriveButton.style.display = 'block';
+        onedriveButton.textContent = 'Upload File To OneDrive';  // Reuse the existing variable
+        
+        // Add click event listener to the download button
+        onedriveButton.addEventListener('click', async () => {
+            uploadtoOneDrive('individual', decryptedExtension);
+        });
         
         // Append the download button to the document or display it wherever needed
         document.body.appendChild(downloadButton);
+        document.body.appendChild(googleButton);
+        document.body.appendChild(onedriveButton);
     }
 }
 
@@ -326,4 +382,228 @@ async function downloadDecryptedFiles(type, name) {
 
         await clearDecryptedFolder();
     }
+}
+async function uploadtoGoogle (type,name){
+    if (type === 'individual') {
+        const files = selectedFiles.files;
+        const totalFiles = files.length;
+        const accesstoken = await getGoogleToken()
+        for (let i = 0; i < totalFiles; i++) {
+            const filename = files[i].name;
+            console.log(filename)
+            let fileNameWithoutExtension;
+            console.log(filename)
+            const numberOfDots = (filename.match(/\./g) || []).length;
+
+            if (numberOfDots === 1 || numberOfDots > 1) {
+                fileNameWithoutExtension = filename.split('.').slice(0, -1).join('.');
+            } else {
+                fileNameWithoutExtension = filename;
+            }
+            if (fileNameWithoutExtension.startsWith("encrypted_")) {
+                fileNameWithoutExtension = fileNameWithoutExtension.replace('encrypted_', 'decrypted_');
+            }
+            const decryptedExtension = decryptedExtensionList[i % decryptedExtensionList.length];
+
+            let fileNameWithEnc = `${fileNameWithoutExtension}.${decryptedExtension}`;
+            const backendurl = `http://localhost:5000/download_single_decrypted_file/${fileNameWithEnc}`
+
+            const blob = await fetch(backendurl).then(response => response.blob());
+        
+            const headers = new Headers();
+            headers.append('Authorization', 'Bearer ' + accesstoken);
+
+            // Construct the request body
+            console.log(files)
+            const formData = new FormData();
+            formData.append('metadata', new Blob([JSON.stringify({ name: fileNameWithEnc })], { type: 'application/json' }));
+            formData.append('file', blob, fileNameWithEnc);
+
+            // Make the POST request
+            fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                method: 'POST',
+                headers,
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Files uploaded successfully:', data);
+            })
+            .catch(error => {
+                console.error('Error uploading file:', error);
+            });
+        }
+    } else {
+        const filename = 'unencrypted.zip'
+        const filenamee = name
+        console.log(filenamee)
+        const backendURL = `http://localhost:5000/download_decrypted_zip/${filename}`;
+        const googleDriveAPI = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+
+        // Step 1: Download ZIP file from the backend
+        const blob = await fetch(backendURL).then(response => response.blob());
+        // Step 2: Upload ZIP file to Google Drive
+        
+        const accessToken = await getGoogleToken();
+        console.log(accessToken)
+        const headers = new Headers({
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/octet-stream', // Set content type to binary
+        });
+        
+        const metadata = {
+            name: `${name}.zip`, // Set the desired file name
+            mimeType: 'application/octet-stream',
+        };
+
+        const formData = new FormData();
+        formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/octet-stream' }));
+        formData.append('file', blob, `${name}.zip`);
+
+        try {
+            const response = await fetch(googleDriveAPI, {
+                method: 'POST',
+                headers,
+                body: blob,
+            });
+       
+     if (response.ok) {
+        const data = await response.json();
+        console.log('File uploaded successfully:', data);
+        // Step 3: Update the filename (send a PATCH request)
+        const fileId = data.id; // Assuming the response contains the file ID
+        const updateFilenameAPI = `https://www.googleapis.com/drive/v3/files/${fileId}`;
+        const updateFilenameData = {
+            name: `${name}.zip`,
+        };
+
+        const updateResponse = await fetch(updateFilenameAPI, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updateFilenameData),
+        });
+        if (updateResponse.ok) {
+            const updateData = await updateResponse.json();
+            console.log('Filename updated successfully:', updateData);
+        } else {
+            console.error('Error updating filename:', updateResponse.statusText);
+        }
+    } else {
+        console.error('Error uploading file to Google Drive:', response.statusText);
+    }
+} catch (error) {
+    console.error('Error uploading file to Google Drive:', error);
+}
+}
+       
+
+
+    
+
+
+}
+
+async function uploadtoOneDrive (type,name){
+    if (type === 'individual') {
+        const files = selectedFiles.files;
+        const totalFiles = files.length;
+        const accesstoken = await getTokenForRequest()
+        for (let i = 0; i < totalFiles; i++) {
+            const filename = files[i].name;
+            console.log(filename)
+            let fileNameWithoutExtension;
+            console.log(filename)
+            const numberOfDots = (filename.match(/\./g) || []).length;
+
+            if (numberOfDots === 1 || numberOfDots > 1) {
+                fileNameWithoutExtension = filename.split('.').slice(0, -1).join('.');
+            } else {
+                fileNameWithoutExtension = filename;
+            }
+            if (fileNameWithoutExtension.startsWith("encrypted_")) {
+                fileNameWithoutExtension = fileNameWithoutExtension.replace('encrypted_', 'decrypted_');
+            }
+            const decryptedExtension = decryptedExtensionList[i % decryptedExtensionList.length];
+
+            let fileNameWithEnc = `${fileNameWithoutExtension}.${decryptedExtension}`;
+
+             console.log(decryptedExtension)
+             console.log(fileNameWithoutExtension)
+             console.log(fileNameWithEnc)
+            const OneDriveAPI = `https://api.onedrive.com/v1.0/drive/root:/${fileNameWithEnc}:/content`;
+            const backendurl = `http://localhost:5000/download_single_decrypted_file/${fileNameWithEnc}`
+
+            const blob = await fetch(backendurl).then(response => response.blob());
+        
+            const headers = new Headers();
+            headers.append('Authorization', 'Bearer ' + accesstoken);
+
+            // Construct the request body
+            console.log(files)
+            const formData = new FormData();
+            formData.append('metadata', new Blob([JSON.stringify({ name: fileNameWithEnc })], { type: 'application/json' }));
+            formData.append('file', blob);
+
+            console.log(formData)
+            // Make the POST request
+            fetch(OneDriveAPI, {
+                method: 'PUT',
+                headers,
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Files uploaded successfully:', data);
+            })
+            .catch(error => {
+                console.error('Error uploading file:', error);
+            });
+        }
+    } else {
+        
+        const filenamefordrive = `${name}.zip`
+        const filename = 'unencrypted.zip'
+        const backendURL = `http://localhost:5000/download_decrypted_zip/${filename}`;
+        const OneDriveAPI= `https://api.onedrive.com/v1.0/drive/root:/${filenamefordrive}:/content`;
+
+        // Step 1: Download ZIP file from the backend
+        const blob = await fetch(backendURL).then(response => response.blob());
+        // Step 2: Upload ZIP file to Google Drive
+        console.log(blob)
+        const accessToken = await getTokenForRequest();
+        console.log(accessToken)
+        const headers = new Headers({
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/octet-stream', // Set content type to binary
+        });
+        console.log(headers)
+        const formData = new FormData();
+        const fileNameOnDrive = `${name}.zip`;
+
+        formData.append('metadata', new Blob([JSON.stringify({ name: fileNameOnDrive })], { type: 'application/json' }));
+        formData.append('file', blob, fileNameOnDrive);
+
+        try {
+            const response = await fetch(OneDriveAPI, {
+                method: 'PUT',
+                headers,
+                body: blob,
+            });
+       
+     if (response.ok) {
+        const data = await response.json();
+        console.log('File uploaded successfully:', data);
+    } else {
+        console.error('Error uploading file to OneDrive:', response.statusText);
+    }
+} catch (error) {
+    console.error('Error uploading file to OneDrive:', error);
+}
+}
+       
+
+
 }

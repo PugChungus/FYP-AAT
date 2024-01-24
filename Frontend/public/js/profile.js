@@ -1,36 +1,6 @@
 import { get_cookie } from "./cookie.js";
 
-function getCurrentTime() {
-  const now = new Date();
-  const year = now.getFullYear().toString();
-  const month = (now.getMonth() + 1).toString().padStart(2, '0');
-  const day = now.getDate().toString().padStart(2, '0');
-  const hours = now.getHours().toString().padStart(2, '0');
-  const minutes = now.getMinutes().toString().padStart(2, '0');
-  const currentTime = `${day}/${month}/${year} ${hours}:${minutes}`;
-  console.log(currentTime);
-  return currentTime;
-}
-
-function ab2str(buf) {
-  return String.fromCharCode.apply(null, new Uint8Array(buf));
-}
-
-
-async function exportPublicKey(key) {
-  const exported = await window.crypto.subtle.exportKey("spki", key);
-  const exportedAsString = ab2str(exported);
-  const exportedAsBase64 = window.btoa(exportedAsString);
-  const pemExported = `-----BEGIN PUBLIC KEY-----\n${exportedAsBase64}\n-----END PUBLIC KEY-----`;
-  return pemExported;
-}
-
-async function exportPrivateKey(key) {
-  const exported = await window.crypto.subtle.exportKey("jwk", key);
-  const jwkString = JSON.stringify(exported, null, '  ');
-  return jwkString;
-}
-
+let id
 
 async function get_email_via_id() {
   const newResponse = await fetch('http://localhost:3000/get_data_from_cookie', {
@@ -52,41 +22,6 @@ async function get_email_via_id() {
   var email_addr = data2["tables"][0]["email_address"];
 
   return email_addr
-}
-
-
-async function keygen() {
-  try {
-    const keyPair = await window.crypto.subtle.generateKey(
-      {
-        name: "RSA-OAEP",
-        modulusLength: 4096,
-        publicExponent: new Uint8Array([1, 0, 1]),
-        hash: "SHA-256",
-      },
-      true,
-      ["encrypt", "decrypt"]
-    );
-    return keyPair;
-  } catch (error) {
-    console.error("Error generating key pair:", error);
-  }
-}
-
-async function updateData(user_email, newData) {
-  const DBOpenRequest = window.indexedDB.open(`${user_email}_db`, 4);
-  DBOpenRequest.onsuccess = (event) => {
-    db = event.target.result;
-    const transaction = db.transaction([`${user_email}__Object_Store`], "readwrite");
-    const objectStore = transaction.objectStore(`${user_email}__Object_Store`);
-    const request = objectStore.put(newData);
-    request.onsuccess = function (event) {
-      console.log('Data updated successfully');
-    };
-    request.onerror = function (event) {
-      console.error('Error updating data: ', event.target.error);
-    };
-  };
 }
 
 async function verifyOTP(email, otp) {
@@ -117,8 +52,6 @@ async function verifyOTP(email, otp) {
     return false;
   }
 }
-
-let id
 
 document.addEventListener('DOMContentLoaded', async function () {
   const newResponse = await fetch('http://localhost:3000/get_data_from_cookie', {
@@ -340,73 +273,4 @@ document.addEventListener('DOMContentLoaded', async function () {
 });
 
   check2FAStatus();
-
-  const rotationButton = document.getElementById('rotationButton');
-  rotationButton.addEventListener('click', async function () {
-  const cardDiv = document.createElement('div');
-  cardDiv.className = 'card';
-  cardDiv.innerHTML = `
-    <div class="card-body">
-      <h5 class="card-title">Key Rotation Warning</h5>
-      <p class="card-text">This will destroy all your old public and private keys and create new ones. Old messages encrypted with your public key will not be retrievable. Do you wish to proceed?</p>
-      <button type="button" class="btn btn-danger" id="denyRotation">Deny</button>
-      <button type="button" class="btn btn-success" id="confirmRotation">Confirm</button>
-    </div>`;
-
-  // Append cardDiv to the document
-  document.body.appendChild(cardDiv);
-
-  // Retrieve the elements and add event listeners after appending to the DOM
-  const denyRotationButton = document.getElementById('denyRotation');
-  denyRotationButton.addEventListener('click', function () {
-    cardDiv.style.display = 'none';
-  });
-
-  const confirmRotationButton = document.getElementById('confirmRotation');
-  confirmRotationButton.addEventListener('click', async function () {
-    const keypair = await keygen();
-    const public_key = keypair.publicKey;
-    const private_key = keypair.privateKey;
-
-    const pem_public = await exportPublicKey(public_key);
-    const jwk_private = await exportPrivateKey(private_key);
-
-    const formData = new FormData();
-    const email = get_email_via_id()
-    console.log(email)
-    formData.append('email', email);
-    formData.append('public_key', pem_public);
-
-    const response = await fetch('http://localhost:3000/update_pubkey', {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (response.ok) {
-      const newData = {
-        privateKey: jwk_private,
-        email: email,
-        dateCreated: getCurrentTime(),
-        name: 'private_key',
-      };
-
-      updateData(email, newData);
-    }
-
-    // Hide the cardDiv after confirmation
-    cardDiv.style.display = 'none';
-  });
-
-  // Style cardDiv
-  cardDiv.style.position = 'fixed';
-  cardDiv.style.top = '0';
-  cardDiv.style.left = '50%';
-  cardDiv.style.transform = 'translateX(-50%)';
-  cardDiv.style.width = '300px';
-  cardDiv.style.margin = '20px';
-  cardDiv.style.border = '1px solid #ccc';
-  cardDiv.style.borderRadius = '8px';
-  cardDiv.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
-});
-
 });
