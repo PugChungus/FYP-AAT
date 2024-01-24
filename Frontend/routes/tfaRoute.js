@@ -6,7 +6,7 @@ const tfaRouter = express.Router();
 
 tfaRouter.post('/get2faStatus', async (req, res) => {
     try {
-        const { email } = req.body.email;
+        const { email } = req.body;
 
         console.log("email:", email)
 
