@@ -319,7 +319,7 @@ async function getEmailFromSessionStorage() {
   return email;
 }
 
- async function verifyTOTP(event) {
+ export async function verifyTOTP(event) {
     event.preventDefault();
   
     // Get the OTP value from the input field

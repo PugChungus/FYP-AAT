@@ -1,14 +1,6 @@
+import { get_cookie } from "./cookie.js";
+
 let id
-
-async function get_cookie() {
-  const cookie_response = await fetch('http://localhost:3000/api/getCookie', {
-      method: 'GET',
-  });
-
-  const cookie_data = await cookie_response.json()
-  const token = cookie_data.token.jwtToken
-  return token
-}
 
 async function get_email_via_id() {
   const newResponse = await fetch('http://localhost:3000/get_data_from_cookie', {
@@ -38,7 +30,7 @@ async function verifyOTP(email, otp) {
     formData.append('email', email);
     formData.append('otp', otp);
 
-    const jwtToken = get_cookie()
+    const jwtToken = await get_cookie()
 
     const response = await fetch('http://localhost:5000/verify_otp', {
       method: 'POST',
@@ -154,7 +146,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             formData.append('id', id);
             const cookie = await get_cookie();
 
-            const jwtToken = get_cookie();
+            const jwtToken = await get_cookie();
 
             const qrResponse = await fetch('http://localhost:5000/generate_2fa_qr_code', {
                 method: 'POST',

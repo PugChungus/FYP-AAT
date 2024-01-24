@@ -1,3 +1,5 @@
+import { get_cookie } from "./cookie.js";
+
 function appendRowToTable(index, fileName, file_size, key_name, type, time) {
   const table = document.querySelector('.responsive-table');
   const newRow = document.createElement('li');
@@ -44,15 +46,7 @@ function appendRowToTable(index, fileName, file_size, key_name, type, time) {
 
 let id;
 
-async function get_cookie() {
-  const cookie_response = await fetch('http://localhost:3000/api/getCookie', {
-      method: 'GET',
-  });
 
-  const cookie_data = await cookie_response.json()
-  const token = cookie_data.token.jwtToken
-  return token
-}
 
 async function renderHistory() {
     const newResponse = await fetch('http://localhost:3000/get_data_from_cookie', {
@@ -66,7 +60,7 @@ async function renderHistory() {
     formData.append('id', id);
   
     try {
-      const jwtToken = get_cookie()
+      const jwtToken = await get_cookie()
 
       const response = await fetch('http://localhost:5000/display_history', {
         method: 'POST',
@@ -115,7 +109,7 @@ async function clear_history() {
   formData.append('id', id);
 
   try {
-    const jwtToken = get_cookie()
+    const jwtToken = await get_cookie()
     
     const response = await fetch('http://localhost:5000/clear_history', {
       method: 'POST',

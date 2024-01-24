@@ -51,7 +51,7 @@ app.get('/', (req, res) => {
     }
 });
 
-app.get('/register', (req, res) => {
+app.get('/ww', (req, res) => {
     // Render the HTML page for authorized users
     res.render('register');
 });

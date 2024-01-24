@@ -1,14 +1,7 @@
+import { get_cookie } from "./cookie.js";
+
 let id;
 
-async function get_cookie() {
-    const cookie_response = await fetch('http://localhost:3000/api/getCookie', {
-        method: 'GET',
-    });
-
-    const cookie_data = await cookie_response.json()
-    const token = cookie_data.token.jwtToken
-    return token
-}
 
 document.addEventListener('DOMContentLoaded', async function() {
     const newResponse = await fetch('http://localhost:3000/get_data_from_cookie', {
@@ -40,7 +33,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     `;
   });
 
-document.getElementById('profileForm').addEventListener('submit', function (event) {
+document.getElementById('profileForm').addEventListener('submit', async function (event) {
     event.preventDefault();
 
     const formData = new FormData();
@@ -54,7 +47,7 @@ document.getElementById('profileForm').addEventListener('submit', function (even
         formData.append('profile-picture', fileInput.files[0]);
     }
 
-    const jwtToken = get_cookie()
+    const jwtToken = await get_cookie()
 
     // Send data to the /upload route using Fetch
     fetch('http://localhost:5000/upload', {
