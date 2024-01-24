@@ -8,6 +8,8 @@ tfaRouter.post('/get2faStatus', async (req, res) => {
     try {
         const { email } = req.body.email;
 
+        console.log("email:", email)
+
         const sql = 'SELECT is_2fa_enabled, tfa_secret FROM user_account WHERE email_address = ?';
         const values = [email];
 

@@ -176,7 +176,8 @@ document.addEventListener('DOMContentLoaded', async function () {
   async function check2FAStatus() {
     try {
       const formData = new FormData();
-      const email = get_email_via_id()
+      const email = await get_email_via_id()
+      console.log("SENDING EMAIL", email)
       formData.append('email', email)
 
       const response = await fetch('http://localhost:3000/get2faStatus', {
