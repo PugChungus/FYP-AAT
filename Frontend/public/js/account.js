@@ -90,7 +90,7 @@ export async function register() {
           if (verificationResponse.ok) {
             openIndexDB(jwk_private, email);
             alert("Registration Successful. Please Check your Email to activate your account. Mail Might take up to 5 Minutes. Might wanna check Junk or Spam folder ;)");
-            // window.location.href = 'http://localhost:3000';
+            window.location.href = 'http://localhost:3000';
           } else {
             alert("Email verification failed. Please try again.");
           }
@@ -278,129 +278,120 @@ async function continueRegularLogin(formData) {
   window.location.href = 'http://localhost:3000/home';
 }
 
-// async function getEmailFromSessionStorage() {
-//   const email = sessionStorage.getItem('encryptedEmail');
-//   if (!email) {
-//     console.error('Email not found in sessionStorage');
-//     return null;
-//   }
+async function getEmailFromSessionStorage() {
+  const email = sessionStorage.getItem('encryptedEmail');
+  if (!email) {
+    console.error('Email not found in sessionStorage');
+    return null;
+  }
 
-//   // Prepare the data to be sent in the POST request
-//   var data = {
-//     otp: otpValue
-//   };
+  // Prepare the data to be sent in the POST request
+  var data = {
+    otp: otpValue
+  };
 
-//   const jwtToken = await get_cookie();
+  const jwtToken = await get_cookie();
 
-//   // Make an HTTP POST request to your backend endpoint
-//   fetch('http://localhost:5000/verify_2fa', {
-//       method: 'POST',
-//       headers: {
-//           'Content-Type': 'application/json',
-//           'Authorization': `Bearer: ${jwtToken}`
-//       },
-//       body: JSON.stringify(data),
-//   })
-//   .then(response => response.json())
-//   .then(data => {
-//       // Handle the response from the backend
-//       console.log(data);
-//       if (data.message === 'OTP is valid') {
-//         continueRegularLogin(formData)
+  // Make an HTTP POST request to your backend endpoint
+  fetch('http://localhost:5000/verify_2fa', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer: ${jwtToken}`
+      },
+      body: JSON.stringify(data),
+  })
+  .then(response => response.json())
+  .then(data => {
+      // Handle the response from the backend
+      console.log(data);
+      if (data.message === 'OTP is valid') {
+        continueRegularLogin(formData)
         
-//       } else {
-//         alert('Invalid OTP. Please try again.')
-//       }
-//   })
-//   .catch((error) => {
-//       console.error('Error:', error);
-//   });
+      } else {
+        alert('Invalid OTP. Please try again.')
+      }
+  })
+  .catch((error) => {
+      console.error('Error:', error);
+  });
 
-//   return email;
-// }
+  return email;
+}
 
-export async function verifyTOTP(event) {
-  event.preventDefault();
-
-  // Get the OTP value from the input field
-  const otpValue = document.getElementById('otp-field').value;
-
-  // Retrieve the encrypted email from sessionStorage
-  const encryptedEmail = sessionStorage.getItem('encrypted_email');
-
-  if (!encryptedEmail) {
+ export async function verifyTOTP(event) {
+    event.preventDefault();
+  
+    // Get the OTP value from the input field
+    var otpValue = document.getElementById('otp-field').value;
+  
+    // Retrieve the encrypted email from sessionStorage
+    let encryptedEmail = sessionStorage.getItem('encrypted_email');
+  
+    if (!encryptedEmail) {
       console.error('Encrypted email not found in sessionStorage');
       return;
-  }
-
-  try {
+    }
+  
+    try {
       const response = await fetch('http://localhost:5000/decrypt_email', {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-              encryptedEmail: encryptedEmail,
-          }),
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          encryptedEmail: encryptedEmail,
+        }),
       });
+  
+      const emaildata = await response.json();
+  
+      if (emaildata.decryptedEmail) {
+        const emailValue = emaildata.decryptedEmail;
+  
+        // Now you can use the emailValue and otpValue for further processing
+        const formData = new FormData();
+        formData.append('email', emailValue);
+        formData.append('otp', otpValue);
 
-      const emailData = await response.json();
-
-      console.log('Decrypted Email Data:', emailData);
-
-      if (emailData.decryptedEmail) {
-          const emailValue = emailData.decryptedEmail;
-
-          if (!emailValue) {
-              // Handle the case where the email is not found in sessionStorage
-              console.error('Email not found in sessionStorage');
-              return;
-          }
-
-          // Prepare the data to be sent in the POST request
-          const data = {
-              otp: otpValue,
-          };
-
-          const formData = new FormData();
-          formData.append('email', emailData.decryptedEmail)
-
-
-          console.log('Data to be sent:', data);
-
-          // Make an HTTP POST request to your backend endpoint
-          fetch('http://localhost:5000/verify_2fa', {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(data),
-          })
-              .then(response => response.text())
-              .then(responseText => {
-                  console.log('Raw Response:', responseText);
-
-                  // Now try to parse the response as JSON
-                  const responseData = JSON.parse(responseText);
-                  console.log('Parsed Response:', responseData);
-
-                  // Continue handling the response
-                  if (responseData.message === 'OTP is valid') {
-                      continueRegularLogin(formData);
-                  } else {
-                      alert('Invalid OTP. Please try again.');
-                  }
-              })
-              .catch(error => {
-                  console.error('Error during fetch:', error);
-              });
+        if (!emailValue) {
+          // Handle the case where the email is not found in sessionStorage
+          console.error('Email not found in sessionStorage');
+          return;
+        }
+        // Prepare the data to be sent in the POST request
+        var data = {
+          otp: otpValue
+        };
+    
+        // Make an HTTP POST request to your backend endpoint
+        fetch('http://localhost:5000/verify_2fa', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Handle the response from the backend
+            console.log(data);
+            if (data.message === 'OTP is valid') {
+              continueRegularLogin(formData)
+              
+            } else {
+              alert('Invalid OTP. Please try again.')
+            }
+        })
+        
+  
       } else {
-          console.error('Email decryption failed');
+        console.error('Email decryption failed');
       }
-  } catch (error) {
+    } catch (error) {
       console.error('Error during email decryption:', error);
+    }
   }
-}
 
 
   export function checkEmail() {

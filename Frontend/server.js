@@ -11,7 +11,7 @@ import { dirname } from 'path';
 import { OAuth2Client } from "google-auth-library";
 import jwt from 'jsonwebtoken';
 
-import { authorizeRoles, checkJwtToken } from './routes/authorizeRolesRoute.js';
+import { authorizeRoles, checkTokenValidity } from './routes/authorizeRolesRoute.js';
 import loginRouter from './routes/loginroute.js'
 import accountRouter from './routes/accountRoute.js'
 import cookieRouter from './routes/cookieRoute.js';
@@ -42,7 +42,7 @@ app.set('views', path.join(__dirname, 'public', 'pages'));
 
 // Set up a route to render your HTML file
 app.get('/', (req, res) => {
-    const isTokenValid = checkJwtToken(req.cookies.jwtToken);
+    const isTokenValid = checkTokenValidity(req);
 
     if (isTokenValid) {
         return res.redirect('/home');
@@ -51,7 +51,7 @@ app.get('/', (req, res) => {
     }
 });
 
-app.get('/register', (req, res) => {
+app.get('/ww', (req, res) => {
     // Render the HTML page for authorized users
     res.render('register');
 });

@@ -1,28 +1,6 @@
 import { keygen, exportPublicKey, exportPrivateKey } from "./rsa_keygen.js";
 import { getCurrentTime, updateData } from "./IndexedDB.js";
 
-async function get_email_via_id() {
-  const newResponse = await fetch('http://localhost:3000/get_data_from_cookie', {
-    method: 'POST'
-  });
-
-  const data = await newResponse.json(); // await here
-  const id = data['id_username']['id'];
-
-  const formData = new FormData();
-  formData.append('id', id);
-
-  const response = await fetch('http://localhost:3000/get_account', {
-    method: 'POST',
-    body: formData,
-  });
-
-  const data2 = await response.json();
-  var email_addr = data2["tables"][0]["email_address"];
-
-  return email_addr
-}
-
 async function rotateKeys() {
   const keypair = await keygen();
   const public_key = keypair.publicKey;
@@ -32,8 +10,7 @@ async function rotateKeys() {
   const jwk_private = await exportPrivateKey(private_key);
 
   const formData = new FormData();
-  const email = await get_email_via_id();
-
+  const email = get_email_via_id();
   formData.append('email', email);
   formData.append('public_key', pem_public);
 
@@ -44,17 +21,17 @@ async function rotateKeys() {
 
   if (response.ok) {
     const newData = {
-      keyName: 'Private Key',
       privateKey: jwk_private,
       email: email,
       dateCreated: getCurrentTime(),
+      name: 'private_key',
     };
 
-    await updateData(email, newData);
+    updateData(email, newData);
   }
 }
 
-export function showKeyRotationWarning() {
+function showKeyRotationWarning() {
   const cardDiv = document.createElement('div');
   cardDiv.className = 'card';
   cardDiv.innerHTML = `
@@ -71,7 +48,7 @@ export function showKeyRotationWarning() {
   // Retrieve the elements and add event listeners after appending to the DOM
   const denyRotationButton = document.getElementById('denyRotation');
   denyRotationButton.addEventListener('click', function () {
-    cardDiv.remove();
+    cardDiv.style.display = 'none';
   });
 
   const confirmRotationButton = document.getElementById('confirmRotation');
@@ -80,7 +57,7 @@ export function showKeyRotationWarning() {
     await rotateKeys();
 
     // Hide the cardDiv after confirmation
-    cardDiv.remove();
+    cardDiv.style.display = 'none';
   });
 
   // Style cardDiv
@@ -94,3 +71,5 @@ export function showKeyRotationWarning() {
   cardDiv.style.borderRadius = '8px';
   cardDiv.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
 }
+
+export { showKeyRotationWarning };

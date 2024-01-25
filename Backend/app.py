@@ -655,9 +655,7 @@ def encrypt_history():
         account_id = request.form['id']  # Use request.form for form data
         # Assuming you have a function to retrieve account_id based on email
         key_name = request.form['key_name']
-        print("KEY NAMEZ:", key_name)
         type_of_encryption = request.form['type']  # Use request.form for form data
-        print("TYPEZZZ:", type_of_encryption)
 
         # Proceed with the database update for username only
         sql = "INSERT INTO history (time, file_name, file_size, account_id, type, key_name) VALUES (%s, %s, %s, %s, %s, %s);"
@@ -838,15 +836,12 @@ def generate_2fa_qr_code():
             print('Valid Token')
 
         email = request.form.get('email')
-        print("WHAT IS THE EMAIL:", email)
 
         # Generate a new secret for the user
         secret = pyotp.random_base32()
 
         # Store the secret securely
         user_secrets[email] = secret
-
-        print("Checking this:", user_secrets)
 
         totp = pyotp.TOTP(secret)
         otp = totp.now()
@@ -876,10 +871,7 @@ def verify_otp():
         otp_value = request.form.get('otp')
 
         # Retrieve the secret associated with the user
-        print("checing again:", email)
-        print("checking:", user_secrets)
         secret = user_secrets.get(email)
-        print("GETTING SECRET:", secret)
 
         if secret is None:
             raise ValueError('Secret key not found for the specified user.')
@@ -900,7 +892,18 @@ def verify_otp():
 @app.route('/verify_2fa', methods=['POST'])
 def verify_2fa():
     try:
+        authorization_header = request.headers.get('Authorization')
+
+        if authorization_header is None:
+            return "Token is Invalid"
         
+        isValid = check_token_validity(authorization_header)
+        
+        if not isValid:
+            print('Invalid Token.')
+            return "Invalid Token."
+        else:
+            print('Valid Token')
 
         data = request.get_json()
         user_input_otp = data.get('otp')
@@ -970,7 +973,7 @@ def send_email():
 def insert_secret_into_db(email, secret):
     try:
         with db.cursor() as cursor:
-            sql = "UPDATE user_account SET tfa_secret = %s, is_2fa_enabled = 1 WHERE email_address = %s"
+            sql = "UPDATE user_account SET tfa_secret = %s WHERE email_address = %s"
             cursor.execute(sql, (secret, email))
         db.commit()
     except Exception as e:
