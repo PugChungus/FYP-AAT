@@ -104,7 +104,7 @@ async function renderHistory() {
     }
 }
 
-async function clear_history() {  
+export async function clear_history() {  
   const formData = new FormData();
   formData.append('id', id);
 

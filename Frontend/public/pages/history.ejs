@@ -53,7 +53,7 @@
         </div>
         <ul class="responsive-table">
           <li class="table-header">
-            <button onclick="clear_history()">Clear History</button>
+            <button onclick="module.clear_history()">Clear History</button>
             <div class="col col-1">Id</div>
             <div class="col col-2">File Name</div>
             <div class="col col-3">File Size</div>
@@ -64,10 +64,16 @@
         </ul>
     </div>
 
+    <script type="text/javascript">
+        const module = {};
+    </script>
     <script src="/js/navbar.js"></script>
     <script src="/js/toprofilePage.js"></script>
     <script type="module" src="/js/home.js"></script>
-    <script type="module" src="/js/history.js"></script>
+    <script type="module">
+        import { clear_history } from '../js/history.js'
+        module.clear_history = clear_history
+    </script>
     
     <!-- <script src="/js/callnavbar.js"></script> -->
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>

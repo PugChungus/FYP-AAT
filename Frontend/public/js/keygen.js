@@ -14,7 +14,7 @@ function isValidKeyName(keyName) {
     return pattern.test(keyName);
 }
 
-function generateKey() {
+export function generateKey() {
     var keyName = document.getElementById('keyName').value;
 
     if (isValidKeyName(keyName)) {

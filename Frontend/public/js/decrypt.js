@@ -1,82 +1,24 @@
 import { get_cookie } from './cookie.js'
 import { createKeyDropdown } from "./key.js";
-import { sendFileToBackend, selectedFiles, seen } from "./virustotal.js";
+import { sendFileToBackend, selectedFiles } from "./virustotal.js";
 
-const selectedFiles = {
-    files: []
-};
 
 const keyDropdown = document.getElementById('key-dropdown');
 let selectedKey = keyDropdown.value;
 let decryptedExtension;
 let decryptedExtensionList = [];
 
-function getAllKeyData() {
-    const keyData = [];
-    for (let i = 0; i < sessionStorage.length; i++) {
-        const key = sessionStorage.key(i);
-        // Check if the key starts with 'key_' to identify your keys
-        if (key.startsWith('key_')) {
-            const keyName = key.substring(4); // Extract the fileNameWithoutExtension part
-            const data = JSON.parse(sessionStorage.getItem(key));
-            keyData.push({ keyName, uploadTime: data.uploadTime });
-        }
-    }
-    return keyData;
-}
 
-function createKeyDropdown() {
-    // Clear existing options
-    keyDropdown.innerHTML = '';
-
-    // Get all key data from sessionStorage
-    const keyData = getAllKeyData();
-
-    // Sort key data based on upload time (assuming uploadTime is in ISO format)
-    keyData.sort((a, b) => new Date(a.uploadTime) - new Date(b.uploadTime));
-
-    // Add each key name as an option in the dropdown
-    keyData.forEach((data, index) => {
-        const option = document.createElement('option');
-        option.value = `key_${data.keyName}`;
-        option.textContent = data.keyName;
-        keyDropdown.appendChild(option);
-    });
-
-    // Set the selected key to the value of the first option
-    selectedKey = keyDropdown.value;
-
-    // Trigger the change event manually
-    keyDropdown.dispatchEvent(new Event('change'));
-}
 
 createKeyDropdown()
 
 document.getElementById('file-input-decrypt').addEventListener('change', handleFileUpload);
 
-function isValidFileExtension(file) {
-    const allowedExtensions = ["enc", "zip"];
-    const fileName = file.name.toLowerCase();
-    const fileExtension = fileName.slice((fileName.lastIndexOf(".") - 1 >>> 0) + 2);
-    console.log(fileExtension)
-
-    if (allowedExtensions.includes(fileExtension)) {
-        return true; // Valid extension
-    } else {
-        alert(`Please upload files with ${allowedExtensions.join(' or ')} extension`);
-        return false; // Invalid extension
-    }
-}
-
 async function handleFileUpload(event) {
     const files = event.target.files;
+    selectedKey = keyDropdown.value;
 
     for (const file of files) {
-        const isValidFileExtensionResult = isValidFileExtension(file);
-
-        if (!isValidFileExtensionResult) {
-            return "End of function.";
-        }
         await sendFileToBackend(file);
     }
 }
@@ -86,7 +28,7 @@ keyDropdown.addEventListener('change', function () {
     selectedKey = keyDropdown.value;
 });
 
-async function uploadFiles() {
+export async function uploadFilez() {
     // Check if there are files to upload
     if (selectedFiles.files.length > 0) {
         await clearDecryptedFolder();
@@ -244,6 +186,21 @@ async function hideDropZoneAndFileDetails() {
     }
 }
 
+function isValidFileExtension(file) {
+    const allowedExtensions = ["enc", "zip"];
+    const fileName = file.name.toLowerCase();
+    const fileExtension = fileName.slice((fileName.lastIndexOf(".") - 1 >>> 0) + 2);
+    console.log(fileExtension)
+
+    if (allowedExtensions.includes(fileExtension)) {
+        return true; // Valid extension
+    } else {
+        alert(`Please upload files with ${allowedExtensions.join(' or ')} extension`);
+        return false; // Invalid extension
+    }
+}
+
+
 async function clearDecryptedFolder() {
     try {
         const clearResponse = await fetch('http://localhost:5000/clear_decrypted_folder', {
@@ -264,7 +221,7 @@ async function decrypt(file, i) {
     const formData = new FormData();
 
     if (selectedKey.length === 0) {
-        alert('No Key Selected')
+        alert('  Selected')
         return false; // Return false indicating decryption failure
     }
 
@@ -297,7 +254,6 @@ async function decrypt(file, i) {
 
         if (response.ok) {
             const responseData = await response.json();
-            console.log(responseData)
             decryptedExtension = responseData.decrypted_extension;
             decryptedExtensionList.push(decryptedExtension);
             const formData2 = new FormData();
@@ -328,11 +284,7 @@ async function decrypt(file, i) {
 
             return true; // Return true indicating decryption success
         } else {
-            if (response.status === 400) {
-                alert('File size is too large. Maximum allowed size is 1 GB')
-            } else {
-                alert('Decryption Failed. Are you sure you are using the correct key, you previously used to encrypt the file?')
-            }
+            alert('Decryption Failed. Are you sure you are using the correct key, you previously used to encrypt the file?')
             return false; // Return false indicating decryption failure
         }
     } catch (error) {
@@ -370,55 +322,6 @@ async function sendFilesToBackend() {
     }
 }
 
-function displayFileDetails(file, formData) {
-    const fileDetailsContainer = document.getElementById('file-details-container');
-
-    // Create a div element for each file
-    const fileContainer = document.createElement('div');
-    fileContainer.classList.add('file-container');
-
-    // Display file name
-    const fileName = document.createElement('div');
-    fileName.textContent = `File Name: ${file.name}`;
-    fileContainer.appendChild(fileName);
-
-    // Display file size
-    const fileSize = document.createElement('div');
-    fileSize.textContent = `File Size: ${formatFileSize(file.size)}`;
-    fileContainer.appendChild(fileSize);
-
-    const removeButton = document.createElement('button');
-    removeButton.textContent = 'Remove';
-    removeButton.addEventListener('click', () => {
-        // Remove the file container from the details container
-        fileDetailsContainer.removeChild(fileContainer);
-        const fileNameParts = file.name.split('.');
-        const fileExtension = fileNameParts.length > 1 ? fileNameParts.pop() : '';
-        const fileNameWithoutExtension = fileNameParts.join('');
-        console.log(fileNameWithoutExtension)
-        seen.delete(fileNameWithoutExtension);
-        // You can also perform additional logic or updates here
-    });
-    fileContainer.appendChild(removeButton);
-
-    // Append file container to the details container
-    fileDetailsContainer.appendChild(fileContainer);
-
-    // Perform the scan after displaying file details
-}
-
-function formatFileSize(size) {
-    const kilobyte = 1024;
-    const megabyte = kilobyte * 1024;
-
-    if (size < kilobyte) {
-        return `${size} B`;
-    } else if (size < megabyte) {
-        return `${(size / kilobyte).toFixed(2)} KB`;
-    } else {
-        return `${(size / megabyte).toFixed(2)} MB`;
-    }
-}
 
 async function downloadDecryptedFiles(type, name) {
     if (type === 'individual') {

@@ -7,14 +7,9 @@ export const selectedFiles = {
 
 export const seen = new Set();
 
+
+
 export async function sendFileToBackend(file) {
-    const maxFileSizeBytes = 1 * 1024 * 1024 * 1024; // 1 GB in bytes
-
-    if (file.size > maxFileSizeBytes) {
-        alert('File size is too large. Maximum allowed size is 1 GB.');
-        return;
-    }
-
     const formData = new FormData();
     formData.append('file', file);
 
