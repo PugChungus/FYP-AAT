@@ -1,13 +1,9 @@
 import { get_cookie } from "./cookie.js";
 import { createKeyDropdown } from "./key.js";
-import { sendFileToBackend,selectedFiles } from "./virustotal.js";
-
-
+import { sendFileToBackend, selectedFiles, seen } from "./virustotal.js";
 
 export const keyDropdown = document.getElementById('key-dropdown');
 let selectedKey = keyDropdown.value;
-
-
 
 createKeyDropdown()
 
@@ -22,8 +18,6 @@ async function handleFileUpload(event) {
     }
 }
 
-
-
 export async function uploadFiles() {
     // Check if there are files to upload
     if (selectedFiles.files.length > 0) {
@@ -34,9 +28,6 @@ export async function uploadFiles() {
         return;
     }
 }
-
-
-
 
 async function clearEncryptedFolder() {
     try {
@@ -123,6 +114,9 @@ async function encrypt(file, i) {
         }
 
         else {
+            if (response.status === 400) {
+                alert('File size is too large. Maximum allowed size is 1 GB')
+            }
             return false;
         }
     }
@@ -277,6 +271,17 @@ async function hideDropZoneAndFileDetails() {
             const zipFolderName = window.prompt('Enter the name for the zip folder (without extension)');
             if (zipFolderName) {
                 downloadEncryptedFiles('zip', zipFolderName);
+                dropZone.style.display = 'block';
+                fileDetails.style.display = 'block';
+                encryptButton.style.display = 'block';
+                dropZoneEncasement.style.display = 'block';
+                googleupload.style.display = 'none';
+                onedriveupload.style.display = 'none';
+                downloadButton.style.display = 'none';
+                selectedFiles.files = []
+                var div = document.getElementById("file-details-container");
+                div.innerHTML = "";
+                seen.clear();
             }
         });
 
@@ -284,6 +289,17 @@ async function hideDropZoneAndFileDetails() {
         individualButton.textContent = 'Download Encrypted Files Individually';
         individualButton.addEventListener('click', async () => {
             downloadEncryptedFiles('individual');
+            dropZone.style.display = 'block';
+            fileDetails.style.display = 'block';
+            encryptButton.style.display = 'block';
+            dropZoneEncasement.style.display = 'block';
+            googleupload.style.display = 'none';
+            onedriveupload.style.display = 'none';
+            downloadButton.style.display = 'none';
+            selectedFiles.files = []
+            var div = document.getElementById("file-details-container");
+            div.innerHTML = "";
+            seen.clear();
         });
         const individualGoogle = document.createElement('button');
         individualGoogle.textContent = 'Upload Files To Google Individually';
@@ -317,6 +333,17 @@ async function hideDropZoneAndFileDetails() {
         // Add click event listener to the download button
         downloadButton.addEventListener('click', async () => {
             downloadEncryptedFiles('individual');
+            dropZone.style.display = 'block';
+            fileDetails.style.display = 'block';
+            encryptButton.style.display = 'block';
+            dropZoneEncasement.style.display = 'block';
+            googleupload.style.display = 'none';
+            onedriveupload.style.display = 'none';
+            downloadButton.style.display = 'none';
+            selectedFiles.files = []
+            var div = document.getElementById("file-details-container");
+            div.innerHTML = "";
+            seen.clear();
         });
 
         googleupload.style.display = 'block';

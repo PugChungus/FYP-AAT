@@ -263,6 +263,13 @@ def format_size(size_in_bytes):
 
     return size
 
+def get_file_size(file_storage):
+    # Seek to the end of the file to get its size
+    file_storage.stream.seek(0, 2)
+    file_size = file_storage.stream.tell()
+    file_storage.stream.seek(0)  # Reset the stream position to the beginning
+    return file_size
+
 @app.route("/AESencryptFile", methods=["POST"])
 @cross_origin()
 def aes_encrypt ():
@@ -410,6 +417,14 @@ def encrypt_files():
             print('Valid Token')
         
         uploaded_files = request.files.getlist('files')
+        total_size_bytes = sum(get_file_size(file_storage) for file_storage in uploaded_files)
+        print(total_size_bytes)
+
+        max_size_gb = 1
+        max_size_bytes = max_size_gb * 1024 * 1024 * 1024
+
+        if total_size_bytes > max_size_bytes:
+            return jsonify({'error': 'Total file size exceeds 1 GB limit'}), 400
         print(uploaded_files)
 
         clear_dict = request.form['clear']
@@ -476,6 +491,16 @@ def decrypt_files():
             print('Valid Token')
 
         uploaded_files = request.files.getlist('files')
+        total_size_bytes = sum(get_file_size(file_storage) for file_storage in uploaded_files)
+        print(total_size_bytes)
+
+        max_size_gb = 1
+        max_size_bytes = max_size_gb * 1024 * 1024 * 1024
+
+        if total_size_bytes > max_size_bytes:
+            return jsonify({'error': 'Total file size exceeds 1 GB limit'}), 400
+        print(uploaded_files)
+
         clear_dict = request.form['clear']
         hex_key = request.form['hex']
         key = bytes.fromhex(hex_key)

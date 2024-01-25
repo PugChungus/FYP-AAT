@@ -1,24 +1,40 @@
 import { get_cookie } from './cookie.js'
 import { createKeyDropdown } from "./key.js";
-import { sendFileToBackend, selectedFiles } from "./virustotal.js";
-
+import { sendFileToBackend, selectedFiles, seen } from "./virustotal.js";
 
 const keyDropdown = document.getElementById('key-dropdown');
 let selectedKey = keyDropdown.value;
 let decryptedExtension;
 let decryptedExtensionList = [];
 
-
-
 createKeyDropdown()
 
 document.getElementById('file-input-decrypt').addEventListener('change', handleFileUpload);
+
+function isValidFileExtension(file) {
+    const allowedExtensions = ["enc", "zip"];
+    const fileName = file.name.toLowerCase();
+    const fileExtension = fileName.slice((fileName.lastIndexOf(".") - 1 >>> 0) + 2);
+    console.log(fileExtension)
+
+    if (allowedExtensions.includes(fileExtension)) {
+        return true; // Valid extension
+    } else {
+        alert(`Please upload files with ${allowedExtensions.join(' or ')} extension`);
+        return false; // Invalid extension
+    }
+}
 
 async function handleFileUpload(event) {
     const files = event.target.files;
     selectedKey = keyDropdown.value;
 
     for (const file of files) {
+        const isValidFileExtensionResult = isValidFileExtension(file);
+
+        if (!isValidFileExtensionResult) {
+            return "End of function.";
+        }
         await sendFileToBackend(file);
     }
 }
@@ -186,21 +202,6 @@ async function hideDropZoneAndFileDetails() {
     }
 }
 
-function isValidFileExtension(file) {
-    const allowedExtensions = ["enc", "zip"];
-    const fileName = file.name.toLowerCase();
-    const fileExtension = fileName.slice((fileName.lastIndexOf(".") - 1 >>> 0) + 2);
-    console.log(fileExtension)
-
-    if (allowedExtensions.includes(fileExtension)) {
-        return true; // Valid extension
-    } else {
-        alert(`Please upload files with ${allowedExtensions.join(' or ')} extension`);
-        return false; // Invalid extension
-    }
-}
-
-
 async function clearDecryptedFolder() {
     try {
         const clearResponse = await fetch('http://localhost:5000/clear_decrypted_folder', {
@@ -254,6 +255,7 @@ async function decrypt(file, i) {
 
         if (response.ok) {
             const responseData = await response.json();
+            console.log(responseData)
             decryptedExtension = responseData.decrypted_extension;
             decryptedExtensionList.push(decryptedExtension);
             const formData2 = new FormData();
@@ -284,7 +286,11 @@ async function decrypt(file, i) {
 
             return true; // Return true indicating decryption success
         } else {
-            alert('Decryption Failed. Are you sure you are using the correct key, you previously used to encrypt the file?')
+            if (response.status === 400) {
+                alert('File size is too large. Maximum allowed size is 1 GB')
+            } else {
+                alert('Decryption Failed. Are you sure you are using the correct key, you previously used to encrypt the file?')
+            }
             return false; // Return false indicating decryption failure
         }
     } catch (error) {
