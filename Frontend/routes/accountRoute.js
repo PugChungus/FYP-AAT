@@ -2,6 +2,7 @@ import express, { Router } from 'express';
 import crypto from 'crypto';
 import argon2 from 'argon2-browser';
 import { pool } from '../db-connection.js';
+import fs from 'fs/promises';
 
 const accountRouter = express.Router();
 
@@ -19,6 +20,19 @@ async function hashPassword(password, salt) {
       throw err;
     }
 }
+// Load insecure passwords from file
+async function loadInsecurePasswords() {
+    const content = await fs.readFile('10k-worst-passwords.txt', 'utf-8');
+    return new Set(content.trim().split('\n'));
+}
+
+let insecurePasswords;
+
+// Initialize insecure passwords on server startup
+async function initializeInsecurePasswords() {
+    insecurePasswords = await loadInsecurePasswords();
+}
+
 
 accountRouter.post('/create_account', async (req, res) => {
     try {
@@ -38,12 +52,31 @@ accountRouter.post('/create_account', async (req, res) => {
         if (!emailRegex.test(email)) {
             return res.status(400).json({ error: 'Invalid email format' });
         }
-
+        
         // Check if passwords match
         if (password !== confirmPassword) {
             return res.status(400).json({ error: 'Passwords do not match' });
         }
 
+        const minLength = 8; // You can adjust this value based on your requirements
+        if (password.length < minLength) {
+            return res.status(400).json({ error: `Password must be at least ${minLength} characters long` });
+        }
+
+        // Check if password contains at least one uppercase letter
+        if (!/[A-Z]/.test(password)) {
+            return res.status(400).json({ error: 'Password must contain at least one uppercase letter' });
+        }
+        // Initialize insecure passwords
+        if (!insecurePasswords) {
+            await initializeInsecurePasswords();
+        }
+
+        // Check if password is insecure
+        if (insecurePasswords.has(password)) {
+            return res.status(400).json({ error: 'Please choose a more secure password' });
+        }
+       
         const random_salt = generateSalt(16)
         const encodedHash = await hashPassword(password, random_salt)
         console.log("Salt:", random_salt)

@@ -277,6 +277,15 @@ const baseUrl = "https://onedrive.live.com/picker";
                     break;
             }
         }
+        
+        async function handleFileUpload(event) {
+            const files = event.target.files;
+            selectedKey = keyDropdown.value;
+        
+            for (const file of files) {
+                await sendFileToBackend(file);
+            }
+        }
 
 document.getElementById('file-input-encrypt').addEventListener('change', handleFileUpload);
 
