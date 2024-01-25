@@ -28,15 +28,18 @@ import sib_api_v3_sdk
 from sib_api_v3_sdk.rest import ApiException
 from pprint import pprint
 import requests
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 CORS(app)
 
 user_secrets = {}
+# salt = secrets.token_hex(16)
 # Connect to the MySQL database
 
 db = pymysql.connect(host = 'localhost', port = 3306, user = 'root', password = 'password', database = 'major_project_db')
 user_dicts = {}  # Dictionary to store user-specific dictionaries
+
 
 secretJwtKey = "ACB725326D68397E743DFC9F3FB64DA50CE7FB135721794C355B0DB219C449B3"
 
@@ -1062,13 +1065,36 @@ def check_email_route():
         return jsonify({'status': 'exists'})
     else:
         return jsonify({'status': 'not exists'})
+    
+
+token_payload = {
+    'token': '',
+    'hashed_token': '',
+    'expiration': 0,
+    'email' : ''
+}
+
 
 @app.route('/email_verification', methods=['POST'])
 def email_verification():
     data = request.get_json()
     print(f"Received JSON data: {data}")
     emailaddress = data.get('email','')
+
+    expiration_time = datetime.utcnow() + timedelta(minutes=15)
+    expiration_timestamp = int(expiration_time.timestamp())
+
     verification_token = secrets.token_urlsafe(32)
+    print("VERFICATION TOKEN:", verification_token)
+
+    hashed_token = hashlib.sha256(verification_token.encode()).hexdigest()
+
+    print("Checking THis hash:", hashed_token)
+
+    token_payload['token'] = verification_token
+    token_payload['hashed_token'] = hashed_token
+    token_payload['expiration'] = expiration_timestamp
+    token_payload['email'] = emailaddress
     configuration = sib_api_v3_sdk.Configuration()
     configuration.api_key['api-key'] = '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'
 
@@ -1106,7 +1132,7 @@ def email_verification():
         <body>
             <h1>Verify Your Email Address</h1>
             <p>Thank you for signing up! Click the link below to verify your email address:</p>
-            <a href="https://localhost:3000/activation?token={verification_token}">Verify Email</a>
+            <a href="http://localhost:3000/activation?token={hashed_token}">Verify Email</a>
         </body>
     </html>
     """
@@ -1127,6 +1153,71 @@ def email_verification():
     except ApiException as e:
         print("Exception when calling SMTPApi->send_transac_email: %s\n" % e)
         return jsonify({'error': 'Failed to send email verification'})
+    
+def is_valid_token(hashed_token, token_payload):
+    token = token_payload['token']
+    print("It's not about the journey:", token)
+    expiration_timestamp = token_payload['expiration']
+
+    # Validate the expiration
+    current_timestamp = int(datetime.utcnow().timestamp())
+    if current_timestamp > expiration_timestamp:
+        return False
+
+    # Validate the hashed token
+    hash_object = hashlib.sha256(f"{token}".encode()).hexdigest()
+    print('but the friends we made along the way:', hash_object)
+    if hashed_token == hash_object:
+        print("MET")
+        return True
+    
+    print("NYET")
+    return False
+
+    
+@app.route('/verify_account', methods=['GET'])
+def verify_account():
+    token = request.args.get('token', '')
+    print("POWER OF FRIENDSHIP:", token)
+
+    if is_valid_token(token, token_payload):  # Provide token_payload as the second argument
+        print("CHECKED")
+        
+        print(token_payload['email'])
+        if token_payload['email'] in token_payload['email']:
+            email = token_payload['email']
+            print("account ID:", email)
+
+            try:
+                with db.cursor() as cursor:
+                    # Update the 'activated' column in the 'user_account' table
+                    sql = "UPDATE user_account SET activated = 1 WHERE email_address = %s;"
+                    cursor.execute(sql, (email,))
+                    db.commit()  # Commit the changes to the database
+
+                    token_payload['token'] = ''
+                    token_payload['hashed_token'] = ''
+                    token_payload['expiration'] = 0
+                    token_payload['email'] = ''
+
+
+                return jsonify({'activation_status': 'success'})
+
+            except Exception as e:
+                print(f"Error updating database: {e}")
+                return jsonify({'activation_status': 'error'})
+
+            finally:
+                db.close()  # Close the database connection
+
+    else:
+        # Return error response
+        print("Id aint here broski")
+        return jsonify({'activation_status': 'error'})
+
+# Make sure to include this return statement for cases where the function does not enter the 'if' block
+    return jsonify({'activation_status': 'error'})
+
 
 if __name__ == '__main__':
     app.run(debug=True,
