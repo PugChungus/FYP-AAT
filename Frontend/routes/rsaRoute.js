@@ -28,11 +28,11 @@ rsaRouter.post('/create_pubkey', async (req, res) => {
 rsaRouter.post('/update_pubkey', async (req, res) => {
     try {
         const public_key = req.body.public_key;
-        const email = req.body.email;
+        const id = req.body.id;
         console.log(public_key)
 
         // Now, you have the account_id, and you can use it in the next INSERT statement
-        const publicKeyResult = await pool.execute('CALL UpdatePublicKey(?, ?)', [public_key, email]);
+        const publicKeyResult = await pool.execute('CALL UpdatePublicKey(?, ?)', [public_key, id]);
 
 
         return res.status(200).json({ message: 'Public Key updated successfully' });

@@ -42,7 +42,7 @@ const encryptionIV = crypto
 
 cron.schedule('0 0 * * *', rotateKeys);
 
-// // // Example: Log the keys every minute for testing
-// cron.schedule('* * * * *', () => {
-//     console.log('Current Keys:', keys.secretJwtKey, keys.secret_key, keys.secret_iv);
-// });
+// // Example: Log the keys every minute for testing
+cron.schedule('* * * * *', () => {
+    console.log('Current Keys:', keys.secretJwtKey, keys.secret_key, keys.secret_iv);
+});

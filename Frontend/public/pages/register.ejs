@@ -26,7 +26,7 @@
                               </div>
                               <div class="form-group">
                                   <p>Email</p>
-                                  <input id="email-field" type="text" class="form-control" placeholder="Input Your Email" onblur="module.checkEmail()">
+                                  <input id="email-field" type="text" class="form-control" placeholder="Input Your Email" onblur="checkEmail()">
                               </div>
                               <div class="form-group">
                                   <p>Password</p>
@@ -57,10 +57,9 @@
     <script src="/js/main.js"></script>
     <script src="/js/popper.js"></script>
     <script type="module">
-        import { checkEmail, register, } from '/js/account.js';
+        import { register } from '/js/account.js';
 
-        module.checkEmail = checkEmail      
-        module.register = register  
+        module.register = register        
     </script>
 </body>
 </html>

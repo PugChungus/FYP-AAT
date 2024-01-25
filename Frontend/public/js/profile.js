@@ -24,15 +24,13 @@ async function get_email_via_id() {
   return email_addr
 }
 
-async function verifyOTP(email, otp, secret) {
+async function verifyOTP(email, otp) {
   try {
     const formData = new FormData();
     formData.append('email', email);
     formData.append('otp', otp);
-    formData.append('secret', secret)
-    console.log("im in your pants:", secret)
+
     const jwtToken = await get_cookie()
-    console.log("ahdjoasd:", formData)
 
     const response = await fetch('http://localhost:5000/verify_otp', {
       method: 'POST',
@@ -41,8 +39,6 @@ async function verifyOTP(email, otp, secret) {
       },
       body: formData,
     });
-
-    print("NATYYYAY:" ,response)
 
     if (response.ok) {
       const data = await response.json();
@@ -94,11 +90,12 @@ document.addEventListener('DOMContentLoaded', async function () {
       </label>
       <span>Enable Two-Factor Authentication</span>
     </div>
-    <button type="button" class="btn btn-danger" id="rotationButton" onclick="module.showKeyRotationWarning()">Key Rotation</button>
+    <button type="button" class="btn btn-danger" id="rotationButton">Key Rotation</button>
   `;
 
   const imgElement = document.getElementById('profile-picture');
   imgElement.src = objectURL;
+
 
   const enable2FASwitch = document.getElementById('2faToggle');
 
@@ -146,9 +143,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         try {
             const formData = new FormData();
-            
-            let email = await get_email_via_id()
-            formData.append('email', email);
+            formData.append('id', id);
             const cookie = await get_cookie();
 
             const jwtToken = await get_cookie();
@@ -211,19 +206,15 @@ document.addEventListener('DOMContentLoaded', async function () {
                     const enteredOTP = qrCodeCardDiv.querySelector('#otpInput').value;
 
                     if (/^\d{6}$/.test(enteredOTP)) {
-                        const email = await get_email_via_id()
-                        console.log("line 209 email:", email)
                         console.log('Submitted OTP:', enteredOTP);
-                        console.log('Secret Key', qrData.secret)
-                        let secret = qrData.secret
-                        const isValidOTP = await verifyOTP(email, enteredOTP, secret);
+                        const isValidOTP = await verifyOTP(email, enteredOTP);
 
                         if (isValidOTP) {
                             console.log('OTP is valid. Proceed with enabling 2FA.');
 
                             try {
                                 // Move the enable2faRoute request here
-                                const enable2faResponse = await fetch('http://localhost:3000/enable2fa', {
+                                const enable2faResponse = await fetch('http://localhost:3000/enable2faRoute', {
                                     method: 'POST',
                                     body: formData,
                                     headers: {
