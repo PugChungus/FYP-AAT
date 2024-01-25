@@ -4,7 +4,7 @@ function openKeyCard() {
     document.getElementById('keyCard').style.display = 'block';
 }
 
-function closeKeyCard() {
+export function closeKeyCard() {
     document.getElementById('keyCard').style.display = 'none';
 }
 

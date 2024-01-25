@@ -1,6 +1,6 @@
 import { get_cookie } from './cookie.js'
 import { createKeyDropdown } from "./key.js";
-import { sendFileToBackend, selectedFiles } from "./virustotal.js";
+import { sendFileToBackend, selectedFiles, seen } from "./virustotal.js";
 
 
 const keyDropdown = document.getElementById('key-dropdown');
@@ -19,6 +19,12 @@ async function handleFileUpload(event) {
     selectedKey = keyDropdown.value;
 
     for (const file of files) {
+        const isValidFileExtensionResult = isValidFileExtension(file);
+
+        if (!isValidFileExtensionResult) {
+            return "End of function.";
+        }
+
         await sendFileToBackend(file);
     }
 }
@@ -284,7 +290,11 @@ async function decrypt(file, i) {
 
             return true; // Return true indicating decryption success
         } else {
-            alert('Decryption Failed. Are you sure you are using the correct key, you previously used to encrypt the file?')
+            if (response.status === 400) {
+                alert('File size is too large. Maximum allowed size is 1 GB')
+            } else {
+                alert('Decryption Failed. Are you sure you are using the correct key, you previously used to encrypt the file?')
+            }
             return false; // Return false indicating decryption failure
         }
     } catch (error) {
