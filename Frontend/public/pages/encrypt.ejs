@@ -86,15 +86,25 @@
 
     
     </div>
-    <button id="encryptButton" class="eButton" onclick="uploadFiles()">Encrypt</button>
+    
+    <button id="encryptButton" class="eButton" onclick='module.uploadFiles()'>Encrypt</button>
     <button id="launchPicker"> OneDrive Picker</button>
     <button id="GooglePicker" onclick="handleAuthClick()"> Google Picker</button>
+
+
+    <script type="text/javascript">
+        const module = {};
+    </script>
     <script src="/js/navbar.js"></script>
     <script type="text/javascript" src="https://alcdn.msauth.net/browser/2.19.0/js/msal-browser.min.js"></script>
     <script type='module' src="/js/home.js"></script>
     <script src="/js/toprofilePage.js"></script>
     <script src="/js/encryptProgress.js"></script>
-    <script type="module" src="/js/encrypt.js"></script>
+    <script type="module">
+        import { uploadFiles } from '../js/encrypt.js';
+
+        module.uploadFiles = uploadFiles        
+    </script>
     <script src ="/js/googlepicker.js"></script>
     <script src ="/js/onedrivepicker.js"></script>
     <script src="https://apis.google.com/js/api.js"></script>

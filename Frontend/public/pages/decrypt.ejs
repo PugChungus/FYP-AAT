@@ -86,15 +86,23 @@
 
     
     </div>
-    <button id="decryptButton" class="eButton" onclick="uploadFiles()">Decrypt</button>
+    <button id="decryptButton" class="eButton" onclick='module.uploadFilez()'>Decrypt</button>
     <button id="launchPicker"> OneDrive Picker</button>
     <button id="GooglePicker" onclick="handleAuthClick()"> Google Picker</button>
-    
+
+
+    <script type="text/javascript">
+        const module = {};
+    </script>
     <script src="/js/navbar.js"></script>
     <script type="module" src="/js/home.js"></script>
     <script src="/js/toprofilePage.js"></script>
     <script src="/js/encryptProgress.js"></script>
-    <script type="module" src="/js/decrypt.js"></script>
+    <script type="module">
+        import { uploadFilez } from '../js/decrypt.js'
+
+        module.uploadFilez = uploadFilez
+    </script>
     <script type="text/javascript" src="https://alcdn.msauth.net/browser/2.19.0/js/msal-browser.min.js"></script>
     <script src="/js/onedrivepicker.js"></script>
     <script src ="/js/googlepicker.js"></script> 
