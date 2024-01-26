@@ -1,4 +1,5 @@
 import { get_cookie } from "./cookie.js";
+import { deleteIndexDB } from "./RSA and IndexedDB/IndexedDB.js";
 
 let id
 
@@ -289,38 +290,48 @@ export async function deleteAccount() {
   // Show a prompt to the user
   const confirmation = window.prompt('To delete your account, type "DELETE" and click OK:');
 
-  // Check if the user entered "DELETE" and confirmed
-  if (confirmation === 'DELETE') {
+  if (confirmation !== 'DELETE') {
+    // User did not confirm, you might want to show a message or take other actions
+    window.alert('Account deletion cancelled.');
+    return;
+  }
+
+  try {
     const newResponse = await fetch('http://localhost:3000/get_data_from_cookie', {
       method: 'POST'
     });
   
     const data = await newResponse.json(); // await here
     const id = data['id_username']['id'];
-    console.log(id)
+    const email = await get_email_via_id()
 
     const formData = new FormData();
     formData.append('id', id)
 
-    const response = await fetch('http://localhost:3000/delete_account', {
+    const response1 = await fetch('http://localhost:3000/blacklist_token', {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer: ${jwtToken}`
-      },
+      body: formData,
+    });
+
+    const response2 = await fetch('http://localhost:3000/delete_account', {
+      method: 'POST',
       body: formData,
     });
 
     // For example, show an alert for demonstration purposes
-    if (response.ok) {
+    if (response2.ok) {
+      deleteIndexDB(email)
       window.alert('Account deleted successfully.');
       window.location.href = 'http://localhost:3000';
-    }
-    else{
+    } else {
       window.alert('Account deletion failed.');
     }
-  } else {
-    // User did not confirm, you might want to show a message or take other actions
-    window.alert('Account deletion cancelled.');
+
+  } catch (error) {
+    // Handle errors
+    console.error('Error deleting account:', error);
+    window.alert('Account deletion failed.');
   }
+
 }
 

@@ -1,5 +1,6 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
+import { pool } from '../db-connection.js';
 import { keys, decryptData } from './keyRoute.js';
 
 const cookieRouter = express.Router();
@@ -9,6 +10,29 @@ cookieRouter.get('/api/getCookie', async (req, res) => {
         const jwtToken = req.cookies.jwtToken;
         console.log("Getting Cookie:", jwtToken)
         return res.status(200).json({ token: {jwtToken} });
+    }
+    catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+cookieRouter.post('/blacklist_token', async (req, res) => {
+    try {
+        const jwtToken = req.cookies.jwtToken;
+
+        const [result] = await pool.execute(
+            'INSERT INTO token_blacklist (token, expiration_timestamp) VALUES (?, ?)',
+            [jwtToken, new Date()]
+        );   
+        
+        res.clearCookie('jwtToken', {
+            httpOnly: true,
+            sameSite: 'Strict',
+            secure: true,
+        });
+
+        return res.status(200).json({ message: 'Token Blacklisted', result});
     }
     catch (err) {
         console.error(err);

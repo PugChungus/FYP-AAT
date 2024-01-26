@@ -126,6 +126,27 @@ async function doesDatabaseExist(dbName) {
   });
 }
 
+export function deleteIndexDB(user_email) {
+  const dbName = `${user_email}_db`;
+  const objectStoreName = `${user_email}__Object_Store`;
+
+  const dbDeleteRequest = indexedDB.open(dbName, 4);
+
+  dbDeleteRequest.onupgradeneeded = function (event) {
+    const db = event.target.result;
+    if (db.objectStoreNames.contains(objectStoreName)) {
+      db.deleteObjectStore(objectStoreName);
+      console.log(`Object store '${objectStoreName}' deleted successfully`);
+    }
+  };
+
+  const deleteRequest = indexedDB.deleteDatabase(dbName);
+
+  deleteRequest.onsuccess = function () {
+    console.log('Database deleted successfully');
+  };
+}
+
 export function getCurrentTime() {
   const now = new Date();
 

@@ -26,7 +26,18 @@ const port = 3000;
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
-app.use(helmet());
+app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+           defaultSrc: ["'self'", 'http://localhost:5000'],
+          'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+          'script-src-attr': ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+          // Add other directives as needed
+        },
+      },
+    })
+  );
 app.use(upload.any());
 app.use(cors());
 app.use(cookieParser());
