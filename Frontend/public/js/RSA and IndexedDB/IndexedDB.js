@@ -8,19 +8,46 @@ export function openIndexDB(jwk_private, user_email) {
     console.log("Database upgrade needed");
     db = event.target.result;
 
-    const objectStore = db.createObjectStore(`${user_email}__Object_Store`, {
-      keyPath: "keyName",
-    });
+    // Check if object store already exists
+    if (!db.objectStoreNames.contains(`${user_email}__Object_Store`)) {
+      const objectStore = db.createObjectStore(`${user_email}__Object_Store`, {
+        keyPath: "keyName",
+      });
 
-    // Define what data items the objectStore will contain
-    objectStore.createIndex("keyName", "keyName", { unique: false });
-    objectStore.createIndex("privateKey", "privateKey", { unique: false });
-    objectStore.createIndex("email", "email", { unique: false });
-    objectStore.createIndex("dateCreated", "dateCreated", { unique: false });
+      // Define what data items the objectStore will contain
+      objectStore.createIndex("keyName", "keyName", { unique: false });
+      objectStore.createIndex("privateKey", "privateKey", { unique: false });
+      objectStore.createIndex("email", "email", { unique: false });
+      objectStore.createIndex("dateCreated", "dateCreated", { unique: false });
+    }
+    else {
+      const objectStore = transaction.objectStore(`${user_email}__Object_Store`);
+
+      if (!objectStore.indexNames.contains("keyName")) {
+        objectStore.createIndex("keyName", "keyName", { unique: false });
+      }
+      // Check if indexes exist; if not, create them
+      if (!objectStore.indexNames.contains("privateKey")) {
+        objectStore.createIndex("privateKey", "privateKey", { unique: false });
+      }
+      if (!objectStore.indexNames.contains("email")) {
+        objectStore.createIndex("email", "email", { unique: false });
+      }
+      if (!objectStore.indexNames.contains("dateCreated")) {
+        objectStore.createIndex("dateCreated", "dateCreated", { unique: false });
+      }
+    }
   };
 
   DBOpenRequest.onsuccess = (event) => {
     db = event.target.result;
+
+    // Check if object store exists
+    if (!db.objectStoreNames.contains(`${user_email}__Object_Store`)) {
+      console.error("Object store does not exist in the database");
+      return;
+    }
+
     addData(jwk_private, user_email);
     console.log("Database opened successfully");
   };
@@ -53,19 +80,50 @@ function addData(jwk_private, user_email) {
 }
 
 export async function updateData(user_email, newData) {
-  const DBOpenRequest = window.indexedDB.open(`${user_email}_db`, 4);
-  DBOpenRequest.onsuccess = (event) => {
-    db = event.target.result;
-    const transaction = db.transaction([`${user_email}__Object_Store`], "readwrite");
-    const objectStore = transaction.objectStore(`${user_email}__Object_Store`);
-    const request = objectStore.put(newData);
-    request.onsuccess = function (event) {
-      console.log('Data updated successfully');
+  const dbExists = await doesDatabaseExist(`${user_email}_db`);
+
+  if (dbExists) {
+    const objectStoreName = `${user_email}__Object_Store`;
+
+    const DBOpenRequest = window.indexedDB.open(`${user_email}_db`, 4);
+
+    DBOpenRequest.onsuccess = function (event) {
+      const db = event.target.result;
+
+      if (db.objectStoreNames.contains(objectStoreName)) {
+        const transaction = db.transaction([objectStoreName], "readwrite");
+        const objectStore = transaction.objectStore(objectStoreName);
+        const request = objectStore.put(newData);
+
+        request.onsuccess = function (event) {
+          console.log('Data updated successfully');
+        };
+
+        request.onerror = function (event) {
+          console.error('Error updating data: ', event.target.error);
+        };
+      } else {
+        alert(`Object store '${objectStoreName}' does not exist. Please delete your current account and create a new account, if you still want to share your files.`);
+      }
     };
-    request.onerror = function (event) {
-      console.error('Error updating data: ', event.target.error);
+  } else {
+    alert(`DB ${user_email}_db does not exist. Please delete your current account and create a new account, if you still want to share your files.`);
+  }
+}
+
+async function doesDatabaseExist(dbName) {
+  return new Promise((resolve) => {
+    const request = window.indexedDB.open(dbName);
+
+    request.onsuccess = function () {
+      request.result.close();
+      resolve(true);
     };
-  };
+
+    request.onerror = function () {
+      resolve(false);
+    };
+  });
 }
 
 export function getCurrentTime() {

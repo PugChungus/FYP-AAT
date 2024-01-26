@@ -95,6 +95,7 @@ document.addEventListener('DOMContentLoaded', async function () {
       <span>Enable Two-Factor Authentication</span>
     </div>
     <button type="button" class="btn btn-danger" id="rotationButton" onclick="module.showKeyRotationWarning()">Key Rotation</button>
+    <button type="button" class="btn btn-danger" id="deleteButton" onclick="module.deleteAccount()">Delete Account</button>
   `;
 
   const imgElement = document.getElementById('profile-picture');
@@ -283,3 +284,43 @@ document.addEventListener('DOMContentLoaded', async function () {
 
   check2FAStatus();
 });
+
+export async function deleteAccount() {
+  // Show a prompt to the user
+  const confirmation = window.prompt('To delete your account, type "DELETE" and click OK:');
+
+  // Check if the user entered "DELETE" and confirmed
+  if (confirmation === 'DELETE') {
+    const newResponse = await fetch('http://localhost:3000/get_data_from_cookie', {
+      method: 'POST'
+    });
+  
+    const data = await newResponse.json(); // await here
+    const id = data['id_username']['id'];
+    console.log(id)
+
+    const formData = new FormData();
+    formData.append('id', id)
+
+    const response = await fetch('http://localhost:3000/delete_account', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer: ${jwtToken}`
+      },
+      body: formData,
+    });
+
+    // For example, show an alert for demonstration purposes
+    if (response.ok) {
+      window.alert('Account deleted successfully.');
+      window.location.href = 'http://localhost:3000';
+    }
+    else{
+      window.alert('Account deletion failed.');
+    }
+  } else {
+    // User did not confirm, you might want to show a message or take other actions
+    window.alert('Account deletion cancelled.');
+  }
+}
+
