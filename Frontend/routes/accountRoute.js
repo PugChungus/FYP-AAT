@@ -2,6 +2,7 @@ import express, { Router } from 'express';
 import crypto from 'crypto';
 import argon2 from 'argon2-browser';
 import { pool } from '../db-connection.js';
+import { checkTokenValidity } from '../authorizeRolesRoute.js';
 import fs from 'fs/promises';
 
 const accountRouter = express.Router();
@@ -115,6 +116,45 @@ accountRouter.post('/check_account', async (req, res) => {
     catch (error) {
         console.error(error);
         return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+
+accountRouter.post('/delete_account', async (req, res) => {
+    const cookie_from_frontend = req.headers.authorization;
+    const isValid = checkTokenValidity(cookie_from_frontend);
+  
+    if (!isValid) {
+      return res.status(401).json({ message: 'Invalid jwtToken' });
+    }
+  
+    const id = req.body.id;
+  
+    try {
+      // Delete user account from the database
+      const [result] = await pool.execute('DELETE FROM user_account WHERE account_id = ?', [id]);
+  
+      // Get the expiration timestamp from the token (assuming it's a JWT)
+      const jwtToken = req.cookies.jwtToken;
+      const expiration_timestamp = jwtToken ? jwtToken.exp : null;
+  
+      // Insert the token into the blacklist table
+      const [result2] = await pool.execute(
+        'INSERT INTO blacklist (token, expiration_timestamp) VALUES (?, ?)',
+        [jwtToken, expiration_timestamp]
+      );
+  
+      // Clear the jwtToken cookie on the client side
+      res.clearCookie('jwtToken', {
+        httpOnly: true,
+        sameSite: 'Strict',
+        secure: true,
+      });
+  
+      return res.status(200).json({ message: 'Account Deleted', result });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 

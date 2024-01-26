@@ -45,8 +45,10 @@
     <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
     <script type="module">
         import { showKeyRotationWarning } from '../js/RSA and IndexedDB/key_regen.js';
+        import { deleteAccount } from '../js/profile.js';
 
         module.showKeyRotationWarning = showKeyRotationWarning 
+        module.deleteAccount = deleteAccount
     </script>
 
 </body>
