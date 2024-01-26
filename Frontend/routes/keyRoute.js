@@ -1,12 +1,23 @@
 import cron from 'node-cron';
 import crypto from 'crypto';
+import express from 'express';
+
+const keyRouter = express.Router();
 
 export let keys = {
-    secretJwtKey: "ACB725326D68397E743DFC9F3FB64DA50CE7FB135721794C355B0DB219C449B3",
-    secret_key: '\xc2\x99~t\xe52\xcbo\xaa\xe8\x93dX\x04\x14\xa8\xa8\x9a\xd8P\x90\xd9"\xd0|\x1cO\xe5\xcbE\x06n',
-    secret_iv: '\xb1\xe1z9\xcf\xc7\x94\x14\xb7u\xa9C\x0f\xf6\x8c\xbc\xc0\x0b\xff\xc4X@\xa4\xb0\x05\x95Ni[\xc8\xdfg',
+    secretJwtKey: crypto.randomBytes(32).toString('hex'),
+    secret_key: crypto.randomBytes(32).toString('hex'),
+    secret_iv: crypto.randomBytes(16).toString('hex'),
     encryption_method: 'aes-256-cbc'
 };
+
+console.log(keys)
+
+keyRouter.get('/keys', (req, res) => {
+    res.json({
+        secretJwtKey: keys.secretJwtKey
+    });
+});
 
 const rotateKeys = () => {
     // Generate new keys
@@ -14,7 +25,7 @@ const rotateKeys = () => {
     keys.secret_key = crypto.randomBytes(32).toString('hex');
     keys.secret_iv = crypto.randomBytes(16).toString('hex');
 
-    console.log('Keys rotated:', keys.secretJwtKey);
+    console.log('Keys rotated:', keys);
 };
 
 export async function encryptData(data) {
@@ -40,9 +51,11 @@ const encryptionIV = crypto
     .digest('hex')
     .substring(0, 16);
 
-cron.schedule('0 0 * * *', rotateKeys);
+cron.schedule('* * * * *', rotateKeys);
 
 // // // Example: Log the keys every minute for testing
-// cron.schedule('* * * * *', () => {
-//     console.log('Current Keys:', keys.secretJwtKey, keys.secret_key, keys.secret_iv);
-// });
+cron.schedule('* * * * *', () => {
+    console.log('Current Keys:', keys);
+});
+
+export default keyRouter;

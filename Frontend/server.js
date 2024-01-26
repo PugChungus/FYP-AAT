@@ -10,16 +10,16 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { OAuth2Client } from "google-auth-library";
 import jwt from 'jsonwebtoken';
+import helmet from 'helmet';
 
 import { authorizeRoles, checkJwtToken } from './routes/authorizeRolesRoute.js';
 import loginRouter from './routes/loginroute.js'
+import keyRouter from './routes/keyRoute.js';
 import accountRouter from './routes/accountRoute.js'
 import cookieRouter from './routes/cookieRoute.js';
 import tfaRouter from './routes/tfaRoute.js';
 import accountDataRouter from './routes/accountDataRoute.js';
 import rsaRouter from './routes/rsaRoute.js';
-import helmet from 'helmet';
-
 
 const app = express();
 const port = 3000;
@@ -41,6 +41,7 @@ app.use(
 app.use(upload.any());
 app.use(cors());
 app.use(cookieParser());
+app.use('/', keyRouter);
 app.use('/', loginRouter);
 app.use('/', accountRouter);
 app.use('/', accountDataRouter);
