@@ -22,7 +22,7 @@
                     <div class="col-md-6 col-lg-4">
                         <div class="login-wrap p-0">
                             <h3 class="mb-4 text-center">Have an account?</h3>
-                            <form action="#" class="signin-form" onsubmit="module.login(event)">
+                            <form action="#" id="login-form" class="signin-form"   >
                                 <div class="form-group">
                                     <input type="text" id="email-field" class="form-control" placeholder="Email"
                                         required>
@@ -61,14 +61,27 @@
         </section>
 
 
-        <script type="text/javascript">
+        <script type="text/javascript"  nonce="<%= nonce %>">
             const module = {};
+        </script>
+        <script type="module" nonce="<%= nonce %>">
+            // Access the form element by its ID
+            const loginForm = document.getElementById('login-form');
+            
+            // Add event listener for form submission
+            loginForm.addEventListener('submit', function(event) {
+                event.preventDefault(); // Prevent default form submission
+                
+                // Call login function from account.js module
+                module.login(event);
+                
+            });
         </script>
 
         <script src="/js/bootstrap.min.js"></script>
         <script src="/js/jquery.min.js"></script>
         <script src="/js/main.js"></script>
-        <script type="module">
+        <script type="module"  nonce="<%= nonce %>">
             import { login } from '/js/account.js';
 
             module.login = login        </script>

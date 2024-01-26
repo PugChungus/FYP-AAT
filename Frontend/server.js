@@ -24,9 +24,29 @@ import helmet from 'helmet';
 const app = express();
 const port = 3000;
 
+
+  app.use((req, res, next) => {
+    // Generate a nonce value
+    const nonce = crypto.randomBytes(16).toString('hex');
+    // Set the nonce value as a local variable to be accessed in the view/template
+    res.locals.nonce = nonce;
+    // Call the next middleware
+    next();
+  });
+app.use(
+    helmet.contentSecurityPolicy({
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'","https://code.jquery.com", "https://cdn.jsdelivr.net", (req, res) => `'nonce-${res.locals.nonce}'`], // Use the nonce value dynamically
+        connectSrc: ["'self'", "http://localhost:5000"],    
+        imgSrc: ["'self'", "data:"],
+      },
+    })
+  );
+
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
-app.use(helmet());
+
 app.use(upload.any());
 app.use(cors());
 app.use(cookieParser());
@@ -50,7 +70,7 @@ app.get('/', (req, res) => {
     if (isTokenValid) {
         return res.redirect('/home');
     } else {
-        return res.render('login');
+        return res.render('login',{ nonce: res.locals.nonce });
     }
 });
 
