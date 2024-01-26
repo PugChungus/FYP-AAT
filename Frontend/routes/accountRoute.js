@@ -21,18 +21,11 @@ async function hashPassword(password, salt) {
     }
 }
 // Load insecure passwords from file
-async function loadInsecurePasswords() {
-    const content = await fs.readFile('10k-worst-passwords.txt', 'utf-8');
-    return new Set(content.trim().split('\n'));
-}
 
-let insecurePasswords;
 
-// Initialize insecure passwords on server startup
-async function initializeInsecurePasswords() {
-    insecurePasswords = await loadInsecurePasswords();
-}
-
+const test = 'Passwords';
+const insecuretest = new Set(['Passwords'])
+const mySet = new Set(['value1', 'Passwords', 'value3']);
 
 accountRouter.post('/create_account', async (req, res) => {
     try {
@@ -40,6 +33,11 @@ accountRouter.post('/create_account', async (req, res) => {
         const email = req.body.email;
         const password = req.body.password;
         const confirmPassword = req.body.confirmPassword;
+
+        const content = await fs.readFile('10k-worst-passwords.txt', 'utf-8');
+        const passworders = content.trim().split('\n').map(password => password.trim().toLowerCase()); 
+        const insecurePasswords = new Set(passworders);
+        const lowercasedpassword = password.toLowerCase()
 
         const emailRegex = /^[\w-]+(\.[\w-]+)*@[A-Za-z0-9]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$/;
 
@@ -57,6 +55,12 @@ accountRouter.post('/create_account', async (req, res) => {
         if (password !== confirmPassword) {
             return res.status(400).json({ error: 'Passwords do not match' });
         }
+        console.log(insecurePasswords)
+        if (insecurePasswords.has(lowercasedpassword)) {
+            return res.status(400).json({ error: 'Your password is execptionally weak, please choose a new one' });
+        }else {
+            console.log("Provided password is not in the list of insecure passwords.");
+        }
 
         const minLength = 8; // You can adjust this value based on your requirements
         if (password.length < minLength) {
@@ -67,15 +71,18 @@ accountRouter.post('/create_account', async (req, res) => {
         if (!/[A-Z]/.test(password)) {
             return res.status(400).json({ error: 'Password must contain at least one uppercase letter' });
         }
-        // Initialize insecure passwords
-        if (!insecurePasswords) {
-            await initializeInsecurePasswords();
-        }
 
         // Check if password is insecure
-        if (insecurePasswords.has(password)) {
-            return res.status(400).json({ error: 'Please choose a more secure password' });
+        
+        if (mySet.has(test)){
+            console.log('working')
+            
         }
+        else{
+            console.log('fake')
+        }
+        
+
        
         const random_salt = generateSalt(16)
         const encodedHash = await hashPassword(password, random_salt)
