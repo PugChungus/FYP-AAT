@@ -18,12 +18,15 @@ import cookieRouter from './routes/cookieRoute.js';
 import tfaRouter from './routes/tfaRoute.js';
 import accountDataRouter from './routes/accountDataRoute.js';
 import rsaRouter from './routes/rsaRoute.js';
+import helmet from 'helmet';
+
 
 const app = express();
 const port = 3000;
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
+app.use(helmet());
 app.use(upload.any());
 app.use(cors());
 app.use(cookieParser());

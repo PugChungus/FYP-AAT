@@ -20,12 +20,7 @@ async function hashPassword(password, salt) {
       throw err;
     }
 }
-// Load insecure passwords from file
 
-
-const test = 'Passwords';
-const insecuretest = new Set(['Passwords'])
-const mySet = new Set(['value1', 'Passwords', 'value3']);
 
 accountRouter.post('/create_account', async (req, res) => {
     try {
@@ -33,14 +28,14 @@ accountRouter.post('/create_account', async (req, res) => {
         const email = req.body.email;
         const password = req.body.password;
         const confirmPassword = req.body.confirmPassword;
-
+        //load insecure passwords from file.
         const content = await fs.readFile('10k-worst-passwords.txt', 'utf-8');
         const passworders = content.trim().split('\n').map(password => password.trim().toLowerCase()); 
         const insecurePasswords = new Set(passworders);
         const lowercasedpassword = password.toLowerCase()
 
         const emailRegex = /^[\w-]+(\.[\w-]+)*@[A-Za-z0-9]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$/;
-
+        const forbiddenPattern = /[<>&'"\$;`|]/
         // Check if all fields are filled
         if (!username || !email || !password || !confirmPassword) {
             return res.status(400).json({ error: 'All fields must be filled' });
@@ -55,7 +50,11 @@ accountRouter.post('/create_account', async (req, res) => {
         if (password !== confirmPassword) {
             return res.status(400).json({ error: 'Passwords do not match' });
         }
-        console.log(insecurePasswords)
+        // Check if password has forbidden characters
+        if (forbiddenPattern.test(password)){
+            return res.status(400).json({ error: 'Forbidden Characters detected'})
+        }
+ 
         if (insecurePasswords.has(lowercasedpassword)) {
             return res.status(400).json({ error: 'Your password is execptionally weak, please choose a new one' });
         }else {
@@ -70,16 +69,6 @@ accountRouter.post('/create_account', async (req, res) => {
         // Check if password contains at least one uppercase letter
         if (!/[A-Z]/.test(password)) {
             return res.status(400).json({ error: 'Password must contain at least one uppercase letter' });
-        }
-
-        // Check if password is insecure
-        
-        if (mySet.has(test)){
-            console.log('working')
-            
-        }
-        else{
-            console.log('fake')
         }
         
 
