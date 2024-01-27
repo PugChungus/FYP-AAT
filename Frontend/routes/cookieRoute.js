@@ -43,7 +43,7 @@ cookieRouter.post('/blacklist_token', async (req, res) => {
             secure: true,
         });
 
-        return res.status(200).json({ message: 'Token Blacklisted', result});
+        return res.status(200).json({ message: 'Token Blacklisted'});
     }
     catch (err) {
         console.error(err);

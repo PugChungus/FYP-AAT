@@ -6,7 +6,7 @@ from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 from Crypto.Util.Padding import pad, unpad
 from base64 import b64encode, b64decode
-from datetime import datetime
+from datetime import datetime, timezone
 from PIL import Image
 from io import BytesIO
 from flask_cors import CORS
@@ -77,11 +77,17 @@ def check_token_validity(authorization_header):
         if authorization_header.startswith('Bearer: '):
             # Extract the token part after 'Bearer '
             jwt_token = authorization_header.split('Bearer: ')[1]
-            print(jwt_token)
-            print(secretJwtKey)
 
-            # Decode the JWT token to check its validity
-            jwt.decode(jwt_token, secretJwtKey, algorithms=["HS512"])
+            decoded_token = jwt.decode(jwt_token, secretJwtKey, algorithms=["HS512"])
+            decoded_token = jwt.decode(jwt_token, secretJwtKey, algorithms=["HS512"])
+            print(decoded_token['exp'])
+
+            # Check if the token is expired
+            current_timestamp = int(datetime.utcnow().replace(tzinfo=timezone.utc).timestamp())
+            print(current_timestamp)
+            if decoded_token['exp'] < current_timestamp:
+                print("Token has expired.")
+                return False
 
             print("Token Verified. Please Proceed.")
             return True

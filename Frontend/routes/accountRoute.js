@@ -121,7 +121,15 @@ accountRouter.post('/check_account', async (req, res) => {
 
 accountRouter.post('/delete_account', async (req, res) => {
     const id = req.body.id;
-  
+    const cookie_from_frontend =  req.headers.authorization
+    const isValid = checkTokenValidity(cookie_from_frontend)
+       
+    if (!isValid) {
+        console.log("Error Validating Key")
+    }
+    else {
+        console.log('valid token')
+    }
     try {
       // Delete user account from the database
       const [result] = await pool.execute('DELETE FROM user_account WHERE account_id = ?', [id]);

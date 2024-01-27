@@ -304,6 +304,7 @@ export async function deleteAccount() {
     const data = await newResponse.json(); // await here
     const id = data['id_username']['id'];
     const email = await get_email_via_id()
+    const jwtToken = await get_cookie();
 
     const formData = new FormData();
     formData.append('id', id)
@@ -315,6 +316,9 @@ export async function deleteAccount() {
 
     const response2 = await fetch('http://localhost:3000/delete_account', {
       method: 'POST',
+      headers: {
+        'Authorization': `Bearer: ${jwtToken}`
+      },
       body: formData,
     });
 
