@@ -74,9 +74,11 @@ def run_scheduler():
 def check_token_validity(authorization_header):
     try:
         # Check if the header starts with 'Bearer'
-        if authorization_header.startswith('Bearer '):
+        if authorization_header.startswith('Bearer: '):
             # Extract the token part after 'Bearer '
-            jwt_token = authorization_header.split('Bearer ')[1]
+            jwt_token = authorization_header.split('Bearer: ')[1]
+            print(jwt_token)
+            print(secretJwtKey)
 
             # Decode the JWT token to check its validity
             jwt.decode(jwt_token, secretJwtKey, algorithms=["HS512"])
@@ -85,10 +87,11 @@ def check_token_validity(authorization_header):
             return True
         else:
             # If the header format is not as expected
-            return jsonify({'error': 'Invalid authorization header format'}), 400
+            return False
     except Exception as e:
         # Handle other unexpected errors
-        return jsonify({'error': str(e)}), 500
+        print({'error': str(e)})
+        return False
 
 @app.route('/create_user_dict', methods=['POST'])
 def create_user_dict():
@@ -100,10 +103,11 @@ def create_user_dict():
             return "Token is Invalid"
         
         isValid = check_token_validity(authorization_header)
+        print(isValid)
         
         if not isValid:
             print('Invalid Token.')
-            return "Invalid Token."
+            return jsonify({'error': 'Invalid Token'}), 500
         else:
             print('Valid Token')
  
@@ -177,6 +181,7 @@ def upload():
             return jsonify({'error': str(e)}), 500
 
     print("hello")
+
     if uploaded_file is None:
         return jsonify({'message': 'No changes'})
 

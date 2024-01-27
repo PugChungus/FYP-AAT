@@ -25,43 +25,44 @@ const app = express();
 const port = 3000;
 
 
-  app.use((req, res, next) => {
-    // Generate a nonce value
-    const nonce = crypto.randomBytes(16).toString('hex');
-    // Set the nonce value as a local variable to be accessed in the view/template
-    res.locals.nonce = nonce;
-    // Call the next middleware
-    next();
-  });
+app.use((req, res, next) => {
+  // Generate a nonce value
+  const nonce = crypto.randomBytes(16).toString('hex');
+  // Set the nonce value as a local variable to be accessed in the view/template
+  res.locals.nonce = nonce;
+  // Call the next middleware
+  next();
+});
+
 app.use(
-    helmet.contentSecurityPolicy({
+  helmet({
+    contentSecurityPolicy: {
       directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'","https://code.jquery.com", "https://cdn.jsdelivr.net", (req, res) => `'nonce-${res.locals.nonce}'`], // Use the nonce value dynamically
-        connectSrc: ["'self'", "http://localhost:5000"],    
-        imgSrc: ["'self'", "data:"],
+         defaultSrc: ["'self'", 'http://localhost:5000'],
+        'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+        'script-src-attr': ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+        // Add other directives as needed
       },
-    })
-  );
+    },
+  })
+);
+
+// app.use(
+//   helmet({
+//     contentSecurityPolicy: {
+//       directives: {
+//          defaultSrc: ["'self'", 'http://localhost:5000'],
+//         'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+//         'script-src-attr': ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+//         // Add other directives as needed
+//       },
+//     },
+//   })
+// );
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
-<<<<<<< HEAD
 
-=======
-app.use(
-    helmet({
-      contentSecurityPolicy: {
-        directives: {
-           defaultSrc: ["'self'", 'http://localhost:5000'],
-          'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-          'script-src-attr': ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-          // Add other directives as needed
-        },
-      },
-    })
-  );
->>>>>>> 6ef68c32bbe953e9ef2f4b524e6b12e622068942
 app.use(upload.any());
 app.use(cors());
 app.use(cookieParser());
@@ -149,84 +150,17 @@ app.get('/settings', authorizeRoles(), (req, res) => {
     res.render('settings', { user: req.user });
 });
 
-// app.post('/enable2fa', async (req, res) => {
-//     try {
-//         const cookie_from_frontend =  req.headers.authorization
-//         const isValid = checkTokenValidity(cookie_from_frontend)
-       
-//         if (!isValid) {
-//             console.log("Error Validating Key")
-//         } else {
-//             const { id } = req.body;
-        
-//             const sql = 'UPDATE user_account SET is_2fa_enabled = 1 WHERE account_id = ?';
-//             const values = [id];
-        
-//             await pool.query(sql, values);
-        
-//             res.json({ message: '2FA Enabled' });
-//         }
-//     } catch (error) {
-//       console.error('Error enabling 2FA:', error);
-//       res.status(500).json({ error: 'Internal Server Error' });
-//     }
-//   });
+app.post('/send_email_from_login', (req, res) => {
+  const email = req.body.email;
 
-// app.post('/disable2fa', async (req, res) => {
-//     try {
-//         const { id } = req.body;
+  // Process the email as needed
+  console.log('Received email from login:', email);
 
-//         const sql = 'UPDATE user_account SET is_2fa_enabled = 0 WHERE account_id = ?'
-//         const values = [id];
-//         await pool.query(sql, values);
-//         res.json({ message: '2FA Disabled'});
-//     } catch (error) {
-//         console.error('Error Disabling 2FA:', error)
-//         res.status(500).json({error: 'Internal Server Error'})
-//     }
-// })
+  // You can now use the email in your verification logic, store it in the database, etc.
 
-// app.post('/get2faStatus', async (req, res) => {
-//     try {
-//         const { email } = req.body.email;
-
-//         const sql = 'SELECT is_2fa_enabled, tfa_secret FROM user_account WHERE email_address = ?';
-//         const values = [email];
-
-//         const result = await pool.query(sql, values);
-//         console.log("Result: ", result)
-
-//         if (result.length > 0 && result[0].length) {
-//             const is2FAEnabled = result[0][0].is_2fa_enabled;
-//             const tfasecret = result[0][0].tfa_secret;
-
-//             console.log('is_2fa_enabled:', is2FAEnabled);
-//             console.log("TFASecret:", tfasecret)
-//             res.json({ is_2fa_enabled: is2FAEnabled, secret: tfasecret});
-//         } else {
-//             res.status(404).json({ error: 'User not found '});
-//         }
-//     } catch (error) {
-//         console.error('Error getting 2FA status: ', error);
-//         res.status(500).json({ error: 'Internal Server Error'});
-//     };
-// });
-
-
-
-
-  app.post('/send_email_from_login', (req, res) => {
-    const email = req.body.email;
-  
-    // Process the email as needed
-    console.log('Received email from login:', email);
-  
-    // You can now use the email in your verification logic, store it in the database, etc.
-  
-    // Send a response back to the client
-    res.json({ message: 'Email received successfully' });
-  });
-
+  // Send a response back to the client
+  res.json({ message: 'Email received successfully' });
+});
 
 app.listen (port, () => {
     console.log(`Server is running at http://localhost:${port}`);

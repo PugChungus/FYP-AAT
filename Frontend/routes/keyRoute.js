@@ -51,11 +51,11 @@ const encryptionIV = crypto
     .digest('hex')
     .substring(0, 16);
 
-cron.schedule('* * * * *', rotateKeys);
+cron.schedule('0 0 * * *', rotateKeys);
 
 // // // Example: Log the keys every minute for testing
-cron.schedule('* * * * *', () => {
-    console.log('Current Keys:', keys);
-});
+// cron.schedule('* * * * *', () => {
+//     console.log('Current Keys:', keys);
+// });
 
 export default keyRouter;
