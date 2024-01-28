@@ -37,7 +37,7 @@ app.use(
     helmet.contentSecurityPolicy({
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'","https://code.jquery.com", "https://cdn.jsdelivr.net", (req, res) => `'nonce-${res.locals.nonce}'`], // Use the nonce value dynamically
+        scriptSrc: ["'self'","https://code.jquery.com", "https://cdn.jsdelivr.net", "https://alcdn.msauth.net" , "https://apis.google.com" ,"https://accounts.google.com;", (req, res) => `'nonce-${res.locals.nonce}'`], // Use the nonce value dynamically
         connectSrc: ["'self'", "http://localhost:5000"],    
         imgSrc: ["'self'", "data:"],
       },
@@ -46,9 +46,7 @@ app.use(
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
-<<<<<<< HEAD
 
-=======
 app.use(
     helmet({
       contentSecurityPolicy: {
@@ -61,7 +59,6 @@ app.use(
       },
     })
   );
->>>>>>> 6ef68c32bbe953e9ef2f4b524e6b12e622068942
 app.use(upload.any());
 app.use(cors());
 app.use(cookieParser());
