@@ -2,6 +2,7 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import { pool } from '../db-connection.js';
 import { keys, decryptData } from './keyRoute.js';
+import { checkTokenValidity } from './authorizeRolesRoute.js';
 
 const cookieRouter = express.Router();
 
@@ -34,6 +35,15 @@ const moveTokenToBlacklist = async (jwtToken) => {
 cookieRouter.post('/blacklist_token', async (req, res) => {
     try {
         const jwtToken = req.cookies.jwtToken;
+        const cookie_from_frontend = req.headers.authorization
+        const isValid = await checkTokenValidity(cookie_from_frontend)
+        console.log(isValid)
+           
+        if (isValid === true) {
+            console.log('Valid token');
+        } else {
+            return res.status(401).json({ error: 'Invalid Token' });
+        }
 
         await moveTokenToBlacklist(jwtToken)
         
@@ -51,23 +61,20 @@ cookieRouter.post('/blacklist_token', async (req, res) => {
     }
 });
 
-cookieRouter.get('/checkTokenValidity', (req, res) => {
+cookieRouter.get('/checkTokenValidity', async (req, res) => {
     const jwtToken = req.cookies.jwtToken;
-  
+
     if (!jwtToken) {
-      // If there's no token, it's considered invalid
-      return res.status(401).json({ isValid: false });
+        // If there's no token, it's considered invalid
+        return res.status(401).json({ isValid: false });
     }
-  
-    try {
-      // Decode the JWT token to check its validity
-      jwt.verify(jwtToken, keys.secretJwtKey);
-      console.log("Token exists")
-      res.status(200).json({ isValid: true });
-    } catch (error) {
-      res.render('accessdenied')
-      // Handle token verification errors (e.g., expired token)
-      res.status(401).json({ isValid: false });
+
+    const isValid = await checkTokenValidity(`Bearer ${jwtToken}`);
+
+    if (isValid === true) {
+        res.status(200).json({ isValid: true });
+    } else {
+        res.status(401).json({ isValid: false });
     }
 });  
 

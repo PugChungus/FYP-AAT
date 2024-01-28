@@ -12,7 +12,7 @@ import { OAuth2Client } from "google-auth-library";
 import jwt from 'jsonwebtoken';
 import helmet from 'helmet';
 
-import { authorizeRoles, checkJwtToken } from './routes/authorizeRolesRoute.js';
+import { authorizeRoles, checkTokenValidity } from './routes/authorizeRolesRoute.js';
 import loginRouter from './routes/loginroute.js'
 import keyRouter from './routes/keyRoute.js';
 import accountRouter from './routes/accountRoute.js'
@@ -81,10 +81,10 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'public', 'pages'));
 
 // Set up a route to render your HTML file
-app.get('/', (req, res) => {
-    const isTokenValid = checkJwtToken(req.cookies.jwtToken);
-
-    if (isTokenValid) {
+app.get('/', async (req, res) => {
+    const isValid = await checkTokenValidity(req.cookies.jwtToken);
+    
+    if (isValid === true) {
         return res.redirect('/home');
     } else {
         return res.render('login',{ nonce: res.locals.nonce });

@@ -11,42 +11,33 @@ export function authorizeRoles() {
                 return res.status(401).render('accessdenied');
             }
 
-            const decodedToken = jwt.verify(jwtToken, keys.secretJwtKey);
-            const encryptedUserData = decodedToken.encryptedUserData;
+            const isValid = await checkTokenValidity(`Bearer ${jwtToken}`);
 
-            try {
-                const decryptedUserData = await decryptData(encryptedUserData);
-                const originalObject = JSON.parse(decryptedUserData);
-                const role = originalObject.role;
+            if (isValid) {
+                const decodedToken = jwt.verify(jwtToken, keys.secretJwtKey);
+                const encryptedUserData = decodedToken.encryptedUserData;
 
-                if (role === 'user') {
-                    return next();
-                } else {
+                try {
+                    const decryptedUserData = await decryptData(encryptedUserData);
+                    const originalObject = JSON.parse(decryptedUserData);
+                    const role = originalObject.role;
+
+                    if (role === 'user') {
+                        return next();
+                    } else {
+                        return res.status(401).render('accessdenied');
+                    }
+                } catch (error) {
+                    console.error('Error during decryption:', error);
                     return res.status(401).render('accessdenied');
                 }
-            } catch (error) {
-                console.error('Error during decryption:', error);
+            } else {
                 return res.status(401).render('accessdenied');
             }
         } catch (error) {
-            if (error.name === 'TokenExpiredError') {
-                return res.status(401).render('accessdenied');
-            }
-
             return res.status(401).render('accessdenied');
         }
     };
-}
-
-export function checkJwtToken(token) {
-    try {
-        // Decode the JWT token to check its validity
-        jwt.verify(token, keys.secretJwtKey);
-        return true;
-    } catch (error) {
-        // Handle token verification errors (e.g., expired token)
-        return false;
-    }
 }
 
 export async function checkTokenValidity(authorizationHeader) {
@@ -68,6 +59,9 @@ export async function checkTokenValidity(authorizationHeader) {
         // Check if the token is in the token_whitelist table
         const [whitelistResult] = await pool.execute('SELECT * FROM token_whitelist WHERE token = ?', [token]);
 
+        console.log('results', blacklistResult, whitelistResult)
+        console.log('results2', blacklistResult.length, whitelistResult.length)
+
         // Check if the token has expired
         const decodedToken = jwt.verify(token, keys.secretJwtKey);
         
@@ -78,14 +72,9 @@ export async function checkTokenValidity(authorizationHeader) {
         }
 
         // Check conditions and return the result
-        if (blacklistResult.length > 0) {
-            // Token is in the blacklist, return false
-            return false;
-        } else if (whitelistResult.length > 0) {
-            // Token is in the whitelist, return true
+        if (blacklistResult.length === 0 && whitelistResult.length > 0) {
             return true;
         } else {
-            // Token is not in either, return false
             return false;
         }
     } catch (error) {

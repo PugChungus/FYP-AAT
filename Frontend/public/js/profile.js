@@ -311,8 +311,16 @@ export async function deleteAccount() {
 
     const response1 = await fetch('http://localhost:3000/blacklist_token', {
       method: 'POST',
+      headers: {
+        'Authorization': `Bearer: ${jwtToken}`
+      },
       body: formData,
     });
+
+    if (response1.status === 401){ 
+      window.alert('Account deletion failed.');
+      return
+    }
 
     const response2 = await fetch('http://localhost:3000/delete_account', {
       method: 'POST',

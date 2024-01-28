@@ -2,7 +2,6 @@ import express, { Router } from 'express';
 import crypto from 'crypto';
 import argon2 from 'argon2-browser';
 import { pool } from '../db-connection.js';
-import { checkTokenValidity } from './authorizeRolesRoute.js';
 import fs from 'fs/promises';
 
 const accountRouter = express.Router();
@@ -121,15 +120,7 @@ accountRouter.post('/check_account', async (req, res) => {
 
 accountRouter.post('/delete_account', async (req, res) => {
     const id = req.body.id;
-    const cookie_from_frontend =  req.headers.authorization
-    const isValid = checkTokenValidity(cookie_from_frontend)
-       
-    if (!isValid) {
-        console.log("Error Validating Key")
-    }
-    else {
-        console.log('valid token')
-    }
+    
     try {
       // Delete user account from the database
       const [result] = await pool.execute('DELETE FROM user_account WHERE account_id = ?', [id]);
