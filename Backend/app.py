@@ -6,7 +6,7 @@ from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 from Crypto.Util.Padding import pad, unpad
 from base64 import b64encode, b64decode
-from datetime import datetime
+from datetime import datetime, timezone
 from PIL import Image
 from io import BytesIO
 from flask_cors import CORS
@@ -17,13 +17,15 @@ import sys
 import requests
 import zipfile
 import hashlib
+import jwt
 import os
 import json
-import jwt
 import pyotp
+import threading
 import qrcode
 import secrets
 import time
+import schedule
 import sib_api_v3_sdk
 from sib_api_v3_sdk.rest import ApiException
 from pprint import pprint
@@ -33,51 +35,85 @@ from datetime import datetime, timedelta
 app = Flask(__name__)
 CORS(app)
 
+# Connect to the MySQL database
+db = pymysql.connect(host = 'localhost', port = 3306, user = 'root', password = 'password', database = 'major_project_db')
+
+user_dicts = {}  # Dictionary to store user-specific dictionaries
 user_secrets = {}
 # salt = secrets.token_hex(16)
-# Connect to the MySQL database
-
-db = pymysql.connect(host = 'localhost', port = 3306, user = 'root', password = 'password', database = 'major_project_db')
-user_dicts = {}  # Dictionary to store user-specific dictionaries
-
-
-secretJwtKey = "ACB725326D68397E743DFC9F3FB64DA50CE7FB135721794C355B0DB219C449B3"
-
 SECRET_KEY = get_random_bytes(32)
 IV = get_random_bytes(16)
+
+def fetch_latest_keys():
+    try:
+        response = requests.get('http://localhost:3000/keys')
+        response.raise_for_status()  # Raise an error for 4xx or 5xx responses
+        return response.json()
+    except requests.RequestException as e:
+        print(f"Error fetching keys: {e}")
+        return None
+
+def update_keys():
+    global secretJwtKey
+    new_keys = fetch_latest_keys()
+    if new_keys:
+        # Update your keys with the new ones
+        secretJwtKey = new_keys['secretJwtKey']
+        print(secretJwtKey)
+        return "Keys Fetched"
+
+update_keys()
+
+schedule.every().minute.do(update_keys)
+
+def run_scheduler():
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
 
 def check_token_validity(authorization_header):
     try:
         # Check if the header starts with 'Bearer'
-        if authorization_header.startswith('Bearer '):
+        if authorization_header.startswith('Bearer: '):
             # Extract the token part after 'Bearer '
-            jwt_token = authorization_header.split('Bearer ')[1]
+            jwt_token = authorization_header.split('Bearer: ')[1]
 
-            # Decode the JWT token to check its validity
-            jwt.decode(jwt_token, secretJwtKey, algorithms=['HS256'])
-            
+            decoded_token = jwt.decode(jwt_token, secretJwtKey, algorithms=["HS512"])
+            decoded_token = jwt.decode(jwt_token, secretJwtKey, algorithms=["HS512"])
+            print(decoded_token['exp'])
+
+            # Check if the token is expired
+            current_timestamp = int(datetime.utcnow().replace(tzinfo=timezone.utc).timestamp())
+            print(current_timestamp)
+            if decoded_token['exp'] < current_timestamp:
+                print("Token has expired.")
+                return False
+
             print("Token Verified. Please Proceed.")
             return True
         else:
             # If the header format is not as expected
-            return jsonify({'error': 'Invalid authorization header format'})
+            return False
     except Exception as e:
-        # Handle token verification errors
-        return jsonify({'error': str(e)}), 500
+        # Handle other unexpected errors
+        print({'error': str(e)})
+        return False
 
 @app.route('/create_user_dict', methods=['POST'])
 def create_user_dict():
     try:
+        print(secretJwtKey)
         authorization_header = request.headers.get('Authorization')
 
         if authorization_header is None:
             return "Token is Invalid"
         
         isValid = check_token_validity(authorization_header)
+        print(isValid)
         
         if not isValid:
             print('Invalid Token.')
-            return "Invalid Token."
+            return jsonify({'error': 'Invalid Token'}), 500
         else:
             print('Valid Token')
  
@@ -151,6 +187,7 @@ def upload():
             return jsonify({'error': str(e)}), 500
 
     print("hello")
+
     if uploaded_file is None:
         return jsonify({'message': 'No changes'})
 
@@ -1220,5 +1257,8 @@ def verify_account():
 
 
 if __name__ == '__main__':
-    app.run(debug=True,
-    port=5000)
+    # Run the scheduler in a separate thread
+    scheduler_thread = threading.Thread(target=run_scheduler)
+    scheduler_thread.start()
+
+    app.run(debug=True, port=5000, use_reloader=False)

@@ -2,7 +2,6 @@ import express, { Router } from 'express';
 import crypto from 'crypto';
 import argon2 from 'argon2-browser';
 import { pool } from '../db-connection.js';
-import { checkTokenValidity } from './authorizeRolesRoute.js';
 import fs from 'fs/promises';
 
 const accountRouter = express.Router();
@@ -121,7 +120,7 @@ accountRouter.post('/check_account', async (req, res) => {
 
 accountRouter.post('/delete_account', async (req, res) => {
     const id = req.body.id;
-  
+    
     try {
       // Delete user account from the database
       const [result] = await pool.execute('DELETE FROM user_account WHERE account_id = ?', [id]);

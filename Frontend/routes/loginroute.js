@@ -8,6 +8,23 @@ import { keys, encryptData } from './keyRoute.js';
 const loginRouter = express.Router();
 let verificationResult;
 
+const addTokenToWhitelist = async (token) => {
+    try {
+      const expirationTimestamp = new Date(Date.now() + 1 * 60 * 60 * 1000); // 1 hour from now
+  
+      const [result] = await pool.execute(
+        'INSERT INTO token_whitelist (token, expiration_timestamp) VALUES (?, ?)',
+        [token, expirationTimestamp]
+      );
+  
+      console.log('Token added to whitelist:', result);
+    } catch (error) {
+      console.error('Error adding token to whitelist:', error);
+      throw error; // Handle the error as needed
+    }
+};
+
+
 loginRouter.post('/login', async (req, res) => {
     const email = req.body.email;
     const password = req.body.password;
@@ -79,6 +96,8 @@ loginRouter.post('/login', async (req, res) => {
                       secure: true,
                       maxAge: 3600000,
                     });
+
+                    await addTokenToWhitelist(jwtToken);
                 }
         
                 return res.status(200).json({ message: 'Account Login Success', result });
@@ -96,17 +115,42 @@ loginRouter.post('/login', async (req, res) => {
     }
 });
 
-loginRouter.get('/logout', (req, res) => {
-    // Clear the JWT token cookie
-    res.cookie('jwtToken', '', {
-        expires: new Date(0),  // Set expiration to a past date
-        httpOnly: true,
-        sameSite: 'Strict',
-        secure: true,
-    });
+const moveTokenToBlacklist = async (jwtToken) => {
+    try {
+        // Move the token from token_whitelist to token_blacklist
+        await pool.execute('INSERT INTO token_blacklist (token, expiration_timestamp) SELECT token, expiration_timestamp FROM token_whitelist WHERE token = ?', [jwtToken]);
 
-    // Redirect or respond as needed
-    return res.redirect('/');
+        // Remove the token from token_whitelist
+        await pool.execute('DELETE FROM token_whitelist WHERE token = ?', [jwtToken]);
+
+        console.log('Token moved to token_blacklist successfully.');
+    } catch (error) {
+        console.error('Error moving token to token_blacklist:', error);
+    }
+};
+
+loginRouter.get('/logout', async (req, res) => {
+    try {
+        // Get the JWT token from the request cookie
+        const jwtToken = req.cookies.jwtToken;
+
+        // Add the token to the token_blacklist table
+        await moveTokenToBlacklist(jwtToken);
+
+        // Clear the JWT token cookie
+        res.cookie('jwtToken', '', {
+            expires: new Date(0),  // Set expiration to a past date
+            httpOnly: true,
+            sameSite: 'Strict',
+            secure: true,
+        });
+
+        // Redirect or respond as needed
+        return res.redirect('/');
+    } catch (error) {
+        console.error('Error during logout:', error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
 });
 
 async function verifyPassword(password, pass_db) {

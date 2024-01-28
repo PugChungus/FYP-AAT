@@ -2,6 +2,7 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import { pool } from '../db-connection.js';
 import { keys, decryptData } from './keyRoute.js';
+import { checkTokenValidity } from './authorizeRolesRoute.js';
 
 const cookieRouter = express.Router();
 
@@ -17,14 +18,34 @@ cookieRouter.get('/api/getCookie', async (req, res) => {
     }
 });
 
+const moveTokenToBlacklist = async (jwtToken) => {
+    try {
+        // Move the token from token_whitelist to token_blacklist
+        await pool.execute('INSERT INTO token_blacklist (token, expiration_timestamp) SELECT token, expiration_timestamp FROM token_whitelist WHERE token = ?', [jwtToken]);
+
+        // Remove the token from token_whitelist
+        await pool.execute('DELETE FROM token_whitelist WHERE token = ?', [jwtToken]);
+
+        console.log('Token moved to token_blacklist successfully.');
+    } catch (error) {
+        console.error('Error moving token to token_blacklist:', error);
+    }
+};
+
 cookieRouter.post('/blacklist_token', async (req, res) => {
     try {
         const jwtToken = req.cookies.jwtToken;
+        const cookie_from_frontend = req.headers.authorization
+        const isValid = await checkTokenValidity(cookie_from_frontend)
+        console.log(isValid)
+           
+        if (isValid === true) {
+            console.log('Valid token');
+        } else {
+            return res.status(401).json({ error: 'Invalid Token' });
+        }
 
-        const [result] = await pool.execute(
-            'INSERT INTO token_blacklist (token, expiration_timestamp) VALUES (?, ?)',
-            [jwtToken, new Date()]
-        );   
+        await moveTokenToBlacklist(jwtToken)
         
         res.clearCookie('jwtToken', {
             httpOnly: true,
@@ -32,7 +53,7 @@ cookieRouter.post('/blacklist_token', async (req, res) => {
             secure: true,
         });
 
-        return res.status(200).json({ message: 'Token Blacklisted', result});
+        return res.status(200).json({ message: 'Token Blacklisted'});
     }
     catch (err) {
         console.error(err);
@@ -40,23 +61,20 @@ cookieRouter.post('/blacklist_token', async (req, res) => {
     }
 });
 
-cookieRouter.get('/checkTokenValidity', (req, res) => {
+cookieRouter.get('/checkTokenValidity', async (req, res) => {
     const jwtToken = req.cookies.jwtToken;
-  
+
     if (!jwtToken) {
-      // If there's no token, it's considered invalid
-      return res.status(401).json({ isValid: false });
+        // If there's no token, it's considered invalid
+        return res.status(401).json({ isValid: false });
     }
-  
-    try {
-      // Decode the JWT token to check its validity
-      jwt.verify(jwtToken, keys.secretJwtKey);
-      console.log("Token exists")
-      res.status(200).json({ isValid: true });
-    } catch (error) {
-      res.render('accessdenied')
-      // Handle token verification errors (e.g., expired token)
-      res.status(401).json({ isValid: false });
+
+    const isValid = await checkTokenValidity(`Bearer ${jwtToken}`);
+
+    if (isValid === true) {
+        res.status(200).json({ isValid: true });
+    } else {
+        res.status(401).json({ isValid: false });
     }
 });  
 
@@ -101,5 +119,26 @@ cookieRouter.post('/get_data_from_cookie', async (req, res) => {
         return res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
+const moveExpiredTokens = async () => {
+    try {
+      // Find expired tokens in the whitelist
+      const [expiredTokens] = await pool.execute('SELECT * FROM token_whitelist WHERE expiration_timestamp < NOW()');
+      
+      // Move expired tokens to the blacklist
+      for (const token of expiredTokens) {
+        await pool.execute('INSERT INTO token_blacklist (token, expiration_timestamp) VALUES (?, ?)', [token.token, token.expiration_timestamp]);
+      }
+  
+      // Optionally, delete the expired tokens from the whitelist
+      await pool.execute('DELETE FROM token_whitelist WHERE expiration_timestamp < NOW()');
+  
+      console.log('Expired tokens moved to blacklist successfully.');
+    } catch (error) {
+      console.error('Error moving expired tokens:', error);
+    }
+};
+
+setInterval(moveExpiredTokens, 60 * 1000);
 
 export default cookieRouter;
