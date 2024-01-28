@@ -3,7 +3,11 @@ from flask import Flask, render_template, request, jsonify, Response
 from werkzeug.utils import secure_filename
 from flask_cors import cross_origin
 from Crypto.Cipher import AES
+from datetime import datetime, timedelta
+from dbutils.pooled_db import PooledDB
 from Crypto.Random import get_random_bytes
+from sib_api_v3_sdk.rest import ApiException
+from pprint import pprint
 from Crypto.Util.Padding import pad, unpad
 from base64 import b64encode, b64decode
 from datetime import datetime, timezone
@@ -27,16 +31,21 @@ import secrets
 import time
 import schedule
 import sib_api_v3_sdk
-from sib_api_v3_sdk.rest import ApiException
-from pprint import pprint
 import requests
-from datetime import datetime, timedelta
 
 app = Flask(__name__)
 CORS(app)
 
 # Connect to the MySQL database
-db = pymysql.connect(host = 'localhost', port = 3306, user = 'root', password = 'password', database = 'major_project_db')
+pool = PooledDB(
+    creator=pymysql,  # Database library/module
+    maxconnections=None,  # Maximum number of connections in the pool
+    host='localhost',
+    port=3306,
+    user='root',
+    password='password',
+    database='major_project_db'
+)
 
 user_dicts = {}  # Dictionary to store user-specific dictionaries
 user_secrets = {}
@@ -62,11 +71,11 @@ def update_keys():
         print(secretJwtKey)
         return "Keys Fetched"
 
-update_keys()
-
-schedule.every().minute.do(update_keys)
-
 def run_scheduler():
+    update_keys()
+    schedule.every().hour.do(update_keys)
+    schedule.every().day.at("00:00").do(update_keys)
+    
     while True:
         schedule.run_pending()
         time.sleep(1)
@@ -74,23 +83,40 @@ def run_scheduler():
 def check_token_validity(authorization_header):
     try:
         # Check if the header starts with 'Bearer'
+        if not authorization_header or not authorization_header.startswith('Bearer: '):
+            return False
+        
         if authorization_header.startswith('Bearer: '):
             # Extract the token part after 'Bearer '
             jwt_token = authorization_header.split('Bearer: ')[1]
 
-            decoded_token = jwt.decode(jwt_token, secretJwtKey, algorithms=["HS512"])
-            decoded_token = jwt.decode(jwt_token, secretJwtKey, algorithms=["HS512"])
-            print(decoded_token['exp'])
+            blacklist_query = "SELECT * FROM token_blacklist WHERE token = %s"
 
+            whitelist_query = "SELECT * FROM token_whitelist WHERE token = %s"
+
+            connection = pool.connection()
+
+            with connection.cursor() as cursor:
+                cursor.execute(blacklist_query, (jwt_token))
+                blacklisted_rows = cursor.fetchall()
+                cursor.execute(whitelist_query, (jwt_token))
+                whitelisted_rows = cursor.fetchall()
+
+            decoded_token = jwt.decode(jwt_token, secretJwtKey, algorithms=["HS512"])
+    
             # Check if the token is expired
             current_timestamp = int(datetime.utcnow().replace(tzinfo=timezone.utc).timestamp())
-            print(current_timestamp)
+
             if decoded_token['exp'] < current_timestamp:
                 print("Token has expired.")
                 return False
-
-            print("Token Verified. Please Proceed.")
-            return True
+            
+            if not blacklisted_rows and whitelisted_rows:
+                print("Token is valid and not blacklisted.")
+                return True
+            else:
+                print("Token is invalid and blacklisted.")
+                return False
         else:
             # If the header format is not as expected
             return False
@@ -120,7 +146,9 @@ def create_user_dict():
         if 'id' in request.form:
             account_id = request.form['id']
 
-            with db.cursor() as cursor:
+            connection = pool.connection()
+
+            with connection.cursor() as cursor:
                 sql = "SELECT email_address FROM user_account WHERE account_id = %s;"
                 cursor.execute(sql, (account_id,))
                 result = cursor.fetchone()
@@ -178,12 +206,14 @@ def upload():
         try:
             # Proceed with the database update for username only
             sql = "UPDATE user_account SET username = %s  WHERE account_id = %s"
-            with db.cursor() as cursor:
+            connection = pool.connection()
+
+            with connection.cursor() as cursor:
                 cursor.execute(sql, (username, account_id))
-            db.commit()
+            connection.commit()
             return jsonify({'message': 'Username updated successfully'})
         except Exception as e:
-            db.rollback()
+            connection.rollback()
             return jsonify({'error': str(e)}), 500
 
     print("hello")
@@ -207,12 +237,14 @@ def upload():
     try:
         # Proceed with the database update for both username and profile picture
         sql = "UPDATE user_account SET username = %s, profile_picture = %s WHERE account_id = %s"
-        with db.cursor() as cursor:
+        connection = pool.connection()
+        
+        with connection.cursor() as cursor:
             cursor.execute(sql, (username, file_bytes, account_id))
-        db.commit()
+        connection.commit()
         return jsonify({'message': 'File uploaded successfully'})
     except Exception as e:
-        db.rollback()
+        connection.rollback()
         return jsonify({'error': str(e)}), 500
 
 @app.route('/aes_keygen', methods=['GET'])
@@ -278,12 +310,14 @@ def format_date():
 
 def store_secret(email, secret):
     try:
-        with db.cursor() as cursor:
+        connection = pool.connection()
+
+        with connection.cursor() as cursor:
             sql = "UPDATE user_account SET tfa_secret = %s WHERE email_address = %s"
             cursor.execute(sql, (secret, email))
-        db.commit()
+        connection.commit()
     except Exception as e:
-        db.rollback()
+        connection.rollback()
         print("Error storing secret: ", str(e)), 500
 
 def format_size(size_in_bytes):
@@ -647,16 +681,18 @@ def clear_history():
 
         sql = "DELETE FROM history " \
               "WHERE account_id IN (SELECT account_id FROM user_account WHERE account_id = %s);"
+        
+        connection = pool.connection()
 
-        with db.cursor() as cursor:
+        with connection.cursor() as cursor:
             cursor.execute(sql, (id))
 
-        db.commit()  # Make sure to commit the changes after executing the query
+        connection.commit()  # Make sure to commit the changes after executing the query
 
         return 'History Cleared.'
 
     except Exception as e:
-        db.rollback()
+        connection.rollback()
         return jsonify({'error': str(e)}), 500
 
     
@@ -683,7 +719,9 @@ def display_history():
             "INNER JOIN user_account ON history.account_id = user_account.account_id " \
             "WHERE user_account.account_id = %s;"
 
-        with db.cursor() as cursor:
+        connection = pool.connection()
+
+        with connection.cursor() as cursor:
             cursor.execute(sql, (account_id))
             rows = cursor.fetchall()
             print(rows)
@@ -694,7 +732,7 @@ def display_history():
         return jsonify(result)
 
     except Exception as e:
-        db.rollback()
+        connection.rollback()
         return jsonify({'error': str(e)}), 500
 
 @app.route('/add_to_encryption_history', methods=['POST'])
@@ -726,16 +764,18 @@ def encrypt_history():
 
         # Proceed with the database update for username only
         sql = "INSERT INTO history (time, file_name, file_size, account_id, type, key_name) VALUES (%s, %s, %s, %s, %s, %s);"
+
+        connection = pool.connection()
         
-        with db.cursor() as cursor:
+        with connection.cursor() as cursor:
             cursor.execute(sql, (datetime.now(), file_name, file_size, account_id, type_of_encryption, key_name))
         
-        db.commit()
+        connection.commit()
         
         return jsonify({'message': 'Data inserted successfully'})
     
     except Exception as e:
-        db.rollback()
+        connection.rollback()
         return jsonify({'error': str(e)}), 500
 
 @app.route('/add_to_decryption_history', methods=['POST'])
@@ -765,16 +805,18 @@ def decrypt_history():
 
         # Proceed with the database update for username only
         sql = "INSERT INTO history (time, file_name, file_size, account_id, type, key_name) VALUES (%s, %s, %s, %s, %s, %s);"
+
+        connection = pool.connection()
         
-        with db.cursor() as cursor:
+        with connection.cursor() as cursor:
             cursor.execute(sql, (datetime.now(), file_name, file_size, account_id, type_of_encryption, key_name))
         
-        db.commit()
+        connection.commit()
         
         return jsonify({'message': 'Data inserted successfully'})
     
     except Exception as e:
-        db.rollback()
+        connection.rollback()
         return jsonify({'error': str(e)}), 500
 
 @app.route('/download_single_encrypted_file/<filename>', methods=['GET'])
@@ -1034,12 +1076,13 @@ def send_email():
 
 def insert_secret_into_db(email, secret):
     try:
-        with db.cursor() as cursor:
+        connection = pool.connection()
+        with connection.cursor() as cursor:
             sql = "UPDATE user_account SET tfa_secret = %s, is_2fa_enabled = 1 WHERE email_address = %s"
             cursor.execute(sql, (secret, email))
-        db.commit()
+        connection.commit()
     except Exception as e:
-        db.rollback()
+        connection.rollback()
         print("Error inserting secret into the database: ", str(e)), 500
 
 def encrypt_email(email):
@@ -1225,12 +1268,14 @@ def verify_account():
             email = token_payload['email']
             print("account ID:", email)
 
+            connection = pool.connection()
+
             try:
-                with db.cursor() as cursor:
+                with connection.cursor() as cursor:
                     # Update the 'activated' column in the 'user_account' table
                     sql = "UPDATE user_account SET activated = 1 WHERE email_address = %s;"
                     cursor.execute(sql, (email,))
-                    db.commit()  # Commit the changes to the database
+                    connection.commit()  # Commit the changes to the database
 
                     token_payload['token'] = ''
                     token_payload['hashed_token'] = ''
@@ -1245,7 +1290,7 @@ def verify_account():
                 return jsonify({'activation_status': 'error'})
 
             finally:
-                db.close()  # Close the database connection
+                connection.close()  # Close the database connection
 
     else:
         # Return error response
