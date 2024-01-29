@@ -83,9 +83,10 @@ loginRouter.post('/login', async (req, res) => {
                 // if (tables['activated'] === 0) {
                 //     window.location.href = 'http://localhost:3000/activation_failure' 
                 // }else {
-
-                if (tables["is_2fa_enabled"] === 1) {
+                console.log
+                if (tables[0][0].is_2fa_enabled === 1) {
                     console.log("2FA_enabled: True")
+                    return res.status(200).json({ message: '2FA Required', result, encryptedUserData });
                 } else {
                     const jwtToken = jwt.sign({ encryptedUserData }, keys.secretJwtKey, { algorithm: 'HS512', expiresIn: '1h' });
 
@@ -163,5 +164,35 @@ async function verifyPassword(password, pass_db) {
         console.error(e.message, e.code);
     }
 }
+
+loginRouter.post('/genToken', async (req, res) => {
+    try {
+        // console.log('Request Body:', hello);
+        console.log('Request Body:', req.body);
+        const encryptedUserData = req.body.encryptedUserData;
+        if (!encryptedUserData) {
+            return res.status(400).json({ error: 'encryptedUserData is missing in the request body' });
+        }
+        console.log('CHECKING5:', encryptedUserData)
+
+
+        const jwtToken = jwt.sign({ encryptedUserData }, keys.secretJwtKey, { algorithm: 'HS512', expiresIn: '1h' });
+
+        // Set the JWE in a cookie
+        res.cookie('jwtToken', jwtToken, {
+            httpOnly: true,
+            sameSite: 'Strict',
+            secure: true,
+            maxAge: 3600000,
+        });
+
+        await addTokenToWhitelist(jwtToken);
+
+        return res.status(200).json({ message: 'JWT Token Generated Successfully' });
+    } catch (error) {
+        console.error('Error during TOTP verification and JWT token generation:', error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
 
 export default loginRouter;

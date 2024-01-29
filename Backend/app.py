@@ -51,7 +51,9 @@ user_dicts = {}  # Dictionary to store user-specific dictionaries
 user_secrets = {}
 # salt = secrets.token_hex(16)
 SECRET_KEY = get_random_bytes(32)
+SECRET_KEY2 = get_random_bytes(32)
 IV = get_random_bytes(16)
+IV2 =get_random_bytes(16)
 
 def fetch_latest_keys():
     try:
@@ -1039,18 +1041,7 @@ def verify_2fa():
 @app.route('/send_secret', methods=['POST'])
 def send_secret():
     try:
-        authorization_header = request.headers.get('Authorization')
-
-        if authorization_header is None:
-            return "Token is Invalid"
         
-        isValid = check_token_validity(authorization_header)
-        
-        if not isValid:
-            print('Invalid Token.')
-            return "Invalid Token."
-        else:
-            print('Valid Token')
 
         data = request.json
         user_key = data.get('email')
@@ -1087,6 +1078,7 @@ def insert_secret_into_db(email, secret):
 
 def encrypt_email(email):
     cipher = AES.new(SECRET_KEY, AES.MODE_CBC, IV)
+    print("ENCRYPTION KEY1:", SECRET_KEY)
     padded_email = pad(email.encode(), AES.block_size)
     encrypted_email = cipher.encrypt(padded_email)
     return b64encode(IV + encrypted_email).decode()
@@ -1094,6 +1086,7 @@ def encrypt_email(email):
 def decrypt_email(encrypted_email):
     encrypted_data = b64decode(encrypted_email.encode())
     iv = encrypted_data[:16]
+    print("decryption KEY1:", SECRET_KEY)
     cipher = AES.new(SECRET_KEY, AES.MODE_CBC, iv)
     decrypted_data = unpad(cipher.decrypt(encrypted_data[16:]), AES.block_size)
     return decrypted_data.decode()
@@ -1299,6 +1292,38 @@ def verify_account():
 
 # Make sure to include this return statement for cases where the function does not enter the 'if' block
     return jsonify({'activation_status': 'error'})
+
+def encrypt_user_data(user_data):
+    cipher = AES.new(SECRET_KEY2, AES.MODE_CBC, IV2)
+    print("ENCRYPTION KEY2:", SECRET_KEY2)
+    padded_user_data = pad(user_data.encode(), AES.block_size)
+    encrypted_user_data = cipher.encrypt(padded_user_data)
+    return b64encode(IV2 + encrypted_user_data).decode()
+
+def decrypt_user_data(encrypted_user_data):
+    encrypted_data = b64decode(encrypted_user_data.encode())
+    iv = encrypted_data[:16]
+    print("decryption KEY2:", SECRET_KEY2)
+    cipher = AES.new(SECRET_KEY2, AES.MODE_CBC, iv)
+    decrypted_data = unpad(cipher.decrypt(encrypted_data[16:]), AES.block_size)
+    return decrypted_data.decode()
+
+
+@app.route('/encrypt_user_data', methods=['POST'])
+def encrypt_user_data_route():
+    data = request.get_json()
+    user_data = data.get('userData', '')
+    encrypted_user_data = encrypt_user_data(user_data)
+    print("data1:", encrypted_user_data)  # Call the correct function
+    return jsonify({'encryptedUserData': encrypted_user_data})
+
+@app.route('/decrypt_user_data', methods=['POST'])
+def decrypt_user_data_route():
+    data = request.get_json()
+    encrypted_user_data = data.get('encryptedUserData', '')
+    print('encrypted Data Getting:', encrypted_user_data)  # Call the correct function
+    decrypted_user_data = decrypt_user_data(encrypted_user_data)
+    return jsonify({'decryptedUserData': decrypted_user_data})
 
 
 if __name__ == '__main__':
