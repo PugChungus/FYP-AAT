@@ -35,4 +35,17 @@ accountDataRouter.post('/get_account2', async (req, res) => {
     }
 });
 
+accountDataRouter.post('/search_users', async (req, res) => {
+    const userInput = req.body.search;
+
+    try {
+        const [tables] = await pool.execute('SELECT * FROM user_account WHERE username LIKE ?', [`${userInput}%`]);
+
+        return res.status(200).json({ message: 'Account Data', result: tables });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 export default accountDataRouter;
