@@ -1,5 +1,7 @@
 import { get_cookie } from "./cookie.js";
 import { deleteIndexDB } from "./RSA and IndexedDB/IndexedDB.js";
+import * as QRCode from 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/+esm'
+
 
 let id
 
@@ -182,7 +184,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                     <div class="card-body">
                         <h5 class="card-title">Two-Factor Authentication Setup</h5>
                         <p class="card-text">Scan the QR code using the Google Authenticator app.</p>
-                        <div id="qrcode"></div>
+                        <canvas id="qrcode"></canvas>
                         <label for="otpInput">Enter OTP:</label>
                         <input type="text" autocomplete="off" id="otpInput" name="otpInput">
                         <button type="button" class="btn btn-secondary" id="cancelButton">Cancel</button>
@@ -190,11 +192,15 @@ document.addEventListener('DOMContentLoaded', async function () {
                     </div>`;
 
                 const qrCodeCanvas = qrCodeCardDiv.querySelector('#qrcode');
-                new QRCode(qrCodeCanvas, {
-                    text: qrCodeUrl,
-                    width: 128,
-                    height: 128,
-                });
+                try {
+                  await QRCode.toCanvas(qrCodeCanvas, qrCodeUrl, {
+                      //text: qrCodeUrl,
+                      width: 128,
+                      height: 128,
+                  });
+              } catch (error) {
+                  console.error('Error generating QR code:', error);
+              }
 
                 const closeCardButton = qrCodeCardDiv.querySelector('#closeCard');
                 closeCardButton.addEventListener('click', function () {

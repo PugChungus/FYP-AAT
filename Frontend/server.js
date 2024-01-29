@@ -35,17 +35,18 @@ app.use((req, res, next) => {
 });
 
 app.use(
-  helmet({
-    contentSecurityPolicy: {
-      directives: {
-         defaultSrc: ["'self'", 'http://localhost:5000'],
-        'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-        'script-src-attr': ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-        // Add other directives as needed
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'", 'http://localhost:5000', 'cdn.jsdelivr.net'],
+          scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'cdn.jsdelivr.net'],
+          scriptSrcAttr: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+          // Add other directives as needed
+        },
       },
-    },
-  })
-);
+    })
+  );
+  
 
 // app.use(
 //   helmet({

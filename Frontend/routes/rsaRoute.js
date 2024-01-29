@@ -5,6 +5,9 @@ const rsaRouter = express.Router();
 
 rsaRouter.post('/create_pubkey', async (req, res) => {
     try {
+      
+        
+
         const public_key = req.body.public_key;
         console.log(public_key)
 
