@@ -230,8 +230,12 @@ async function hideDropZoneAndFileDetails() {
     const dropZoneEncasement = document.querySelector('.encasement-container');
     const encryptButton = document.getElementById('encryptButton');
     const downloadButton = document.createElement('button');
+    const shareButton = document.createElement('button');
     const googleupload = document.createElement('button');
     const onedriveupload = document.createElement('button');
+
+    shareButton.id = 'shareButton';
+    shareButton.textContent = 'Share File';
 
     downloadButton.id = 'downloadButton';
     downloadButton.textContent = 'Download Encrypted Files';
@@ -339,6 +343,27 @@ async function hideDropZoneAndFileDetails() {
         // If there is only one file, create a simple download button
         downloadButton.style.display = 'block';
         downloadButton.textContent = 'Download Encrypted File';  // Reuse the existing variable
+
+        shareButton.style.display = 'block';
+        shareButton.textContent = 'Share File';  
+
+        const modal = document.getElementById('myModal');
+
+        shareButton.addEventListener('click', async () => {
+            modal.style.display = 'block'; // Show the modal
+        });
+
+        const closeModal = document.getElementById('closeModal');
+
+        closeModal.addEventListener('click', () => {
+            modal.style.display = 'none'; // Hide the modal when close button is clicked
+        });
+
+        window.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
         
         // Add click event listener to the download button
         downloadButton.addEventListener('click', async () => {
@@ -374,6 +399,7 @@ async function hideDropZoneAndFileDetails() {
         });
         // Append the download button to the document or display it wherever needed
         document.body.appendChild(downloadButton);
+        document.body.appendChild(shareButton);
         document.body.appendChild(googleupload);
         document.body.appendChild(onedriveupload);
     }
