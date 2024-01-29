@@ -1,6 +1,7 @@
 import { get_cookie } from "./cookie.js";
 import { createKeyDropdown } from "./key.js";
 import { sendFileToBackend, selectedFiles, seen } from "./virustotal.js";
+import { showModal } from "./share_file.js";
 
 
 
@@ -345,25 +346,8 @@ async function hideDropZoneAndFileDetails() {
         downloadButton.textContent = 'Download Encrypted File';  // Reuse the existing variable
 
         shareButton.style.display = 'block';
-        shareButton.textContent = 'Share File';  
-
-        const modal = document.getElementById('myModal');
-
-        shareButton.addEventListener('click', async () => {
-            modal.style.display = 'block'; // Show the modal
-        });
-
-        const closeModal = document.getElementById('closeModal');
-
-        closeModal.addEventListener('click', () => {
-            modal.style.display = 'none'; // Hide the modal when close button is clicked
-        });
-
-        window.addEventListener('click', (event) => {
-            if (event.target === modal) {
-                modal.style.display = 'none';
-            }
-        });
+        shareButton.textContent = 'Share File'; 
+        shareButton.onclick = showModal; 
         
         // Add click event listener to the download button
         downloadButton.addEventListener('click', async () => {

@@ -6,8 +6,7 @@ export const selectedFiles = {
 };
 
 export const seen = new Set();
-
-
+let totalUploadedSizeBytes = 0;
 
 export async function sendFileToBackend(file) {
     const maxFileSizeBytes = 1 * 1024 * 1024 * 1024; // 1 GB in bytes
@@ -16,44 +15,53 @@ export async function sendFileToBackend(file) {
         alert('File size is too large. Maximum allowed size is 1 GB.');
         return;
     }
-    
+
+    if (totalUploadedSizeBytes + file.size > maxFileSizeBytes) {
+        alert('Total file size exceeds the limit. Maximum allowed size is 1 GB.');
+        return;
+    }
+
     const formData = new FormData();
     formData.append('file', file);
 
     const fileNameParts = file.name.split('.');
     const fileExtension = fileNameParts.length > 1 ? fileNameParts.pop() : '';
     const fileNameWithoutExtension = fileNameParts.join('');
-    console.log(fileNameWithoutExtension)
+    console.log(fileNameWithoutExtension);
 
     const scanLoader = document.getElementById('scan-loader');
-    scanLoader.style.display = 'block'
+    scanLoader.style.display = 'block';
 
     try {
         const scanResult = await performScan(formData);
 
         if (scanResult.isValid) {
-            selectedFiles.files.push(file); 
+            selectedFiles.files.push(file);
             if (seen.has(fileNameWithoutExtension)) {
-                alert('Duplicate file name')
+                alert('Duplicate file name');
                 return;
             }
-            
+
             seen.add(fileNameWithoutExtension);
-            console.log(`Scan result for ${file.name}: Non-malicious. Proceeding with upload`)
-            displayFileDetails(file, formData)
+            console.log(`Scan result for ${file.name}: Non-malicious. Proceeding with upload`);
+            displayFileDetails(file, formData);
+
+            // Update the totalUploadedSizeBytes counter
+            totalUploadedSizeBytes += file.size;
         } else {
-            console.warn(`Scan result for ${file.name}: Malicious. Upload denied`)
-            
+            console.warn(`Scan result for ${file.name}: Malicious. Upload denied`);
+
             setTimeout(() => {
                 alert(`File ${file.name} is malicious. Upload denied.`);
-            }, 500); 
+            }, 500);
         }
-    } catch (error){
-        console.error(`Error during scan for ${file.name}:`, error)
+    } catch (error) {
+        console.error(`Error during scan for ${file.name}:`, error);
     } finally {
-        scanLoader.style.display = 'none'
+        scanLoader.style.display = 'none';
     }
 }
+
 
 async function performScan(formData) {
     const jwtToken =  await get_cookie()

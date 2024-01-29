@@ -83,7 +83,7 @@ app.set('views', path.join(__dirname, 'public', 'pages'));
 
 // Set up a route to render your HTML file
 app.get('/', async (req, res) => {
-    const isValid = await checkTokenValidity(req.cookies.jwtToken);
+    const isValid = await checkTokenValidity(`Bearer ${req.cookies.jwtToken}`);
     
     if (isValid === true) {
         return res.redirect('/home');
