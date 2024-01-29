@@ -52,6 +52,8 @@ export async function checkTokenValidity(authorizationHeader) {
     // Extract the token from the Authorization header
     const token = headerString.split(' ')[1];
 
+    console.log('this is da token', token)
+
     try {
         // Check if the token is in the token_blacklist table
         const [blacklistResult] = await pool.execute('SELECT * FROM token_blacklist WHERE token = ?', [token]);

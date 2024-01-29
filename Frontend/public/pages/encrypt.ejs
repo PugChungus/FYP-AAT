@@ -44,13 +44,22 @@
     </div>
     <div id="main-content" class="height-80 bg-light">
         <h1>ENCRYPT</h1>
-        <div id="myModal" class="modal" style="display: none;">
-            <!-- Modal content -->
+
+        <div id="shareModal" class="modal" style="display: none;">
+            <div class="modal-content">
+              <span class="close" id="closeModal">&times;</span>
+              <h2>Share</h2>
+              <textarea id="userNameInput" placeholder="Enter username"></textarea>
+              <div id="userDropdown" class="dropdown-content"></div>
+              <button id="confirmShare" onclick="shareFile()">Share</button>
+            </div>
+        </div>
+        <!-- <div id="myModal" class="modal" style="display: none;">
             <div class="modal-content">
                 <span class="close" id="closeModal">&times;</span>
                 <p>Some text in the Modal..</p>
             </div>
-        </div>
+        </div> -->
     </div>
 
     <div id="scan-loader" class="scan-loader">
