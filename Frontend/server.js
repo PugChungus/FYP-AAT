@@ -111,7 +111,7 @@ app.get('/forgetpassword', (req, res) => {
     res.render('forgetpassword');
 });
 
-app.get('/2fa', authorizeRoles(), (req, res) => {
+app.get('/2fa',  (req, res) => {
     res.render('2fa', { user: req.user });
 });
 
