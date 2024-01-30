@@ -464,17 +464,25 @@ export async function verifyTOTP(event) {
     });
 
     const responseData = await response2.json();
+    const newData = decryptedUserData.decryptedUserData
     const formDatax = new FormData();
-    formDatax.append('encryptedUserData', decryptedUserData)
+    formDatax.append('encryptedUData', JSON.stringify(newData))
+
+    console.log('Data to be sent to http://localhost:3000/genToken:', {
+  encryptedUserData: newData,
+});
+
+    console.log('FormDataxData: ', formDatax)
 
     if (responseData.message === 'OTP is valid') {
       console.log("WEHWEH2:", decryptedUserData.decryptedUserData)
+      console.log('Data to be sent to http://localhost:3000/genToken:', JSON.stringify({ encryptedUData: newData }));
       const verifyTokenResponse = await fetch('http://localhost:3000/genToken', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formDatax)
+        body: JSON.stringify({ encryptedUData: newData }),
       });
 
       const verifyTokenData = await verifyTokenResponse.json();
@@ -517,5 +525,39 @@ export async function verifyTOTP(event) {
         });
     }
     // If email is empty or whitespace, do nothing
+}
+
+export async function checkUsername() {
+  // Get the username from the input field
+  var username = document.getElementById('username-field').value;
+
+  try {
+    // Make a POST request to the /check_username endpoint
+    const response = await fetch('http://localhost:3000/check_username', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username: username }),
+    });
+
+    // Check if the request was successful (status code 200)
+    if (response.ok) {
+      const data = await response.json();
+      if (data.exists) {
+        // Username already exists
+        alert('Username already exists');
+      } else {
+        // Username is available
+        alert('Username is available');
+      }
+    } else {
+      // Handle non-successful status codes
+      alert('Failed to check username');
+    }
+  } catch (error) {
+    // Handle any other errors
+    console.error(error);
+  }
 }
   

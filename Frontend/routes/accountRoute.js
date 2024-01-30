@@ -90,7 +90,7 @@ accountRouter.post('/create_account', async (req, res) => {
         return res.status(200).json({ message: 'Account created successfully' });
     } catch (err) {
         console.error(err);
-        return res.status(500).json({ error: 'Internal Server Error' });
+        return res.status(500).json({ error: err });
     }
 });
 
@@ -131,5 +131,26 @@ accountRouter.post('/delete_account', async (req, res) => {
       return res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
+accountRouter.post('/check_username', async (req, res) => {
+    const username = req.body.username;
+  
+    try {
+      // Check the count of occurrences of the username in the database
+      const [result] = await pool.execute('SELECT COUNT(*) as count FROM user_account WHERE username = ?', [username]);
+  
+      const count = result[0].count;
+  
+      if (count > 0) {
+        return res.status(200).json({ message: 'Username already exists', exists: true });
+      } else {
+        return res.status(200).json({ message: 'Username is available', exists: false });
+      }
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+  
 
 export default accountRouter;
