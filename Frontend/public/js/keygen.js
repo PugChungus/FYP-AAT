@@ -171,6 +171,8 @@ function createKeyDropdown() {
     });
 }
 
+createKeyDropdown()
+
 function createKeyEntry(keyName, dateTime, keyContent) {
     const keyEntriesContainer = document.querySelector('.responsive-table');
     const latestId = keyEntriesContainer.querySelectorAll('.table-row').length + 1;

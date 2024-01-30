@@ -92,6 +92,11 @@ app.get('/', async (req, res) => {
     }
 });
 
+app.get('/test', (req, res) => {
+    // Render the HTML page for authorized users
+    res.render('test');
+});
+
 app.get('/register', (req, res) => {
     // Render the HTML page for authorized users
     res.render('register');

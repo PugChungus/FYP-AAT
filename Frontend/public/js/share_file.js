@@ -1,3 +1,5 @@
+const selectedUsers = [];
+
 async function executeSQLQuery(userInput) {
     const formData = new FormData();
     formData.append('search', userInput);
@@ -45,18 +47,69 @@ async function executeSQLQuery(userInput) {
                 const selectButton = document.createElement('button');
                 selectButton.textContent = 'Select';
                 selectButton.addEventListener('click', () => {
-                    console.log(`Selected user's email: ${email}`);
+                    // Create a new div for the selected user
+                    if (selectedUsers.includes(email)) {
+                        alert('This user is already selected.');
+                    }
+                    else {
+                        selectedUsers.push(email);
+
+                        const selectedUserDiv = document.createElement('div');
+                        selectedUserDiv.classList.add('selected-user');
+    
+                        // Add an h3 header
+                        const header = document.createElement('h3');
+                        header.textContent = 'Selected user';
+    
+                        // Add the selected username
+                        const selectedUsername = document.createElement('span');
+                        selectedUsername.textContent = username;
+    
+                        // Add a close button
+                        const closeButton = document.createElement('button');
+                        closeButton.textContent = 'X';
+                        closeButton.addEventListener('click', () => {
+                            // Remove the selected user when the close button is clicked
+                            selectedUserDiv.remove();
+                            
+                            const index = selectedUsers.indexOf(email);
+                            if (index !== -1) {
+                                selectedUsers.splice(index, 1);
+                            }
+                        });
+    
+                        // Append elements to the selectedUserDiv
+                        selectedUserDiv.appendChild(header);
+                        selectedUserDiv.appendChild(selectedUsername);
+                        selectedUserDiv.appendChild(closeButton);
+    
+                        // Append the selectedUserDiv to the modal
+                        document.getElementById('userDropdown').appendChild(selectedUserDiv);
+    
+                        console.log(`Selected user's email: ${email}`);
+                        console.log(selectedUsers)
+                    }
                 });
 
                 dropdownItem.appendChild(selectButton);
                 dropdown.appendChild(dropdownItem);
             }
+
         } else {
             console.error('Failed to fetch data:', response.statusText);
         }
     } catch (error) {
         console.error('Error during fetch:', error);
     }
+}
+
+async function shareFile() {
+
+    const response = await fetch(`http://localhost:5000/download_single_encrypted_file/${fileNameWithEnc}`);
+    const blob = await response.blob();
+
+    const downloadLink = document.createElement('a');
+    downloadLink.href = URL.createObjectURL(blob);
 }
   
 export async function showModal(){ 
