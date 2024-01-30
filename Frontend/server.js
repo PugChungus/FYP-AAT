@@ -24,6 +24,8 @@ import rsaRouter from './routes/rsaRoute.js';
 const app = express();
 const port = 3000;
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.use((req, res, next) => {
   // Generate a nonce value
@@ -112,7 +114,7 @@ app.get('/forgetpassword', (req, res) => {
 });
 
 app.get('/2fa',  (req, res) => {
-    res.render('2fa', { user: req.user });
+    res.render('2fa', {user: req.user});
 });
 
 app.get('/change-password', authorizeRoles(), (req, res) => {

@@ -167,18 +167,21 @@ async function verifyPassword(password, pass_db) {
 
 loginRouter.post('/genToken', async (req, res) => {
     try {
-        // console.log('Request Body:', hello);
+        // Log the entire request body for debugging
         console.log('Request Body:', req.body);
-        const encryptedUserData = req.body.encryptedUserData;
+
+        // Extract encryptedUserData from the request body
+        const encryptedUserData = req.body.encryptedUData;
+
+        // Check if encryptedUserData is present
         if (!encryptedUserData) {
-            return res.status(400).json({ error: 'encryptedUserData is missing in the request body' });
+            return res.status(400).json({ error: 'Missing encryptedUserData in the request body' });
         }
-        console.log('CHECKING5:', encryptedUserData)
 
-
+        // Generate JWT token
         const jwtToken = jwt.sign({ encryptedUserData }, keys.secretJwtKey, { algorithm: 'HS512', expiresIn: '1h' });
 
-        // Set the JWE in a cookie
+        // Set the JWT token in a cookie
         res.cookie('jwtToken', jwtToken, {
             httpOnly: true,
             sameSite: 'Strict',
@@ -186,13 +189,16 @@ loginRouter.post('/genToken', async (req, res) => {
             maxAge: 3600000,
         });
 
+        // Add the token to the whitelist
         await addTokenToWhitelist(jwtToken);
 
+        // Send success response
         return res.status(200).json({ message: 'JWT Token Generated Successfully' });
     } catch (error) {
-        console.error('Error during TOTP verification and JWT token generation:', error);
+        console.error('Error during JWT token generation:', error);
         return res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
 
 export default loginRouter;
