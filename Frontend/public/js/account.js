@@ -335,49 +335,6 @@ async function continueRegularLogin(formData) {
   window.location.href = 'http://localhost:3000/home';
 }
 
-// async function getEmailFromSessionStorage() {
-//   const email = sessionStorage.getItem('encryptedEmail');
-//   if (!email) {
-//     console.error('Email not found in sessionStorage');
-//     return null;
-//   }
-
-//   // Prepare the data to be sent in the POST request
-//   var data = {
-//     otp: otpValue
-//   };
-
-//   const jwtToken = await get_cookie();
-
-//   // Make an HTTP POST request to your backend endpoint
-//   fetch('http://localhost:5000/verify_2fa', {
-//       method: 'POST',
-//       headers: {
-//           'Content-Type': 'application/json',
-//           'Authorization': `Bearer: ${jwtToken}`
-//       },
-//       body: JSON.stringify(data),
-//   })
-//   .then(response => response.json())
-//   .then(data => {
-//       // Handle the response from the backend
-//       console.log(data);
-//       if (data.message === 'OTP is valid') {
-//         continueRegularLogin(formData)
-        
-//       } else {
-//         alert('Invalid OTP. Please try again.')
-//       }
-//   })
-//   .catch((error) => {
-//       console.error('Error:', error);
-//   });
-
-//   return email;
-// }
-
-// Inside account.js
-
 export async function verifyTOTP(event) {
   event.preventDefault();
 

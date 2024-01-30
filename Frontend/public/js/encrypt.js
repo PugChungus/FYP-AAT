@@ -6,7 +6,7 @@ import { showModal } from "./share_file.js";
 
 
 export const keyDropdown = document.getElementById('key-dropdown');
-let selectedKey = keyDropdown.value;
+export let selectedKey = keyDropdown.value;
 
 
 
@@ -384,7 +384,7 @@ async function hideDropZoneAndFileDetails() {
 
         shareButton.style.display = 'block';
         shareButton.textContent = 'Share File'; 
-        shareButton.onclick = showModal; 
+        shareButton.onclick = () => showModal(selectedKey);
         
         // Add click event listener to the download button
         downloadButton.addEventListener('click', async () => {

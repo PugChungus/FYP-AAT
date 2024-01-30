@@ -1,13 +1,31 @@
 import express, { Router } from 'express';
 import { pool } from '../db-connection.js';
+import e from 'express';
 
 const rsaRouter = express.Router();
 
+rsaRouter.post('/get_pubkey', async (req, res) => {
+    try {
+        const email = req.body.email;
+
+        // Now, you have the account_id, and you can use it in the next INSERT statement
+        const publicKeyResult = await pool.execute(`SELECT public_key
+        FROM public_key
+        INNER JOIN user_account
+        ON public_key.account_id = user_account.account_id
+        WHERE email_address = ?`, [email]);
+
+
+        return res.status(200).json({ message: 'Public Key retrieved', result: publicKeyResult });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+})
+
+
 rsaRouter.post('/create_pubkey', async (req, res) => {
     try {
-      
-        
-
         const public_key = req.body.public_key;
         console.log(public_key)
 

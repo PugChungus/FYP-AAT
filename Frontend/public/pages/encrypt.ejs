@@ -55,7 +55,7 @@
               <h2>Share</h2>
               <input type="text" id="userNameInput" placeholder="Search for username">
               <div id="userDropdown" class="dropdown-content"></div>
-              <button id="confirmShare" onclick="shareFile()">Share</button>
+              <button id="confirmShare" onclick="module.shareFile()">Share</button>
             </div>
         </div>
 
@@ -114,10 +114,12 @@
     <script src="/js/encryptProgress.js"></script>
     <script type="module">
         import { uploadFiles, handleDragOver, handleDrop } from '../js/encrypt.js';
+        import { shareFile } from '../js/share_file.js';
 
         module.uploadFiles = uploadFiles        
         module.handleDragOver = handleDragOver
         module.handleDrop = handleDrop
+        module.shareFile = shareFile
     </script>
     <script src ="/js/googlepicker.js"></script>
     <script src ="/js/onedrivepicker.js"></script>

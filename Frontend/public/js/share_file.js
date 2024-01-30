@@ -1,6 +1,8 @@
+import { selectedKey } from "./encrypt.js";
+
 const selectedUsers = [];
 
-async function executeSQLQuery(userInput) {
+async function executeSQLQuery(userInput, selectedKey) {
     const formData = new FormData();
     formData.append('search', userInput);
 
@@ -103,16 +105,47 @@ async function executeSQLQuery(userInput) {
     }
 }
 
-async function shareFile() {
+export async function shareFile() {
 
-    const response = await fetch(`http://localhost:5000/download_single_encrypted_file/${fileNameWithEnc}`);
-    const blob = await response.blob();
+    // encrypt the key using frontend rsa after that we will get the encrypted key using rsa
+    // make a post request to a new python route that will have the encrypted key formdata
+    // it will append the encrypted key from the formdata to the start of the file
+    // on success it will send the file to the user account through the file shared table via an insert statement
+    // share if success the modal will be cleared and the file will be shared there will be loading circle
+    const keyItem = sessionStorage.getItem(selectedKey)
 
-    const downloadLink = document.createElement('a');
-    downloadLink.href = URL.createObjectURL(blob);
+    for (let i = 0; i < selectedUsers.length; i++) {
+
+        if (keyItem === null) {  
+            if (selectedKey.startsWith("key_")){
+                const selectedKeyDisplay = selectedKey.replace('key_', '');
+                alert(`Encryption key ${selectedKeyDisplay} used to previously encrypt the file was removed.`);
+            }
+        } else {
+            const jsonString = sessionStorage.getItem(selectedKey);
+            const keyData = JSON.parse(jsonString);
+            const keyValue = keyData.keyValue; //DEK AES KEY
+            const share_target_email  = selectedUsers[i]
+            console.log(keyValue)
+            console.log(share_target_email);
+
+            const formData = new FormData();
+            formData.append('email', share_target_email);
+            
+            const response = await fetch('http://localhost:3000/get_pubkey', {
+              method: 'POST',
+              body: formData,
+            });
+
+            const responseData = await response.json();
+            console.log(responseData)
+            const data = responseData.result[0][0]['public_key']
+            console.log(data)
+        }
+    }
 }
   
-export async function showModal(){ 
+export async function showModal(selectedKey){ 
     const modal = document.getElementById('shareModal');
 
     modal.style.display = 'block'; // Show the modal
@@ -127,7 +160,7 @@ export async function showModal(){
 
     userNameInput.addEventListener('input', function () {
         const userInput = userNameInput.value.toLowerCase();
-        executeSQLQuery(userInput);
+        executeSQLQuery(userInput, selectedKey);
     });
 
     window.addEventListener('click', (event) => {
