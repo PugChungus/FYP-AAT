@@ -88,7 +88,8 @@ function displayFileDetails(file, formData) {
 
     // Create a div element for each file
     const fileContainer = document.createElement('div');
-    fileContainer.classList.add('file-container');
+    fileContainer.classList.add('file-entry-container'); // Add a container class
+    fileDetailsContainer.appendChild(fileContainer);
 
     // Display file name
     const fileName = document.createElement('div');
@@ -114,11 +115,11 @@ function displayFileDetails(file, formData) {
     });
     fileContainer.appendChild(removeButton);
 
-    // Append file container to the details container
-    fileDetailsContainer.appendChild(fileContainer);
-
     // Perform the scan after displaying file details
 }
+
+
+
 
 function formatFileSize(size) {
     const kilobyte = 1024;

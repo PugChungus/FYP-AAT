@@ -14,14 +14,50 @@ createKeyDropdown()
 
 document.getElementById('file-input-encrypt').addEventListener('change', handleFileUpload);
 
-async function handleFileUpload(event) {
-    const files = event.target.files;
+const existingFileEntries = new Set();
+
+export function handleFileUpload(event) {
+    const newFiles = event.target.files;
     selectedKey = keyDropdown.value;
 
-    for (const file of files) {
-        await sendFileToBackend(file);
+    // Loop through each dropped file
+    for (const file of newFiles) {
+        // Check if the file already exists in the set
+        if (!existingFileEntries.has(file.name)) {
+            // If not, send it to the backend and add to the set
+            sendFileToBackend(file);
+            existingFileEntries.add(file.name);
+        } else {
+            // If exists, you may want to handle it (skip or show a message)
+            console.log(`File ${file.name} already exists. Skipping...`);
+        }
     }
 }
+
+export function handleDrop(event) {
+    event.preventDefault();
+
+    const files = event.dataTransfer.files;
+
+    // Loop through each dropped file
+    for (const file of files) {
+        // Check if the file already exists in the set
+        if (!existingFileEntries.has(file.name)) {
+            // If not, send it to the backend and add to the set
+            sendFileToBackend(file);
+            existingFileEntries.add(file.name);
+        } else {
+            // If exists, you may want to handle it (skip or show a message)
+            console.log(`File ${file.name} already exists. Skipping...`);
+        }
+    }
+}
+
+export function handleDragOver(event) {
+    event.preventDefault();
+}
+
+
 
 
 
@@ -35,6 +71,7 @@ export async function uploadFiles() {
         return;
     }
 }
+
 
 
 

@@ -3,11 +3,11 @@
     display: flex;
     flex-direction: column;
     margin-top: 20px;
-    width: 50%; /* Increase width for better alignment */
-    border: 2px solid silver;
-    padding: 10px;
-    border-radius: 5px;
-    height: 400px;
+    width: 70%; /* Increased width for better alignment */
+    
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2); /* Added box shadow for depth */
 }
 
 .key-dropdown-container {
@@ -15,12 +15,13 @@
 }
 
 .file-drop-area {
-    border: 2px dashed #ccc;
+    border: 2px dashed #007bff; /* Bootstrap primary color for the border */
     padding: 20px;
     text-align: center;
     width: 100%;
-    height: 280px;
+    height: 300px;
     border-radius: 20px;
+    background-color: #f8f9fa; /* Bootstrap light background color */
 }
 
 .file-drop-area img {
@@ -29,58 +30,55 @@
 
 .button-container {
     display: flex;
-    flex-direction: column; /* Change flex direction to column */
-    align-items: center; /* Center items vertically */
-    margin-top: 10px;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 15px;
 }
 
-#authorize_button,
-.btn-primary,
-#file-input-label {
-    width: 100%; /* Make buttons and label 100% width */
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 10px; /* Add margin for spacing */
-}
 
 #authorize_button {
-    background-color: #4CAF50;
+    background-color: #28a745; /* Bootstrap success color */
     color: white;
     border: none;
     padding: 10px;
     display: flex;
-    align-items: center; /* Align items horizontally */
-    width: 30%;
+    align-items: center;
+    justify-content: center;
+    width: 50%;
+    border-radius: 5px;
 }
+
 
 #authorize_button box-icon {
     margin-right: 5px;
 }
 
 .btn-primary,
-#file-input-label {
-    background-color: #4CAF50;
+#file-input-encrypt,
+#authorize_button {
+    background-color: #007bff; /* Bootstrap primary color */
     color: white;
     border: none;
     padding: 10px;
-    margin-left: 0; /* Adjust margin for alignment */
-    width: 30%;
+    margin-top: 10px;
+    width: 50%;
 }
 
 #file-details-container {
-    width: 50%; /* Adjust the width as needed */
-    border: 2px solid silver;
-    height: 100%; /* Set height to 100% to match encasement height */
-    border-radius: 5px;
-    padding: 10px;
-    margin-right: 20px; /* Add margin for spacing */
+    width: 30%;
+    height: 100%;
+    border-radius: 10px;
+    padding: 15px;
     margin-top: 20px;
+    overflow-y: auto; /* Enable vertical scrolling if more than 5 entries */
+    max-height: 430px; /* Set the maximum height for the container */
 }
 
 .file-entry-container {
-    border: 2px solid #ccc; /* Add a border to each file entry container */
     margin-bottom: 10px; /* Add margin between file entries */
+    border: 2px solid silver; /* Add border property */
     border-radius: 5px;
+    padding: 10px;
 }
 
 .file-entry {
@@ -140,9 +138,24 @@
 
 .eButton {
     border: none;
-    background-color: #4CAF50;
+    background-color: #28a745; /* Bootstrap success color */
     border-radius: 5px;
     position: absolute;
-    right: 80px;
+    right: 20px;
+    bottom: 20px;
     color: white;
+}
+
+.file-container {
+    padding: 10px;
+    border-bottom: 1px solid #ddd; /* Add a border between entries */
+}
+
+.jumbotron {
+    margin-top: 80px;
+    margin-bottom:10px;
+}
+
+#header {
+    margin-bottom: 10px;
 }
