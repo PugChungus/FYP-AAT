@@ -41,8 +41,8 @@ export function handleDrop(event) {
 
     // Loop through each dropped file
     for (const file of files) {
-        // Check if the file already exists in the set
-        if (!existingFileEntries.has(file.name)) {
+           // Check if the file already exists in the set
+           if (!existingFileEntries.has(file.name)) {
             // If not, send it to the backend and add to the set
             sendFileToBackend(file);
             existingFileEntries.add(file.name);
@@ -58,8 +58,9 @@ export function handleDragOver(event) {
 }
 
 
-
-
+document.getElementById('encryptButton').addEventListener('click', function() {
+   uploadFiles();
+});
 
 export async function uploadFiles() {
     // Check if there are files to upload
