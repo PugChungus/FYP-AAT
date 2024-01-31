@@ -68,7 +68,7 @@ app.use(
       directives: {
         defaultSrc: ["'self'",'http://localhost:5000','cdn.jsdelivr.net'],
         scriptSrc: ["'self'",(req, res) => `'nonce-${res.locals.nonce}'`,"https://code.jquery.com", "https://cdn.jsdelivr.net", "https://alcdn.msauth.net" , "https://apis.google.com" ,"https://accounts.google.com","https://apis.google.com/js/api.js","https://accounts.google.com/gsi/client",'cdn.jsdelivr.net'], // Use the nonce value dynamically
-        connectSrc: ["'self'", 'https://api.onedrive.com','https://public.bn.files.1drv.com','https://api.onedrive.com/v1.0/drives', "https://alcdn.msauth.net",'https://login.microsoftonline.com',"http://localhost:5000","https://www.googleapis.com"],    
+        connectSrc: ["'self'", 'https://unpkg.com','https://api.onedrive.com','https://public.bn.files.1drv.com','https://api.onedrive.com/v1.0/drives', "https://alcdn.msauth.net",'https://login.microsoftonline.com',"http://localhost:5000","https://www.googleapis.com"],    
         imgSrc: ["'self'", "data:"],
         formAction: ["'self'", "https://onedrive.live.com"],
         frameSrc: ["'self'", "https://docs.google.com","https://content.googleapis.com/"] 

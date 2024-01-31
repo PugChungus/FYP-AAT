@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" nonce="<%= nonce %>" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css" nonce="<%= nonce %>" >
     <link rel="stylesheet" type="text/css" href="/css/home.css">
     <link rel="stylesheet" type="text/css" href="/css/loading.css">
     <link rel="stylesheet" type="text/css" href="/css/navbar.css">
@@ -88,31 +88,35 @@
     </div>
     <button id="decryptButton" class="eButton" onclick='module.uploadFilez()'>Decrypt</button>
     <button id="launchPicker"> OneDrive Picker</button>
-    <button id="GooglePicker" onclick="handleAuthClick()"> Google Picker</button>
+    <button id="googlepocker" > Google Picker</button>
 
 
-    <script type="text/javascript">
+    <script type="text/javascript" nonce="<%= nonce %>">
         const module = {};
     </script>
-    <script src="/js/navbar.js"></script>
-    <script type="module" src="/js/home.js"></script>
-    <script src="/js/toprofilePage.js"></script>
-    <script src="/js/encryptProgress.js"></script>
-    <script type="module">
+    <script src="/js/navbar.js" nonce="<%= nonce %>"></script>
+    <script type="module" src="/js/home.js" nonce="<%= nonce %>"></script>
+    <script src="/js/toprofilePage.js" nonce="<%= nonce %>"></script>
+    <script src="/js/encryptProgress.js" nonce="<%= nonce %>" ></script>
+    <script type="module" nonce="<%= nonce %>">
         import { uploadFilez } from '../js/decrypt.js'
 
         module.uploadFilez = uploadFilez
     </script>
+    
+    <script type="module" src ="/js/googlepicker.js"  nonce="<%= nonce %>">
+        
+    </script>
     <script type="text/javascript" src="https://alcdn.msauth.net/browser/2.19.0/js/msal-browser.min.js"></script>
-    <script src="/js/onedrivepicker.js"></script>
-    <script src ="/js/googlepicker.js"></script> 
-    <script src="https://apis.google.com/js/api.js"></script>
-    <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
-    <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
-    <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
+    <script type ="module" src ="/js/onedrivepicker.js"  nonce="<%= nonce %>"></script>
+    <script src="https://apis.google.com/js/api.js"  nonce="<%= nonce %>"></script>
+    <script async defer src="https://apis.google.com/js/api.js"    nonce="<%= nonce %>"></script>
+    <script async defer src="https://accounts.google.com/gsi/client"   nonce="<%= nonce %>" ></script>
+   
+    <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js" nonce="<%= nonce %>"></script>
     <!-- <script src="/js/callnavbar.js"></script> -->
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous" nonce="<%= nonce %>" ></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous" nonce="<%= nonce %>" ></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous" nonce="<%= nonce %>" ></script>
 </body>
 </html>
