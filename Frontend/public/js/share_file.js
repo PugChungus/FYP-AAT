@@ -1,8 +1,11 @@
 import { selectedKey } from "./encrypt.js";
+import { importPublicKey, encryptDataWithPublicKey, arrayBufferToString } from "./RSA and IndexedDB/rsa.js";
+import { selectedFiles } from "./virustotal.js";
+import { get_email_via_id } from "./profile.js";
 
 const selectedUsers = [];
 
-async function executeSQLQuery(userInput, selectedKey) {
+async function executeSQLQuery(userInput) {
     const formData = new FormData();
     formData.append('search', userInput);
 
@@ -61,7 +64,7 @@ async function executeSQLQuery(userInput, selectedKey) {
     
                         // Add an h3 header
                         const header = document.createElement('h3');
-                        header.textContent = 'Selected user';
+                        header.textContent = 'Selected users';
     
                         // Add the selected username
                         const selectedUsername = document.createElement('span');
@@ -105,6 +108,12 @@ async function executeSQLQuery(userInput, selectedKey) {
     }
 }
 
+function padBytes(data, blockSize) {
+    const padLength = blockSize - (data.length % blockSize);
+    const padding = Buffer.alloc(padLength, padLength); // Pad with the length of padding
+    return Buffer.concat([data, padding]);
+}
+
 export async function shareFile() {
 
     // encrypt the key using frontend rsa after that we will get the encrypted key using rsa
@@ -114,38 +123,71 @@ export async function shareFile() {
     // share if success the modal will be cleared and the file will be shared there will be loading circle
     const keyItem = sessionStorage.getItem(selectedKey)
 
-    for (let i = 0; i < selectedUsers.length; i++) {
+    const files = selectedFiles.files;
+    const totalFiles = files.length;
 
-        if (keyItem === null) {  
-            if (selectedKey.startsWith("key_")){
-                const selectedKeyDisplay = selectedKey.replace('key_', '');
-                alert(`Encryption key ${selectedKeyDisplay} used to previously encrypt the file was removed.`);
+    for (let selectedUserIndex = 0; selectedUserIndex < selectedUsers.length; selectedUserIndex++) {
+        for (let fileIndex = 0; fileIndex < totalFiles; fileIndex++) {
+            if (keyItem === null) {  
+                if (selectedKey.startsWith("key_")){
+                    const selectedKeyDisplay = selectedKey.replace('key_', '');
+                    alert(`Encryption key ${selectedKeyDisplay} used to previously encrypt the file was removed.`);
+                }
+            } else {
+                const jsonString = sessionStorage.getItem(selectedKey);
+                const keyData = JSON.parse(jsonString);
+                const keyValue = keyData.keyValue; //DEK AES KEY
+                const share_target_email = selectedUsers[selectedUserIndex]
+                console.log(keyValue)
+                console.log(share_target_email);
+
+                const formData = new FormData();
+                formData.append('email', share_target_email);
+                
+                const response = await fetch('http://localhost:3000/get_pubkey', {
+                method: 'POST',
+                body: formData,
+                });
+
+                const responseData = await response.json();
+                const public_key = responseData.result[0][0]['public_key']
+                const public_key_obj = await importPublicKey(public_key);
+                const result = await encryptDataWithPublicKey(keyValue, public_key_obj);
+                const rdata = arrayBufferToString(result);
+                const rdata_padded = padBytes(rdata, 1024);
+                formData.append('key', rdata_padded)
+
+                const share_by_email = await get_email_via_id()
+                formData.append('email2', share_by_email)
+    
+                const filename = files[fileIndex].name;
+                let fileNameWithoutExtension;
+    
+                const numberOfDots = (filename.match(/\./g) || []).length;
+    
+                if (numberOfDots === 1 || numberOfDots > 1) {
+                    fileNameWithoutExtension = filename.split('.').slice(0, -1).join('.');
+                } else {
+                    fileNameWithoutExtension = filename;
+                }
+    
+                const fileNameWithEnc = `${fileNameWithoutExtension}.enc`;
+
+                const response2 = await fetch(`http://localhost:5000/send_file/${fileNameWithEnc}`, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (response2.ok) {
+                    alert(`File ${fileNameWithEnc} successfully shared with ${share_target_email}.`)
+                }
+    
             }
-        } else {
-            const jsonString = sessionStorage.getItem(selectedKey);
-            const keyData = JSON.parse(jsonString);
-            const keyValue = keyData.keyValue; //DEK AES KEY
-            const share_target_email  = selectedUsers[i]
-            console.log(keyValue)
-            console.log(share_target_email);
-
-            const formData = new FormData();
-            formData.append('email', share_target_email);
-            
-            const response = await fetch('http://localhost:3000/get_pubkey', {
-              method: 'POST',
-              body: formData,
-            });
-
-            const responseData = await response.json();
-            console.log(responseData)
-            const data = responseData.result[0][0]['public_key']
-            console.log(data)
         }
     }
 }
   
-export async function showModal(selectedKey){ 
+export async function showModal(){ 
     const modal = document.getElementById('shareModal');
 
     modal.style.display = 'block'; // Show the modal
@@ -160,7 +202,7 @@ export async function showModal(selectedKey){
 
     userNameInput.addEventListener('input', function () {
         const userInput = userNameInput.value.toLowerCase();
-        executeSQLQuery(userInput, selectedKey);
+        executeSQLQuery(userInput);
     });
 
     window.addEventListener('click', (event) => {

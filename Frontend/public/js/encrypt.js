@@ -384,7 +384,7 @@ async function hideDropZoneAndFileDetails() {
 
         shareButton.style.display = 'block';
         shareButton.textContent = 'Share File'; 
-        shareButton.onclick = () => showModal(selectedKey);
+        shareButton.onclick = () => showModal();
         
         // Add click event listener to the download button
         downloadButton.addEventListener('click', async () => {

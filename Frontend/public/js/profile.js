@@ -5,7 +5,7 @@ import * as QRCode from 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/+esm'
 
 let id
 
-async function get_email_via_id() {
+export async function get_email_via_id() {
   const newResponse = await fetch('http://localhost:3000/get_data_from_cookie', {
     method: 'POST'
   });

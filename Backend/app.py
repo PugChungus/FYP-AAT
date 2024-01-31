@@ -1,5 +1,5 @@
 from __future__ import print_function
-from flask import Flask, render_template, request, jsonify, Response
+from flask import Flask, render_template, request, jsonify, Response, abort
 from werkzeug.utils import secure_filename
 from flask_cors import cross_origin
 from Crypto.Cipher import AES
@@ -820,6 +820,51 @@ def decrypt_history():
     except Exception as e:
         connection.rollback()
         return jsonify({'error': str(e)}), 500
+
+@app.route('/send_file/<filename>', methods=['POST'])
+def send_file_to_user(filename):
+    print(filename, 'file')
+
+    # Assuming encrypted_data_dict is a global dictionary
+    for key, value in encrypted_data_dict.items():
+        print(key, 'key')
+
+    DEK = request.form.get('key')
+    shared_to_email = request.form.get('email')
+    shared_by_email = request.form.get('email2')
+
+    print(DEK)
+    print(shared_to_email)
+    print(shared_by_email)
+
+    if not DEK or not shared_to_email or not shared_by_email:
+        abort(400, 'Invalid request data')
+
+    encrypted_data = encrypted_data_dict.get(filename, None)
+
+    if encrypted_data is None:
+        return 'File not found', 404
+
+    concat = DEK + encrypted_data
+
+    WideFileName = filename.encode("utf-8").decode("latin-1")
+
+    connection = pool.connection()
+    try:
+        with connection.cursor() as cursor:
+            sql = """INSERT INTO file_shared (file, file_name, shared_by, shared_to)
+            VALUES (%s, %s, 
+            (SELECT ua1.account_id FROM user_account ua1 WHERE ua1.email_address = %s),
+            (SELECT ua2.account_id FROM user_account ua2 WHERE ua2.email_address = %s))"""
+            cursor.execute(sql, (concat, WideFileName, shared_by_email, shared_to_email))
+        connection.commit()
+    except Exception as e:
+        print(f"Error inserting into database: {e}", file=sys.stderr)
+        return 'Internal Server Error', 500
+    finally:
+        connection.close()
+
+    return 'File shared successfully.', 200
 
 @app.route('/download_single_encrypted_file/<filename>', methods=['GET'])
 def download_single_encrypted_file(filename):

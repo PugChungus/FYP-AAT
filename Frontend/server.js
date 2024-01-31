@@ -7,6 +7,7 @@ import path from 'path';
 import crypto from 'crypto';
 import { pool } from './db-connection.js';
 import { fileURLToPath } from 'url';
+import sizeof from 'object-sizeof';
 import { dirname } from 'path';
 import { OAuth2Client } from "google-auth-library";
 import jwt from 'jsonwebtoken';
@@ -47,8 +48,7 @@ app.use(
         },
       },
     })
-  );
-  
+);
 
 // app.use(
 //   helmet({

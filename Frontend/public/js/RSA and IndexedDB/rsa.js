@@ -10,7 +10,7 @@ function stringToArrayBuffer(str){
     return buf;
 }
 
-function arrayBufferToString(str){
+export function arrayBufferToString(str){
     var byteArray = new Uint8Array(str);
     var byteString = '';
     for(var i=0; i < byteArray.byteLength; i++) {
@@ -19,16 +19,16 @@ function arrayBufferToString(str){
     return byteString;
 }
 
-function encryptDataWithPublicKey(data, key) {
+export async function encryptDataWithPublicKey(data, key) {
     data = stringToArrayBuffer(data);
-    return window.crypto.subtle.encrypt(
-    {
-        name: "RSA-OAEP",
-        //label: Uint8Array([...]) //optional
-    },
-    key, //from generateKey or importKey above
-    data //ArrayBuffer of data you want to encrypt
-);
+    return await window.crypto.subtle.encrypt(
+        {
+            name: "RSA-OAEP",
+            //label: Uint8Array([...]) //optional
+        },
+        key, //from generateKey or importKey above
+        data //ArrayBuffer of data you want to encrypt
+    );
 }
 
 function decryptDataWithPrivateKey(data, key) {
@@ -108,7 +108,7 @@ function uploadFile2() {
     }
 }
 
-async function importPublicKey(pem) {
+export async function importPublicKey(pem) {
     // fetch the part of the PEM string between header and footer
     const pemHeader = "-----BEGIN PUBLIC KEY-----";
     const pemFooter = "-----END PUBLIC KEY-----";
