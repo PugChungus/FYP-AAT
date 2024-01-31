@@ -1,6 +1,8 @@
 
 import { sendFileToBackend } from "./virustotal.js";
-  document.getElementById('GooglePicker').onclick = handleAuthClick;
+document.getElementById('googlepocker').addEventListener('click', function() {
+  handleAuthClick();
+});
 
   const SCOPES = 'https://www.googleapis.com/auth/drive';
   //const CLIENT_ID = '984198711838-2uekpq9dj3nkbe4igf9jl3h78lsvse9p.apps.googleusercontent.com';

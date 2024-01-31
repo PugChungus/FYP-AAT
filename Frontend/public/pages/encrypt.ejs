@@ -94,8 +94,16 @@
                     </div>
                 </div>
             </form>
+            <button id="googlepocker" class="btn btn-danger" >
+                <img src="../images/google-drive.svg" alt="Google Drive Icon" class="svg-icon">
+                Choose From Google Drive
+            </button>
+            <button id="launchPicker" class="btn btn-info">
+                <img src="../images/onedrive-1.svg" alt="OneDrive Icon" class="svg-icon">
+                Choose from OneDrive
+            </button>   
         </div>
-
+        
         <div class="FilesContainer" id="files-details-container">
             <div class="input-group md-form form-sm form-2 pl-0">
             </div>
@@ -109,8 +117,9 @@
 
     </div>
 
-    <button id="encryptButton" class="eButton" onclick='module.uploadFiles()'>Encrypt Now</button>
-
+    <button id="encryptButton" class="eButton" >Encrypt Now</button>
+    
+    
     <script type="text/javascript" nonce="<%= nonce %>">
         const module = {};
     </script>
@@ -132,7 +141,9 @@
         module.shareFile = shareFile
     </script>
     
-    <script type="module" src ="/js/googlepicker.js"  nonce="<%= nonce %>"></script>
+    <script type="module" src ="/js/googlepicker.js"  nonce="<%= nonce %>">
+        
+    </script>
     <script type ="module" src ="/js/onedrivepicker.js"  nonce="<%= nonce %>"></script>
     <script src="https://apis.google.com/js/api.js"  nonce="<%= nonce %>"></script>
     <script async defer src="https://apis.google.com/js/api.js"    nonce="<%= nonce %>"></script>
