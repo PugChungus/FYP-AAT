@@ -9,27 +9,14 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" type="text/css" href="/css/login.css">
 </head>
-
 <body class="img js-fullheight" style="background-image: url(/images/bg.jpg);">
     <section class="ftco-section">
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-md-6 col-lg-4">
                     <div class="login-wrap p-0">
-                        <h3 class="mb-4 text-center">
-                            {% if activation_status == 'success' %}
-                                Account Activated Successfully!
-                            {% elif activation_status == 'error' %}
-                                Account Activation Failed!
-                            {% else %}
-                                Welcome!
-                            {% endif %}
-                        </h3>
-                        {% if activation_status == 'success' %}
-                            <p class="text-center">Your account has been successfully activated.</p>
-                        {% elif activation_status == 'error' %}
-                            <p class="text-center">Sorry, there was an issue activating your account.</p>
-                        {% endif %}
+                        <h3 id="activation-title" class="mb-4 text-center"></h3>
+                        <p id="activation-message" class="text-center"></p>
                         <div class="form-group">
                             <a href="/" class="form-control btn btn-primary submit px-3 text-center">Back to Login</a>
                         </div>

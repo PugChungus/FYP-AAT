@@ -178,7 +178,9 @@ export async function login(event) {
       console.log("MAYBE???:", loginData['encryptedUserData'])
       console.log("IS THIS EVEN CORRECT???:", encryptedUserData)
       console.log("loginDataMessage:", loginData['message'])
-      if (loginData['message'] === '2FA Required' ) {
+      if (loginData['message'] === 'Account is Not Activated') {
+        window.location.href='http://localhost:3000/activation_failure'
+      } else if (loginData['message'] === '2FA Required' ) {
         const get2FAResponse = await fetch('http://localhost:3000/get2faStatus', {
             method: 'POST',
             body: formData,
@@ -227,7 +229,8 @@ export async function login(event) {
             window.location.href='http://localhost:3000/2fa';
         
 
-      }else {
+
+      } else {
       const jwtToken = await get_cookie();
 
       console.log(data)
@@ -239,11 +242,6 @@ export async function login(event) {
         console.log(count)
         if (count === 1) {
 
-          // Check if 2FA is required
-          // const get2FAResponse = await fetch('http://localhost:3000/get2faStatus', {
-          //   method: 'POST',
-          //   body: formData,
-          // });
 
           const response = await fetch('http://localhost:3000/get_account2', { 
             method: 'POST',
@@ -264,42 +262,6 @@ export async function login(event) {
           var pfp = data["tables"][0]["profile_picture"]
 
           sessionStorage.setItem('profile_picture', pfp);
-
-          // const get2FAData = await get2FAResponse.json();
-          // console.log("2fa Data:", get2FAData);
-          // const is2FAEnabled = get2FAData.is_2fa_enabled === 1;
-          // const secret = get2FAData.secret;
-          // const emailz = get2FAData.email;
-
-          // console.log('Is 2FA Enabled: ', is2FAEnabled);
-          // console.log('Secret Key: ', secret);
-
-          // if (is2FAEnabled) {
-          //   const sendSecretResponse = await fetch('http://localhost:5000/send_secret', {
-          //     method: 'POST',
-          //     headers: {
-          //       'Content-Type': 'application/json',
-          //       'Authorization': `Bearer: ${jwtToken}`
-          //     },
-          //     body: JSON.stringify({
-          //       secret: secret,
-          //     }),
-          //   })
-
-            // const sendSecretData = await sendSecretResponse.json();
-            // console.log('Secret sent to server:', sendSecretData);
-
-            // const encryptedEmail = await encryptEmail(email);
-
-            // if (!encryptedEmail) {
-            //   console.error('Email encryption failed');
-            // return;
-            // }
-
-            // sessionStorage.setItem('encrypted_email', encryptedEmail);
-            //window.location.href = 'http://localhost:3000/2fa';
-          
-            // Continue with regular login process
             await continueRegularLogin(formData);
           
         } else {
@@ -315,7 +277,8 @@ export async function login(event) {
   } catch (error) {
     console.error('Error during fetch:', error);
   }
-}
+}	
+
 
 
 async function continueRegularLogin(formData) {

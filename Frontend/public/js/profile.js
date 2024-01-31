@@ -293,6 +293,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 });
 
 export async function deleteAccount() {
+  console.log("CLICKING ON DELETE BUTTON")
   // Show a prompt to the user
   const confirmation = window.prompt('To delete your account, type "DELETE" and click OK:');
 

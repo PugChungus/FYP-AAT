@@ -159,3 +159,16 @@
 #header {
     margin-bottom: 10px;
 }
+
+
+.drive-picker-buttons {
+    display: flex;
+    gap: 10px; /* Adjust the gap between buttons as needed */
+}
+
+.svg-icon {
+    width: 16px; /* Adjust the width as needed */
+    height: 16px; /* Adjust the height as needed */
+    margin-right: 5px; /* Add spacing between the icon and text */
+    margin-top: 6px;
+}
