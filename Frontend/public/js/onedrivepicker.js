@@ -1,8 +1,11 @@
 
 
 import { sendFileToBackend } from "./virustotal.js";
-    document.getElementById("launchPicker").onclick = launchPicker;
-
+ 
+    document.getElementById('launchPicker').addEventListener('click', function(event) {
+        event.preventDefault();
+        launchPicker();
+      });
     const msalParams = {
         auth: {
             authority:  "https://login.microsoftonline.com/consumers",
@@ -116,7 +119,7 @@ import { sendFileToBackend } from "./virustotal.js";
                     console.error('Token retrieval failed. Cannot proceed.');
                     return;
                 }
-                e.preventDefault();
+                //e.preventDefault();
 
                 win = window.open("", "Picker", "width=800,height=600")
 
