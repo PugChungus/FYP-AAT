@@ -1,15 +1,21 @@
 import { get_cookie } from "./cookie.js";
 import { keygen, exportPublicKey, exportPrivateKey } from "./RSA and IndexedDB/rsa_keygen.js";
 import { openIndexDB } from "./RSA and IndexedDB/IndexedDB.js";
+// import fs from 'fs/promises';
 
 const emailRegex = /^[\w-]+(\.[\w-]+)*@[A-Za-z0-9]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$/;
+const passwordRegex = /[<>&'"\$;`|]/
 //add frontend regex???????????
 export async function register() {
   const username = document.getElementById('username-field').value;
   const email = document.getElementById('email-field').value;
   const password = document.getElementById('password-field').value;
   const confirmPassword = document.getElementById('confirm-password-field').value;
-
+  const minLength = 8; // min length of password
+  // const content = await fs.readFile('10k-worst-passwords.txt', 'utf-8');
+  // const passworders = content.trim().split('\n').map(password => password.trim().toLowerCase()); 
+  // // const insecurePasswords = new Set(passworders);
+  // const lowercasedpassword = password.toLowerCase()
   // Check if all fields are filled
   if (!username || !email || !password || !confirmPassword) {
     alert("All fields must be filled");
@@ -27,6 +33,23 @@ export async function register() {
     alert("Passwords don't match");
     return;
   }
+  // if (insecurePasswords.has(lowercasedpassword)) {
+  //   alert("Your password is execeptionally weak, choose another one")
+  //   return;
+  // }
+  if (passwordRegex.test(password)){
+    alert("Forbidden Characters Detected")
+    return;
+  }
+  if (password.length < minLength) {
+    alert("Minimum length is 8 characters")
+      return;
+  }
+  // Check if password contains at least one uppercase letter
+  if (!/[A-Z]/.test(password)) {
+    alert("Passowrd must contain at least one Uppercase letter")
+    return;
+}
   
   try {
     const formData = new FormData();
@@ -446,7 +469,10 @@ export async function verifyTOTP(event) {
     }
     // If email is empty or whitespace, do nothing
 }
-
+//NOTICE : using blur and alerts this way will cause infinite loop of alerts 
+// document.getElementById('username-field').addEventListener('blur', checkUsername);
+// document.getElementById('email-field').addEventListener('change', checkEmail);
+document.getElementById('reg').addEventListener('click',register);
 export async function checkUsername() {
   // Get the username from the input field
   var username = document.getElementById('username-field').value;
@@ -480,4 +506,3 @@ export async function checkUsername() {
     console.error(error);
   }
 }
-  

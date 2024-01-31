@@ -71,7 +71,8 @@ app.use(
         connectSrc: ["'self'", 'https://unpkg.com','https://api.onedrive.com','https://public.bn.files.1drv.com','https://api.onedrive.com/v1.0/drives', "https://alcdn.msauth.net",'https://login.microsoftonline.com',"http://localhost:5000","https://www.googleapis.com"],    
         imgSrc: ["'self'", "data:"],
         formAction: ["'self'", "https://onedrive.live.com"],
-        frameSrc: ["'self'", "https://docs.google.com","https://content.googleapis.com/"] 
+        frameSrc: ["'self'", "https://docs.google.com","https://content.googleapis.com/"],
+        scriptSrcAttr: [(req, res) => `'nonce-${res.locals.nonce}'`]
       },
     })
   );
