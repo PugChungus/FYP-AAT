@@ -1339,6 +1339,85 @@ def decrypt_user_data_route():
     decrypted_user_data = decrypt_user_data(encrypted_user_data)
     return jsonify({'decryptedUserData': decrypted_user_data})
 
+@app.route('/email_forgetPassword', methods=['POST'])
+def email_forgetPassword():
+    data = request.get_json()
+    print(f"Received JSON data: {data}")
+    emailaddress = data.get('email','')
+
+    expiration_time = datetime.utcnow() + timedelta(minutes=15)
+    expiration_timestamp = int(expiration_time.timestamp())
+
+    verification_token = secrets.token_urlsafe(32)
+    print("VERFICATION TOKEN:", verification_token)
+
+    hashed_token = hashlib.sha256(verification_token.encode()).hexdigest()
+
+    print("Checking THis hash:", hashed_token)
+
+    token_evpayload['token'] = verification_token
+    token_evpayload['hashed_token'] = hashed_token
+    token_evpayload['expiration'] = expiration_timestamp
+    token_evpayload['email'] = emailaddress
+    configuration = sib_api_v3_sdk.Configuration()
+    configuration.api_key['api-key'] = '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'
+
+    api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
+    subject = "Email Verification"
+    html_content = f"""
+    <html>
+        <head>
+            <style>
+                body {{
+                    background-color: #f4f4f4;
+                    margin: 0;
+                    padding: 0;
+                }}
+                h1 {{
+                    color: #333333;
+                }}
+                p {{
+                    color: #666666;
+                }}
+                a {{
+                    display: inline-block;
+                    padding: 10px 20px;
+                    margin-top: 20px;
+                    background-color: #3498db;
+                    color: #ffffff;
+                    text-decoration: none;
+                    border-radius: 5px;
+                }}
+                a:hover {{
+                    background-color: #2980b9;
+                }}
+            </style>
+        </head>
+        <body>
+            <h1>Reset Your Password</h1>
+            <p>Thank you for signing up! Click the link below to verify your email address:</p>
+            <a href="http://localhost:3000/resetpassword?token={hashed_token}">Verify Email</a>
+        </body>
+    </html>
+    """
+    sender = {"name":"JTR Support","email":"jtrhelp123@gmail.com"}
+    print(f"Recipient's email address: {emailaddress}")
+    to = [{'email': emailaddress}]
+    cc = None
+    bcc =None
+    reply_to = None
+    headers = {"Some-Custom-Name":"unique-id-1234"}
+    params = {"parameter":"My param value","subject":"New Subject"}
+    send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(to=to, bcc=bcc, cc=cc, reply_to=reply_to, headers=headers, html_content=html_content, sender=sender, subject=subject)
+
+    try:
+        api_response = api_instance.send_transac_email(send_smtp_email)
+        pprint(api_response)
+        return jsonify({'message': 'Email verification sent successfully'})
+    except ApiException as e:
+        print("Exception when calling SMTPApi->send_transac_email: %s\n" % e)
+        return jsonify({'error': 'Failed to send email verification'})
+
 
 if __name__ == '__main__':
     # Run the scheduler in a separate thread

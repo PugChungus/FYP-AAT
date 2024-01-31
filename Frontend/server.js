@@ -158,6 +158,10 @@ app.get('/settings', authorizeRoles(), (req, res) => {
     res.render('settings', { user: req.user });
 });
 
+app.get('/resetpassword', (req, res) => {
+    res.render('resetpassword', {user: req})
+})
+
 app.post('/send_email_from_login', (req, res) => {
   const email = req.body.email;
 
