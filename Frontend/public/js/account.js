@@ -152,6 +152,7 @@ async function encryptEmail(email) {
   }
 }
 
+document.getElementById('submit').addEventListener('click', login);
 
 
 export async function login(event) {
