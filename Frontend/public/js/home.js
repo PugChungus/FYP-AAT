@@ -35,6 +35,7 @@ function handleSignOut() {
   })
   .then(response => {
     if (response.ok) {
+      sessionStorage.clear();
       window.location.href = '/';
       clearInputBoxes();
     } else {

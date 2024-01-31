@@ -108,11 +108,17 @@ async function executeSQLQuery(userInput) {
     }
 }
 
-function padBytes(data, blockSize) {
+function padString(data, blockSize) {
     const padLength = blockSize - (data.length % blockSize);
-    const padding = Buffer.alloc(padLength, padLength); // Pad with the length of padding
-    return Buffer.concat([data, padding]);
+    const padding = String.fromCharCode(padLength).repeat(padLength);
+    return data + padding;
 }
+
+function unpadString(paddedData) {
+    const padLength = paddedData.charCodeAt(paddedData.length - 1);
+    return paddedData.slice(0, -padLength);
+}
+
 
 export async function shareFile() {
 
@@ -154,7 +160,12 @@ export async function shareFile() {
                 const public_key_obj = await importPublicKey(public_key);
                 const result = await encryptDataWithPublicKey(keyValue, public_key_obj);
                 const rdata = arrayBufferToString(result);
-                const rdata_padded = padBytes(rdata, 1024);
+                const rdata_padded = padString(rdata, 1024);
+                const rdata_unpadded = unpadString(rdata_padded);
+                console.log(rdata)
+                console.log(rdata_padded)
+                console.log(rdata_unpadded)
+
                 formData.append('key', rdata_padded)
 
                 const share_by_email = await get_email_via_id()

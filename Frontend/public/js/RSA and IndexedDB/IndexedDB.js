@@ -68,7 +68,7 @@ function addData(jwk_private, user_email) {
     dateCreated: getCurrentTime(),
   };
 
-  const addRequest = objectStore.add(newItem);
+  const addRequest = objectStore.put(newItem);
 
   addRequest.onsuccess = () => {
     console.log("Data added successfully");

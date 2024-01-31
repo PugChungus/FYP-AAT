@@ -64,14 +64,6 @@
     <script src="/js/jquery.min.js"  nonce="<%= nonce %>"></script>
     <script src="/js/main.js"  nonce="<%= nonce %>"></script>
     <script src="/js/popper.js " nonce="<%= nonce %>" ></script>
-    <script type="module" src="js/account.js" nonce="<%= nonce %>"></script>
-    <script type="module" nonce="<%= nonce %>">
-
-        import { checkEmail, register, checkUsername } from '/js/account.js';
-
-        module.checkEmail = checkEmail      
-        module.register = register  
-        module.checkUsername = checkUsername
-    </script>
+    <script type="module" src="/js/register.js" nonce="<%= nonce %>" ></script>
 </body>
 </html>

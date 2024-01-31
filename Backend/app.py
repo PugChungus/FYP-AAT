@@ -829,15 +829,18 @@ def send_file_to_user(filename):
     for key, value in encrypted_data_dict.items():
         print(key, 'key')
 
-    DEK = request.form.get('key')
+    padded_key = request.form.get('key')
+    padded_key_bytes = padded_key.encode('utf-8')
+    size_in_bytes = sys.getsizeof(padded_key_bytes)
     shared_to_email = request.form.get('email')
     shared_by_email = request.form.get('email2')
 
-    print(DEK)
+    print(padded_key)
+    print(size_in_bytes)
     print(shared_to_email)
     print(shared_by_email)
 
-    if not DEK or not shared_to_email or not shared_by_email:
+    if not padded_key or not shared_to_email or not shared_by_email:
         abort(400, 'Invalid request data')
 
     encrypted_data = encrypted_data_dict.get(filename, None)
@@ -845,7 +848,7 @@ def send_file_to_user(filename):
     if encrypted_data is None:
         return 'File not found', 404
 
-    concat = DEK + encrypted_data
+    concat = padded_key_bytes + encrypted_data
 
     WideFileName = filename.encode("utf-8").decode("latin-1")
 
