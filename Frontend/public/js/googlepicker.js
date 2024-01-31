@@ -1,6 +1,7 @@
 
 import { sendFileToBackend } from "./virustotal.js";
-document.getElementById('googlepocker').addEventListener('click', function() {
+document.getElementById('googlepocker').addEventListener('click', function(event) {
+  event.preventDefault();
   handleAuthClick();
 });
 
