@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 8.0.34, for Win64 (x86_64)
 --
--- Host: localhost    Database: major_project_db
+-- Host: 127.0.0.1    Database: major_project_db
 -- ------------------------------------------------------
 -- Server version	8.0.35
 
@@ -175,13 +175,13 @@ DELIMITER ;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb3 */ ;
-/*!50003 SET character_set_results = utf8mb3 */ ;
-/*!50003 SET collation_connection  = utf8mb3_general_ci */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'NO_AUTO_VALUE_ON_ZERO' */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`localhost` PROCEDURE `InsertPublicKey`(IN p_public_key VARCHAR(255), IN p_account_id INT)
+CREATE DEFINER=`root`@`localhost` PROCEDURE `InsertPublicKey`(IN p_public_key VARCHAR (16383), IN p_account_id INT)
 BEGIN
     INSERT INTO public_key (public_key, account_id, date_created) VALUES (p_public_key, p_account_id, NOW());
 END ;;
@@ -194,13 +194,13 @@ DELIMITER ;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb3 */ ;
-/*!50003 SET character_set_results = utf8mb3 */ ;
-/*!50003 SET collation_connection  = utf8mb3_general_ci */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'NO_AUTO_VALUE_ON_ZERO' */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`localhost` PROCEDURE `UpdatePublicKey`(IN p_public_key VARCHAR(255), IN p_email_address VARCHAR(255))
+CREATE DEFINER=`root`@`localhost` PROCEDURE `UpdatePublicKey`(IN p_public_key VARCHAR(16383), IN p_email_address VARCHAR(255))
 BEGIN
     UPDATE public_key
     INNER JOIN user_account ON public_key.account_id = user_account.account_id
@@ -241,4 +241,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-01-22 16:43:21
+-- Dump completed on 2024-01-31 10:38:52
