@@ -61,9 +61,22 @@ def padding(data, target_size):
         # No padding needed, or padding exceeds the target size
         return data
     else:
-        # Pad the data to the target size
-        padding = bytes([pad_length] * pad_length)
+        # Pad the data to the target size using valid byte values
+        padding = bytes([pad_length % 256] * pad_length)
         return data + padding
+
+def unpadding(padded_data):
+    # Get the last byte, which indicates the padding length
+    pad_length = padded_data[-1]
+
+    # Check if the padding length is valid
+    if pad_length > len(padded_data):
+        raise ValueError('Invalid padding length')
+
+    # Slice the padded data to remove the padding
+    original_data = padded_data[:-pad_length]
+
+    return original_data
 
 def fetch_latest_keys():
     try:
@@ -830,6 +843,22 @@ def decrypt_history():
     except Exception as e:
         connection.rollback()
         return jsonify({'error': str(e)}), 500
+    
+@app.route('/unpad', methods=['POST'])
+def unpad():
+    file_data_string = request.form.get('file')
+    key = file_data_string[-1024:]
+    key_bytes = key.encode('utf-8')
+    print(len(key_bytes))
+    print(key_bytes)
+    original_key = unpadding(key_bytes)
+
+    # Convert buffer object to bytes
+    file_data_bytes = bytes(file_data_string, 'latin-1')
+
+    print(file_data_bytes)
+
+    return jsonify({'result': 'yes'}), 200
 
 @app.route('/send_file/<filename>', methods=['POST'])
 def send_file_to_user(filename):
@@ -860,7 +889,9 @@ def send_file_to_user(filename):
     if encrypted_data is None:
         return 'File not found', 404
 
-    concat = key_padded + encrypted_data
+    concat = encrypted_data + key_padded
+
+    print(type(concat))
 
     WideFileName = filename.encode("utf-8").decode("latin-1")
 

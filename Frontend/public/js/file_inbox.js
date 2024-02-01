@@ -52,6 +52,20 @@ function checkKeyExistence(dbName, objectStoreName, keyToCheck) {
   });
 }
 
+async function decryptFile(file_data) {
+
+  const formData = new FormData();
+  formData.append('file', file_data);
+
+  const response = await fetch('http://localhost:5000/unpad', {
+    method: 'POST',
+    body: formData,
+  });
+
+  const data = await response.json();
+  console.log(data.result);
+}
+
 async function displayFiles() {
   const newResponse = await fetch('http://localhost:3000/get_data_from_cookie', {
     method: 'POST',
@@ -74,6 +88,7 @@ async function displayFiles() {
 
   for (let i = 0; i < tables.length; i++) {
     var file_data = tables[i]['file'];
+    console.log(file_data)
     var shared_email = tables[i]['shared_by_email'];
     var file_name = tables[i]['file_name'];
     var date = new Date(tables[i]['date_shared']).toLocaleString();
@@ -104,7 +119,7 @@ async function displayFiles() {
       decryptButton.textContent = 'Decrypt File';
       decryptButton.addEventListener('click', function () {
         // Call your decryption function here
-        decryptFile(file_name);
+        decryptFile(file_data);
       });
       cellDecryptButton.appendChild(decryptButton);
 
