@@ -155,8 +155,8 @@ app.get('/profile', authorizeRoles(), (req, res) => {
     res.render('profile', { user: req.user });
 });
 
-app.get('/settings', authorizeRoles(), (req, res) => {
-    res.render('settings', { user: req.user });
+app.get('/fileInbox', authorizeRoles(), (req, res) => {
+    res.render('fileInbox', { user: req.user });
 });
 
 app.get('/resetpassword', (req, res) => {
