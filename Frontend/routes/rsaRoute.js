@@ -4,6 +4,26 @@ import e from 'express';
 
 const rsaRouter = express.Router();
 
+rsaRouter.post('/get_shared_files', async (req, res) => {
+    try {
+        const id = req.body.id;
+
+        // Now, you have the account_id, and you can use it in the next INSERT statement
+        const file_rows = await pool.execute(`
+            SELECT file_shared.*, user_account.email_address AS shared_by_email
+            FROM file_shared
+            INNER JOIN user_account ON file_shared.shared_by = user_account.account_id
+            WHERE file_shared.shared_to = ?
+            ORDER BY file_shared.date_shared DESC
+        `, [id]);
+
+        return res.status(200).json({ message: 'Shared files retrieved', file_rows });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 rsaRouter.post('/get_pubkey', async (req, res) => {
     try {
         const email = req.body.email;

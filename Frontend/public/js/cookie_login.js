@@ -2,29 +2,29 @@ import { get_cookie } from "./cookie.js";
 
 async function cookie_login() {
 
-    const valid_token = await fetch('http://localhost:3000/checkTokenValidity', {
-      method: 'GET',
+  const valid_token = await fetch('http://localhost:3000/checkTokenValidity', {
+    method: 'GET',
+  });
+
+  const isValid = await valid_token.json();
+
+  if (isValid['isValid'] == true) {
+    
+    const newResponse = await fetch('http://localhost:3000/get_data_from_cookie', {
+      method: 'POST'
     });
   
-    const isValid = await valid_token.json();
-  
-    if (isValid['isValid'] == true) {
-      
-      const newResponse = await fetch('http://localhost:3000/get_data_from_cookie', {
-        method: 'POST'
-      });
+    const data = await newResponse.json(); // await here
+    const id = data['id_username']['id'];
     
-      const data = await newResponse.json(); // await here
-      const id = data['id_username']['id'];
-      
-      const formData = new FormData();
-      formData.append('id', id)
-  
-      const jwtToken = await get_cookie()
-      if (sessionStorage.getItem('fetchUserDictRequested') === 'true') {
-        return; // Exit the function if fetch_user_dict request has already been made
-      }else{
-        const response = await fetch('http://localhost:5000/create_user_dict', {
+    const formData = new FormData();
+    formData.append('id', id)
+
+    const jwtToken = await get_cookie()
+    if (sessionStorage.getItem('fetchUserDictRequested') === 'true') {
+      return; // Exit the function if fetch_user_dict request has already been made
+    } else {
+      const response = await fetch('http://localhost:5000/create_user_dict', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer: ${jwtToken}`
@@ -32,14 +32,12 @@ async function cookie_login() {
         body: formData,
       });
       // Set the flag in sessionStorage indicating fetch_user_dict request has been made
-    sessionStorage.setItem('fetchUserDictRequested', 'true');
-      }
-      
-      
-    }
-    else {
-      window.location.href = 'login'
+      sessionStorage.setItem('fetchUserDictRequested', 'true');
     }
   }
+  else {
+    window.location.href = 'login'
+  }
+}
 
-  cookie_login()
+cookie_login()

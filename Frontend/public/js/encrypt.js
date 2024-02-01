@@ -29,7 +29,7 @@ export function handleFileUpload(event) {
             existingFileEntries.add(file.name);
         } else {
             // If exists, you may want to handle it (skip or show a message)
-            console.log(`File ${file.name} already exists. Skipping...`);
+            alert(`File ${file.name} already exists. Skipping...`);
         }
     }
 }
@@ -186,6 +186,7 @@ async function sendFilesToBackend() {
         const encryptionSuccessful = await encrypt(file, i);
 
         if (encryptionSuccessful) {
+            existingFileEntries.clear();
             hideDropZoneAndFileDetails();
         }
     } else {
@@ -198,7 +199,7 @@ async function sendFilesToBackend() {
                 return;
             }
         }
-
+        existingFileEntries.clear();
         // If all files are successfully decrypted, hide the drop zone
         hideDropZoneAndFileDetails();
     }

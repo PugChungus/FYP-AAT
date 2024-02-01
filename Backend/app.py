@@ -855,10 +855,10 @@ def send_file_to_user(filename):
     connection = pool.connection()
     try:
         with connection.cursor() as cursor:
-            sql = """INSERT INTO file_shared (file, file_name, shared_by, shared_to)
-            VALUES (%s, %s, 
-            (SELECT ua1.account_id FROM user_account ua1 WHERE ua1.email_address = %s),
-            (SELECT ua2.account_id FROM user_account ua2 WHERE ua2.email_address = %s))"""
+            sql = """INSERT INTO file_shared (file, file_name, date_shared, shared_by, shared_to)
+                    VALUES (%s, %s, now(),
+                            (SELECT ua1.account_id FROM user_account ua1 WHERE ua1.email_address = %s),
+                            (SELECT ua2.account_id FROM user_account ua2 WHERE ua2.email_address = %s))"""
             cursor.execute(sql, (concat, WideFileName, shared_by_email, shared_to_email))
         connection.commit()
     except Exception as e:
