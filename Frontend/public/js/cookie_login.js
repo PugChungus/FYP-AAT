@@ -21,14 +21,21 @@ async function cookie_login() {
       formData.append('id', id)
   
       const jwtToken = await get_cookie()
-  
-      const response = await fetch('http://localhost:5000/create_user_dict', {
+      if (sessionStorage.getItem('fetchUserDictRequested') === 'true') {
+        return; // Exit the function if fetch_user_dict request has already been made
+      }else{
+        const response = await fetch('http://localhost:5000/create_user_dict', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer: ${jwtToken}`
         },
         body: formData,
       });
+      // Set the flag in sessionStorage indicating fetch_user_dict request has been made
+    sessionStorage.setItem('fetchUserDictRequested', 'true');
+      }
+      
+      
     }
     else {
       window.location.href = 'login'
