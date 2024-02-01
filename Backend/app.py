@@ -55,6 +55,16 @@ SECRET_KEY2 = get_random_bytes(32)
 IV = get_random_bytes(16)
 IV2 =get_random_bytes(16)
 
+def padding(data, target_size):
+    pad_length = target_size - len(data)
+    if pad_length <= 0:
+        # No padding needed, or padding exceeds the target size
+        return data
+    else:
+        # Pad the data to the target size
+        padding = bytes([pad_length] * pad_length)
+        return data + padding
+
 def fetch_latest_keys():
     try:
         response = requests.get('http://localhost:3000/keys')
@@ -829,18 +839,20 @@ def send_file_to_user(filename):
     for key, value in encrypted_data_dict.items():
         print(key, 'key')
 
-    padded_key = request.form.get('key')
-    padded_key_bytes = padded_key.encode('utf-8')
-    size_in_bytes = sys.getsizeof(padded_key_bytes)
+    key = request.form.get('key')
+    key_size = len(key)
+    key_bytes = key.encode('utf-8')
+    key_padded = padding(key_bytes , 1024)
     shared_to_email = request.form.get('email')
     shared_by_email = request.form.get('email2')
 
-    print(padded_key)
-    print(size_in_bytes)
+    print(key)
+    print(key_size)
+    print(key_padded)
     print(shared_to_email)
     print(shared_by_email)
 
-    if not padded_key or not shared_to_email or not shared_by_email:
+    if not key or not shared_to_email or not shared_by_email:
         abort(400, 'Invalid request data')
 
     encrypted_data = encrypted_data_dict.get(filename, None)
@@ -848,7 +860,7 @@ def send_file_to_user(filename):
     if encrypted_data is None:
         return 'File not found', 404
 
-    concat = padded_key_bytes + encrypted_data
+    concat = key_padded + encrypted_data
 
     WideFileName = filename.encode("utf-8").decode("latin-1")
 
