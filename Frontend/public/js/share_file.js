@@ -3,7 +3,11 @@ import { importPublicKey, encryptDataWithPublicKey, arrayBufferToString } from "
 import { selectedFiles } from "./virustotal.js";
 import { get_email_via_id } from "./profile.js";
 
-const selectedUsers = [];
+let selectedUsers = [];
+let previouslySelectedUsers = [];
+
+// const selectedUsersContainer = document.getElementById('selectedUsersContainer');
+
 
 async function executeSQLQuery(userInput) {
     const formData = new FormData();
@@ -18,9 +22,15 @@ async function executeSQLQuery(userInput) {
         if (response.ok) {
             const tables = await response.json();
             const dropdown = document.getElementById('userDropdown');
+            const selectedUsersDiv = document.getElementById('selectedUserDiv');
 
+            // Save the previously selected users before regeneration
+            previouslySelectedUsers = selectedUsers.slice();
+
+            // Clear existing dropdown items
             dropdown.innerHTML = '';
 
+            // Loop through the result and create dropdown items
             for (const user of tables.result) {
                 const username = user.username;
                 const pfpBuffer = user.profile_picture;
@@ -37,69 +47,86 @@ async function executeSQLQuery(userInput) {
                     objectURL = "../images/account_circle_FILL0_wght200_GRAD200_opsz24.png";
                 }
 
+                // Create image element for user avatar
                 const imgElement = document.createElement('img');
                 imgElement.src = objectURL;
-                imgElement.classList.add('user-avatar'); // Add a class for styling if needed
+                imgElement.classList.add('user-avatar');
 
+                // Create username element
                 const usernameElement = document.createElement('span');
                 usernameElement.textContent = username;
 
+                // Create dropdown item container
                 const dropdownItem = document.createElement('div');
                 dropdownItem.classList.add('dropdown-item');
+
+                // Append image and username to dropdown item
                 dropdownItem.appendChild(imgElement);
                 dropdownItem.appendChild(usernameElement);
 
+                // Create select button
                 const selectButton = document.createElement('button');
                 selectButton.textContent = 'Select';
-                selectButton.addEventListener('click', () => {
-                    // Create a new div for the selected user
-                    if (selectedUsers.includes(email)) {
-                        alert('This user is already selected.');
-                    }
-                    else {
-                        selectedUsers.push(email);
 
-                        const selectedUserDiv = document.createElement('div');
-                        selectedUserDiv.classList.add('selected-user');
-    
-                        // Add an h3 header
+                // Add click event listener to select button
+                selectButton.addEventListener('click', () => {
+                    if (!selectedUsers.includes(email)) {
                         const header = document.createElement('h3');
-                        header.textContent = 'Selected users';
-    
-                        // Add the selected username
+
+                        // Check if the array is empty and remove the header
+                        if (selectedUsers.length === 0) {
+                            selectedUsersDiv.innerHTML = '';
+                        }
+
+                        // Append the header only if it's the first selection
+                        if (selectedUsers.length === 0) {
+                            header.textContent = 'Selected user';
+                            selectedUsersDiv.appendChild(header);
+                        }
+
+                        selectedUsers.push(email);
+                        selectedUsersDiv.classList.add('selected-user');
+
                         const selectedUsername = document.createElement('span');
-                        selectedUsername.textContent = username;
-    
-                        // Add a close button
-                        const closeButton = document.createElement('button');
-                        closeButton.textContent = 'X';
-                        closeButton.addEventListener('click', () => {
-                            // Remove the selected user when the close button is clicked
-                            selectedUserDiv.remove();
-                            
+                        selectedUsername.textContent = `, ${username}`;
+
+                        const deleteButton = document.createElement('button');
+                        deleteButton.textContent = 'Delete';
+                        deleteButton.addEventListener('click', () => {
+                            selectedUsername.remove();
+                            deleteButton.remove();
+
                             const index = selectedUsers.indexOf(email);
                             if (index !== -1) {
                                 selectedUsers.splice(index, 1);
                             }
+
+                            // Check if the array is empty and remove the header
+                            if (selectedUsers.length === 0) {
+                                selectedUsersDiv.innerHTML = '';
+                            }
                         });
-    
-                        // Append elements to the selectedUserDiv
-                        selectedUserDiv.appendChild(header);
-                        selectedUserDiv.appendChild(selectedUsername);
-                        selectedUserDiv.appendChild(closeButton);
-    
-                        // Append the selectedUserDiv to the modal
-                        document.getElementById('userDropdown').appendChild(selectedUserDiv);
-    
+
+                        selectedUsersDiv.appendChild(selectedUsername);
+                        selectedUsersDiv.appendChild(deleteButton);
+
                         console.log(`Selected user's email: ${email}`);
-                        console.log(selectedUsers)
+                        console.log(selectedUsers);
+                    } else {
+                        // Alert the user or handle the duplicate case as needed
+                        alert(`User ${username} is already selected.`);
                     }
                 });
 
+                // Append select button to dropdown item
                 dropdownItem.appendChild(selectButton);
+
+                // Append dropdown item to dropdown
                 dropdown.appendChild(dropdownItem);
             }
 
+            // Save the currently selected users for the next regeneration
+            previouslySelectedUsers = selectedUsers.slice();
         } else {
             console.error('Failed to fetch data:', response.statusText);
         }
@@ -107,6 +134,12 @@ async function executeSQLQuery(userInput) {
         console.error('Error during fetch:', error);
     }
 }
+
+
+
+
+
+
 
 function padString(data, blockSize) {
     const padLength = blockSize - (data.length % blockSize);
@@ -198,17 +231,17 @@ export async function shareFile() {
     }
 }
   
-export async function showModal(){ 
+
+export async function showModal() {
     const modal = document.getElementById('shareModal');
 
     modal.style.display = 'block'; // Show the modal
 
     const closeModal = document.getElementById('closeModal');
-
     const userNameInput = document.getElementById('userNameInput');
 
     closeModal.addEventListener('click', () => {
-        modal.style.display = 'none'; // Hide the modal when close button is clicked
+        modal.style.display = 'none'; // Hide the modal when the close button is clicked
     });
 
     userNameInput.addEventListener('input', function () {
@@ -221,4 +254,7 @@ export async function showModal(){
             modal.style.display = 'none';
         }
     });
+
+    // Append the selectedUsersContainer to the body
+    // document.body.appendChild(selectedUsersContainer);
 }
