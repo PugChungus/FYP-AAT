@@ -1,4 +1,7 @@
 import { get_cookie } from "./cookie.js";
+document.getElementById('clearhistory').addEventListener('click', function() {
+  clear_history();
+});
 
 function appendRowToTable(index, fileName, file_size, key_name, type, time) {
   const table = document.querySelector('.responsive-table');

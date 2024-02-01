@@ -53,7 +53,7 @@
         </div>
         <ul class="responsive-table">
           <li class="table-header">
-            <button onclick="module.clear_history()">Clear History</button>
+            <button id='clearhistory' >Clear History</button>
             <div class="col col-1">Id</div>
             <div class="col col-2">File Name</div>
             <div class="col col-3">File Size</div>
@@ -64,13 +64,13 @@
         </ul>
     </div>
 
-    <script type="text/javascript">
+    <script nonce="<%= nonce %>" type="text/javascript">
         const module = {};
     </script>
     <script src="/js/navbar.js"></script>
     <script src="/js/toprofilePage.js"></script>
     <script type="module" src="/js/home.js"></script>
-    <script type="module">
+    <script nonce="<%= nonce %>" type="module">
         import { clear_history } from '../js/history.js'
         module.clear_history = clear_history
     </script>

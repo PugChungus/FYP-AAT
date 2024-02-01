@@ -37,15 +37,39 @@ app.use((req, res, next) => {
   next();
 });
 
+// app.use(
+//     helmet({
+//       contentSecurityPolicy: {
+//         directives: {
+//           defaultSrc: ["'self'", 'http://localhost:5000', 'cdn.jsdelivr.net'],
+//           scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'cdn.jsdelivr.net'],
+//           scriptSrcAttr: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+//           // Add other directives as needed
+//         },
+//       },
+//     })
+// );
+//this line removes the x powered by , reducing info given out
+app.use(helmet.hidePoweredBy());
 app.use(
-    helmet({
-      contentSecurityPolicy: {
-        directives: {
-          defaultSrc: ["'self'", 'http://localhost:5000', 'cdn.jsdelivr.net'],
-          scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'cdn.jsdelivr.net'],
-          scriptSrcAttr: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-          // Add other directives as needed
-        },
+    helmet.contentSecurityPolicy({
+      directives: {
+        defaultSrc: ["'self'",'http://localhost:5000','cdn.jsdelivr.net'],
+        scriptSrc: ["'self'",(req, res) => `'nonce-${res.locals.nonce}'`,
+                    "https://code.jquery.com", 
+                    "https://cdn.jsdelivr.net", 
+                    "https://alcdn.msauth.net" ,
+                    "https://apis.google.com" ,
+                    "https://accounts.google.com",
+                    "https://apis.google.com/js/api.js",
+                    "https://accounts.google.com/gsi/client",
+                    'cdn.jsdelivr.net',
+                    'https://unpkg.com'],
+        connectSrc: ["'self'", 'https://unpkg.com','https://api.onedrive.com','https://public.bn.files.1drv.com','https://api.onedrive.com/v1.0/drives', "https://alcdn.msauth.net",'https://login.microsoftonline.com',"http://localhost:5000","https://www.googleapis.com"],    
+        imgSrc: ["'self'", "data:"],
+        formAction: ["'self'", "https://onedrive.live.com"],
+        frameSrc: ["'self'", "https://docs.google.com","https://content.googleapis.com/"],
+        scriptSrcAttr: [(req, res) => `'nonce-${res.locals.nonce}'`]
       },
     })
 );
@@ -89,9 +113,9 @@ app.get('/', async (req, res) => {
     const isValid = await checkTokenValidity(`Bearer ${req.cookies.jwtToken}`);
     
     if (isValid === true) {
-        return res.redirect('/home',);
+        return res.redirect('/home');
     } else {
-        return res.render('login',);
+        return res.render('login');
     }
 });
 

@@ -13,7 +13,12 @@ function isValidKeyName(keyName) {
     const pattern = /^[a-zA-Z0-9_]+$/;
     return pattern.test(keyName);
 }
-
+document.getElementById('KeyGen').addEventListener('click', function() {
+    generateKey();
+ });
+ document.getElementById('keyCardClose').addEventListener('click', function() {
+    closeKeyCard();
+ });
 export function generateKey() {
     var keyName = document.getElementById('keyName').value;
 
