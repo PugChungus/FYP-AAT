@@ -70,16 +70,16 @@
     <!-- keycard.html -->
 
     <div id="keyCard">
-        <span id="keyCardClose" onclick="module.closeKeyCard()">&times;</span>
+        <span id="keyCardClose">&times;</span>
         <h3>Generate New Key</h3>
         <label for="keyName">Key Name:</label>
         <input type="text" id="keyName" placeholder="Enter Key Name">
-        <button onclick="module.generateKey()">Generate Key</button>
+        <button id="KeyGen" >Generate Key</button>
     </div>
 
 
 
-    <script type="text/javascript">
+    <script type="text/javascript" nonce="<%= nonce %>">
         const module = {};
     </script>
 
@@ -90,7 +90,7 @@
     <script type="module" src="/js/home.js"></script>
     <script src="/js/toprofilePage.js"></script>
     <script type="module" src="/js/keygen.js"></script>
-    <script type="module">
+    <script type="module" nonce="<%= nonce %>">
         import { generateKey, closeKeyCard } from '../js/keygen.js';
 
         module.generateKey = generateKey
