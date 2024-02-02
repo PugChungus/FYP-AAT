@@ -90,8 +90,10 @@ document.getElementById('googlepocker').addEventListener('click', function(event
       console.error('Error sending access token to server:', error);
     }
   }
-  async function getGoogleToken() {
+  export async function getGoogleToken() {
     return new Promise((resolve, reject) => {
+      gisLoaded()
+      gapiLoaded()
         tokenClient.callback = async (response) => {
             if (response.error !== undefined) {
                 reject(response);

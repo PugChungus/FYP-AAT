@@ -48,7 +48,7 @@ import { sendFileToBackend } from "./virustotal.js";
 
     }
 
-    async function getTokenForRequest() {
+    export async function getTokenForRequest() {
 
         let accessToken = null;
         
@@ -282,15 +282,5 @@ import { sendFileToBackend } from "./virustotal.js";
                 }
             }
             
-            async function handleFileUpload(event) {
-                const files = event.target.files;
-                selectedKey = keyDropdown.value;
-            
-                for (const file of files) {
-                    await sendFileToBackend(file);
-                }
-            }
-
-    document.getElementById('file-input-encrypt').addEventListener('change', handleFileUpload);
-
+    
 
