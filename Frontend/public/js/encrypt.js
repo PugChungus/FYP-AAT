@@ -2,8 +2,8 @@ import { get_cookie } from "./cookie.js";
 import { createKeyDropdown } from "./key.js";
 import { sendFileToBackend, selectedFiles, seen } from "./virustotal.js";
 import { showModal } from "./share_file.js";
-
-
+import {getGoogleToken } from './googlepicker.js';
+import { getTokenForRequest } from "./onedrivepicker.js";
 
 export const keyDropdown = document.getElementById('key-dropdown');
 export let selectedKey = keyDropdown.value;
@@ -427,7 +427,7 @@ async function hideDropZoneAndFileDetails() {
         document.body.appendChild(onedriveupload);
     }
 }
-//finish individ upload today
+
 
 //send files to backend to perform a virus check
 

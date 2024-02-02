@@ -8,7 +8,7 @@ let selectedKey = keyDropdown.value;
 let decryptedExtension;
 let decryptedExtensionList = [];
 
-
+document.getElementById('decryptButton').addEventListener('click', uploadFilez);
 
 createKeyDropdown()
 
@@ -44,6 +44,8 @@ export async function uploadFilez() {
         return;
     }
 }
+
+
 
 async function hideDropZoneAndFileDetails() {
     const dropZone = document.querySelector('.drag-zone-container');
