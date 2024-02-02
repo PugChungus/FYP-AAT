@@ -45,7 +45,7 @@ export function decryptDataWithPrivateKey(data, key) {
 
 let sharedData
 
-function uploadFile() {
+export function uploadFile() {
     const fileInput = document.getElementById('fileInput');
     const file = fileInput.files[0];
 
@@ -53,7 +53,7 @@ function uploadFile() {
         const reader = new FileReader();
         reader.onload = async function (e) {
             const outputDiv = document.getElementById('output');
-            const data = "example";
+            const data = "i am a poolball?????????/";
             const public_key = e.target.result;
 
             try {
@@ -77,7 +77,7 @@ function uploadFile() {
     }
 }
 
-function uploadFile2() {
+export function uploadFile2() {
     const fileInput = document.getElementById('fileInput2');
     const file = fileInput.files[0];
 
@@ -112,24 +112,25 @@ export async function importPublicKey(pem) {
     // fetch the part of the PEM string between header and footer
     const pemHeader = "-----BEGIN PUBLIC KEY-----";
     const pemFooter = "-----END PUBLIC KEY-----";
-    const pemContents = pem.substring(
-      pemHeader.length,
-      pem.length - pemFooter.length - 1,
-    );
+    const pemContents = pem
+        .replace(pemHeader, '')
+        .replace(pemFooter, '')
+        .replace(/\s/g, ''); // Remove any remaining whitespaces, including line breaks
+
     // base64 decode the string to get the binary data
     const binaryDerString = window.atob(pemContents);
     // convert from a binary string to an ArrayBuffer
     const binaryDer = stringToArrayBuffer(binaryDerString);
-  
+
     return window.crypto.subtle.importKey(
-      "spki",
-      binaryDer,
-      {
-        name: "RSA-OAEP",
-        hash: "SHA-256",
-      },
-      true,
-      ["encrypt"],
+        "spki",
+        binaryDer,
+        {
+            name: "RSA-OAEP",
+            hash: "SHA-256",
+        },
+        true,
+        ["encrypt"],
     );
 }
 

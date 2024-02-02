@@ -69,6 +69,7 @@ async function decryptFile(file_data, user_email) {
   const key = atob(parts[0]);
   const encrypted_data = atob(parts[1]);
   console.log(key)
+  console.log(typeof(key))
   console.log(encrypted_data)
 
   const key_from_indexed_db = await get_private_key(user_email)
@@ -78,12 +79,10 @@ async function decryptFile(file_data, user_email) {
   const private_key_obj = JSON.parse(private_key)
   console.log(private_key_obj)
 
-  const keyArrayBuffer = stringToArrayBuffer(key)
   const private_key_obj2 = await importPrivateKeyFromJWK(private_key_obj)
-  console.log(keyArrayBuffer)
   console.log(private_key_obj2)
   
-  decryptDataWithPrivateKey(keyArrayBuffer, private_key_obj2).then((result) => {
+  decryptDataWithPrivateKey(key, private_key_obj2).then((result) => {
     const rdata = arrayBufferToString(result);
     console.log(rdata)
   });
