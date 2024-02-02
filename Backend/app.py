@@ -52,8 +52,10 @@ user_secrets = {}
 # salt = secrets.token_hex(16)
 SECRET_KEY = get_random_bytes(32)
 SECRET_KEY2 = get_random_bytes(32)
+SECRET_KEYFP = get_random_bytes(32)
 IV = get_random_bytes(16)
 IV2 =get_random_bytes(16)
+IVFP = get_random_bytes(16)
 
 def padding(data, target_size):
     pad_length = target_size - len(data)
@@ -1293,17 +1295,27 @@ def insert_secret_into_db(email, secret):
 
 def encrypt_email(email):
     cipher = AES.new(SECRET_KEY, AES.MODE_CBC, IV)
+    print("e1")
     print("ENCRYPTION KEY1:", SECRET_KEY)
+    print("Encryption IV:", IV)
+    print("e2")
     padded_email = pad(email.encode(), AES.block_size)
+    print("e3")
     encrypted_email = cipher.encrypt(padded_email)
+    print("e4")
     return b64encode(IV + encrypted_email).decode()
 
 def decrypt_email(encrypted_email):
     encrypted_data = b64decode(encrypted_email.encode())
+    print("d1", encrypted_data)
     iv = encrypted_data[:16]
+    print("d2", iv)
     print("decryption KEY1:", SECRET_KEY)
     cipher = AES.new(SECRET_KEY, AES.MODE_CBC, iv)
+    print("d3", cipher)
+    
     decrypted_data = unpad(cipher.decrypt(encrypted_data[16:]), AES.block_size)
+    print("d4")
     return decrypted_data.decode()
 
 @app.route('/encrypt_email', methods=['POST'])
@@ -1360,13 +1372,6 @@ token_evpayload = {
     'hashed_token': '',
     'expiration': 0,
     'email' : ''
-}
-
-token_fppayload = {
-    'token': '',
-    'hashed_token': '',
-    'expiration': 0,
-    'email': ''
 }
 
 
@@ -1527,6 +1532,7 @@ def encrypt_user_data(user_data):
     print("ENCRYPTION KEY2:", SECRET_KEY2)
     padded_user_data = pad(user_data.encode(), AES.block_size)
     encrypted_user_data = cipher.encrypt(padded_user_data)
+    print("WHAT THE:", b64encode(IV2 + encrypted_user_data).decode())
     return b64encode(IV2 + encrypted_user_data).decode()
 
 def decrypt_user_data(encrypted_user_data):
@@ -1535,6 +1541,7 @@ def decrypt_user_data(encrypted_user_data):
     print("decryption KEY2:", SECRET_KEY2)
     cipher = AES.new(SECRET_KEY2, AES.MODE_CBC, iv)
     decrypted_data = unpad(cipher.decrypt(encrypted_data[16:]), AES.block_size)
+    print("WHAT THE TEH:", decrypted_data.decode())
     return decrypted_data.decode()
 
 
@@ -1554,6 +1561,13 @@ def decrypt_user_data_route():
     decrypted_user_data = decrypt_user_data(encrypted_user_data)
     return jsonify({'decryptedUserData': decrypted_user_data})
 
+token_fppayload = {
+    'token': '',
+    'hashed_token': '',
+    'expiration': 0,
+    'email': ''
+}
+
 @app.route('/email_forgetPassword', methods=['POST'])
 def email_forgetPassword():
     data = request.get_json()
@@ -1570,10 +1584,10 @@ def email_forgetPassword():
 
     print("Checking THis hash:", hashed_token)
 
-    token_evpayload['token'] = verification_token
-    token_evpayload['hashed_token'] = hashed_token
-    token_evpayload['expiration'] = expiration_timestamp
-    token_evpayload['email'] = emailaddress
+    token_fppayload['token'] = verification_token
+    token_fppayload['hashed_token'] = hashed_token
+    token_fppayload['expiration'] = expiration_timestamp
+    token_fppayload['email'] = emailaddress
     configuration = sib_api_v3_sdk.Configuration()
     configuration.api_key['api-key'] = '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'
 
@@ -1610,7 +1624,7 @@ def email_forgetPassword():
         </head>
         <body>
             <h1>Reset Your Password</h1>
-            <p>Thank you for signing up! Click the link below to verify your email address:</p>
+            <p>Please Click On the Button below to Validate your Email Address and change your password.</p>
             <a href="http://localhost:3000/resetpassword?token={hashed_token}">Verify Email</a>
         </body>
     </html>
@@ -1632,6 +1646,130 @@ def email_forgetPassword():
     except ApiException as e:
         print("Exception when calling SMTPApi->send_transac_email: %s\n" % e)
         return jsonify({'error': 'Failed to send email verification'})
+    
+def is_valid_tokenfp(hashed_token, token_fppayload):
+    token = token_fppayload['token']
+    print("It's not about the journey:", token)
+    expiration_timestamp = token_fppayload['expiration']
+
+    # Validate the expiration
+    current_timestamp = int(datetime.utcnow().timestamp())
+    if current_timestamp > expiration_timestamp:
+        return False
+
+    # Validate the hashed token
+    hash_object = hashlib.sha256(f"{token}".encode()).hexdigest()
+    print('but the friends we made along the way:', hash_object)
+    if hashed_token == hash_object:
+        print("MET")
+        return True
+    
+    print("NYET")
+    return False
+
+def encrypt_emailfp(email):
+    cipher = AES.new(SECRET_KEYFP, AES.MODE_CBC, IVFP)
+    print("e1")
+    print("ENCRYPTION KEY1:", SECRET_KEYFP)
+    print("Encryption IV:", IVFP)
+    print("e2")
+    padded_email = pad(email.encode(), AES.block_size)
+    print("e3")
+    encrypted_email = cipher.encrypt(padded_email)
+    print("e4")
+    print("WhaT  THE:", b64encode(IVFP + encrypted_email).decode())
+    return b64encode(IVFP + encrypted_email).decode()
+
+def decrypt_emailfp(encrypted_email):
+    try:
+        print("checking email:", encrypted_email)
+        encrypted_data = b64decode(encrypted_email.encode())
+        print("d1", encrypted_data)
+        iv = encrypted_data[:16]
+        print("d2", iv)
+        print("decryption KEY1:", SECRET_KEYFP)
+        cipher = AES.new(SECRET_KEYFP, AES.MODE_CBC, iv)
+        print("d3", cipher)
+
+        decrypted_data = unpad(cipher.decrypt(encrypted_data[16:]), AES.block_size)
+        print("d4")
+        print("CHauihbdfis:", decrypted_data.decode())
+        return decrypted_data.decode()
+    except Exception as e:
+        print("Decryption error:", str(e))
+        raise
+
+    
+@app.route('/verify_reset_password', methods=['POST'])
+def reset_password():
+    try:
+        # Get the token from the request body
+        data = request.json
+        token = data.get('token', '')
+        print("POWER OF FRIENDSHIP:", token)
+
+        # Assuming you have a function is_valid_token for token validation
+        if is_valid_token(token, token_fppayload):  # Provide token_evpayload as the second argument
+            print("CHECKED")
+            print('OMG:', token_fppayload)
+            
+            if token_fppayload['email'] in token_fppayload['email']:
+                email = token_fppayload['email']
+                print("account ID:", email)
+                encrypted_email = encrypt_emailfp(email)
+                print("What data type:", type(encrypted_email))
+                print("What data :", encrypted_email)
+
+
+                # Assuming you have a function pool.connection() for database connection
+                
+
+                return jsonify({'Validation': 'success', 'encrypted_email': encrypted_email})
+
+        else:
+            # Return error response
+            print("Id aint here broski")
+            return jsonify({'Validation': 'failed'})
+
+    except Exception as e:
+        print(f"Error processing request: {e}")
+        return jsonify({'activation_status': 'error'})
+
+# Make sure to include this return statement for cases where the function does not enter the 'if' block
+    return jsonify({'activation_status': 'error'})
+
+@app.route('/a_reset_password', methods=['POST'])
+def a_reset_password():
+    try:
+        data = request.get_json()
+        print("resetdata:", data)
+
+        # Check if 'newPassword' and 'tempemail' are in the JSON data
+        if 'newPassword' not in data :
+            return jsonify({'error': 'Missing parameters'}), 400
+
+        new_password = data['newPassword']
+
+        email = token_fppayload['email']
+
+        try:
+            # Proceed with the database update for username only
+            sql = "UPDATE user_account SET password = %s  WHERE email_address = %s"
+            connection = pool.connection()
+
+            with connection.cursor() as cursor:
+                cursor.execute(sql, (new_password, email))
+            connection.commit()
+
+            return jsonify({'message': 'Password updated successfully'})
+
+        except Exception as e:
+            connection.rollback()
+            return jsonify({'error': str(e)}), 500
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 
 
 if __name__ == '__main__':

@@ -1,6 +1,3 @@
-// activation.js
-
-// Function to send a verification request to the server
 async function verifyAccount() {
     try {
         // Get the token from the URL

@@ -21,6 +21,8 @@ import cookieRouter from './routes/cookieRoute.js';
 import tfaRouter from './routes/tfaRoute.js';
 import accountDataRouter from './routes/accountDataRoute.js';
 import rsaRouter from './routes/rsaRoute.js';
+import forgetPasswordRouter from './routes/forgetPasswordRoute.js';
+import hashPasswordRouter from './routes/hashpasswordRoute.js';
 
 const app = express();
 const port = 3000;
@@ -102,6 +104,8 @@ app.use('/', accountDataRouter);
 app.use('/', rsaRouter);
 app.use('/', cookieRouter);
 app.use('/', tfaRouter);
+app.use('/', forgetPasswordRouter)
+app.use('/', hashPasswordRouter)
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
