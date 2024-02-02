@@ -186,6 +186,8 @@ export async function shareFile() {
                 const public_key_obj = await importPublicKey(public_key);
                 const result = await encryptDataWithPublicKey(keyValue, public_key_obj);
                 const rdata = arrayBufferToString(result);
+                console.log(rdata)
+                console.log(typeof(rdata))
 
                 formData.append('key', rdata)
 
