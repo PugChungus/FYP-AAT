@@ -57,28 +57,17 @@ IV = get_random_bytes(16)
 IV2 =get_random_bytes(16)
 IVFP = get_random_bytes(16)
 
-def padding(data, target_size):
-    pad_length = target_size - len(data)
-    if pad_length <= 0:
-        # No padding needed, or padding exceeds the target size
-        return data
-    else:
-        # Pad the data to the target size using valid byte values
-        padding = bytes([pad_length % 256] * pad_length)
-        return data + padding
+def btoa(s):
+    # Encode the string to bytes
+    bytes_data = s.encode('utf-8')
 
-def unpadding(padded_data):
-    # Get the last byte, which indicates the padding length
-    pad_length = padded_data[-1]
+    # Encode bytes to base64
+    base64_data = base64.b64encode(bytes_data)
 
-    # Check if the padding length is valid
-    if pad_length > len(padded_data):
-        raise ValueError('Invalid padding length')
+    # Decode the base64 bytes to a UTF-8 string
+    result = base64_data.decode('utf-8')
 
-    # Slice the padded data to remove the padding
-    original_data = padded_data[:-pad_length]
-
-    return original_data
+    return result
 
 def fetch_latest_keys():
     try:
@@ -967,24 +956,6 @@ def decrypt_history():
     except Exception as e:
         connection.rollback()
         return jsonify({'error': str(e)}), 500
-    
-@app.route('/unpad', methods=['POST'])
-def unpad():
-    file_data_string = request.form.get('file')
-    # print(file_data_string)
-    data = file_data_string[:-1024]
-    key = file_data_string[-1024:]
-    print(key)
-    data_bytes = data.encode('utf-8')
-    key_bytes = key.encode('utf-8')
-    # print(key_bytes)
-    original_key = unpadding(key_bytes)
-    print(original_key)
-
-    original_key_base64 = base64.b64encode(original_key).decode('utf-8')
-    data_base64 = base64.b64encode(data_bytes).decode()
-
-    return jsonify({'key': original_key_base64, 'file': data_base64}), 200
 
 @app.route('/send_file/<filename>', methods=['POST'])
 def send_file_to_user(filename):
@@ -995,17 +966,10 @@ def send_file_to_user(filename):
         print(key, 'key')
 
     key = request.form.get('key')
-    key_size = len(key)
-    key_bytes = key.encode('utf-8')
-    key_padded = padding(key_bytes , 1024)
     shared_to_email = request.form.get('email')
     shared_by_email = request.form.get('email2')
 
     print(key)
-    print(key_size)
-    print(key_padded)
-    print(shared_to_email)
-    print(shared_by_email)
 
     if not key or not shared_to_email or not shared_by_email:
         abort(400, 'Invalid request data')
@@ -1014,10 +978,12 @@ def send_file_to_user(filename):
 
     if encrypted_data is None:
         return 'File not found', 404
+    
+    delimiter = '|!|'
+    key_bytes_base64 = btoa(key)
+    encrypted_data_base64 = base64.b64encode(encrypted_data).decode('utf-8')
 
-    concat = encrypted_data + key_padded
-
-    print(type(concat))
+    concat = key_bytes_base64 + delimiter + encrypted_data_base64
 
     WideFileName = filename.encode("utf-8").decode("latin-1")
 

@@ -1,4 +1,4 @@
-import { decryptDataWithPrivateKey, importPrivateKeyFromJWK } from "./RSA and IndexedDB/rsa.js";
+import { decryptDataWithPrivateKey, importPrivateKeyFromJWK, arrayBufferToString } from "./RSA and IndexedDB/rsa.js";
 import { get_private_key } from "./RSA and IndexedDB/IndexedDB.js";
 import { ab2str } from "./RSA and IndexedDB/rsa_keygen.js";
 
@@ -56,50 +56,49 @@ function checkKeyExistence(dbName, objectStoreName, keyToCheck) {
   });
 }
 
+function stringToArrayBuffer(str) {
+  const encoder = new TextEncoder('utf-8');
+  return encoder.encode(str).buffer;
+}
+
 async function decryptFile(file_data, user_email) {
 
-  console.log(file_data)
-  const file_data1 = ab2str(file_data.data)
-  console.log(file_data1)
-
-  const formData = new FormData();
-  formData.append('file', file_data1);
-
-  const response = await fetch('http://localhost:5000/unpad', {
-    method: 'POST',
-    body: formData,
-  });
-
-  const { key, file } = await response.json();
-  const key_unpadded = atob(key);
-  const decodedResult = atob(file);
-
-  console.log(key_unpadded);
-  console.log(decodedResult)
+  const file_data1 = ab2str(file_data.data);
+  const delimiter = '|!|';
+  const parts = file_data1.split(delimiter);
+  const key = atob(parts[0]);
+  const encrypted_data = atob(parts[1]);
+  console.log(key)
+  console.log(encrypted_data)
 
   const key_from_indexed_db = await get_private_key(user_email)
   const private_key = key_from_indexed_db.privateKey
   console.log(private_key)
+
   const private_key_obj = JSON.parse(private_key)
   console.log(private_key_obj)
+
+  const keyArrayBuffer = stringToArrayBuffer(key)
   const private_key_obj2 = await importPrivateKeyFromJWK(private_key_obj)
+  console.log(keyArrayBuffer)
   console.log(private_key_obj2)
-  decryptDataWithPrivateKey(key_unpadded, private_key_obj2).then((result) => {
+  
+  decryptDataWithPrivateKey(keyArrayBuffer, private_key_obj2).then((result) => {
     const rdata = arrayBufferToString(result);
     console.log(rdata)
   });
-  console.log(aes_key)
+  
 
-  formData.append('hex', rdata)
-  formData.append('files', decodedResult);
+  // formData.append('hex', rdata)
+  // formData.append('files', decodedResult);
 
-  const response2 = await fetch('http://localhost:5000/decrypt2', {
-    method: 'POST',
-    headers: {
-        'Authorization': `Bearer: ${jwtToken}`
-    },
-    body: formData,
-  });
+  // const response2 = await fetch('http://localhost:5000/decrypt2', {
+  //   method: 'POST',
+  //   headers: {
+  //       'Authorization': `Bearer: ${jwtToken}`
+  //   },
+  //   body: formData,
+  // });
 }
 
 async function displayFiles() {
