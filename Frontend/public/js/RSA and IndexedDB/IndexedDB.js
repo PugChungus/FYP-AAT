@@ -57,6 +57,41 @@ export function openIndexDB(jwk_private, user_email) {
   };
 }
 
+export function get_private_key(user_email) {
+  return new Promise((resolve, reject) => {
+    // Open a connection to the IndexedDB database
+    const openRequest = window.indexedDB.open(`${user_email}_db`, 4);
+
+    openRequest.onerror = function(event) {
+      console.error("Failed to open database:", event.target.error);
+      reject(event.target.error);
+    };
+
+    openRequest.onsuccess = function(event) {
+      const db = event.target.result;
+
+      // Start a transaction to access the object store
+      const transaction = db.transaction(`${user_email}__Object_Store`, 'readonly');
+      const objectStore = transaction.objectStore(`${user_email}__Object_Store`);
+
+      // Retrieve data using a key or index
+      const key = 'Private Key';  // Replace with the actual key you want to retrieve
+      const getRequest = objectStore.get(key);
+
+      getRequest.onsuccess = function(event) {
+        const data = event.target.result;
+        console.log("Retrieved data:", data);
+        resolve(data);
+      };
+
+      getRequest.onerror = function(event) {
+        console.error("Error retrieving data:", event.target.error);
+        reject(event.target.error);
+      };
+    };
+  });
+}
+
 function addData(jwk_private, user_email) {
   const transaction = db.transaction([`${user_email}__Object_Store`], "readwrite");
   const objectStore = transaction.objectStore(`${user_email}__Object_Store`);
@@ -166,44 +201,3 @@ export function getCurrentTime() {
 
   return currentTime;
 }
-
-// function addData(user_email) {
-//     const transaction = db.transaction([`${user_email}__Object_Store`], "readwrite");
-//     const objectStore = transaction.objectStore(`${user_email}__Object_Store`);
-
-//     const newItem = {
-//       privateKey: jwk_private,
-//       email: user_email,
-//       dateCreated: getCurrentTime(),
-//     };
-
-//     const addRequest = objectStore.add(newItem);
-
-//     addRequest.onsuccess = () => {
-//       console.log("Data added successfully");
-//     };
-
-//     addRequest.onerror = (error) => {
-//       console.error("Error adding data: ", error);
-//     };
-// }
-
-// function getCurrentTime() {
-//     const now = new Date();
-  
-//     // Get the current date components
-//     const year = now.getFullYear().toString(); // Get the last two digits of the year
-//     const month = (now.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-based
-//     const day = now.getDate().toString().padStart(2, '0');
-  
-//     // Get the current time components
-//     const hours = now.getHours().toString().padStart(2, '0');
-//     const minutes = now.getMinutes().toString().padStart(2, '0');
-  
-//     // Combine the components into the desired format
-//     const currentTime = `${day}/${month}/${year} ${hours}:${minutes}`;
-
-//     console.log(currentTime);
-  
-//     return currentTime;
-// }

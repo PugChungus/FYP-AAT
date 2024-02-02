@@ -1,3 +1,7 @@
+import { decryptDataWithPrivateKey, importPrivateKeyFromJWK } from "./RSA and IndexedDB/rsa.js";
+import { get_private_key } from "./RSA and IndexedDB/IndexedDB.js";
+import { ab2str } from "./RSA and IndexedDB/rsa_keygen.js";
+
 async function get_email_via_id() {
   const newResponse = await fetch('http://localhost:3000/get_data_from_cookie', {
     method: 'POST'
@@ -52,18 +56,50 @@ function checkKeyExistence(dbName, objectStoreName, keyToCheck) {
   });
 }
 
-async function decryptFile(file_data) {
+async function decryptFile(file_data, user_email) {
+
+  console.log(file_data)
+  const file_data1 = ab2str(file_data.data)
+  console.log(file_data1)
 
   const formData = new FormData();
-  formData.append('file', file_data);
+  formData.append('file', file_data1);
 
   const response = await fetch('http://localhost:5000/unpad', {
     method: 'POST',
     body: formData,
   });
 
-  const data = await response.json();
-  console.log(data.result);
+  const { key, file } = await response.json();
+  const key_unpadded = atob(key);
+  const decodedResult = atob(file);
+
+  console.log(key_unpadded);
+  console.log(decodedResult)
+
+  const key_from_indexed_db = await get_private_key(user_email)
+  const private_key = key_from_indexed_db.privateKey
+  console.log(private_key)
+  const private_key_obj = JSON.parse(private_key)
+  console.log(private_key_obj)
+  const private_key_obj2 = await importPrivateKeyFromJWK(private_key_obj)
+  console.log(private_key_obj2)
+  decryptDataWithPrivateKey(key_unpadded, private_key_obj2).then((result) => {
+    const rdata = arrayBufferToString(result);
+    console.log(rdata)
+  });
+  console.log(aes_key)
+
+  formData.append('hex', rdata)
+  formData.append('files', decodedResult);
+
+  const response2 = await fetch('http://localhost:5000/decrypt2', {
+    method: 'POST',
+    headers: {
+        'Authorization': `Bearer: ${jwtToken}`
+    },
+    body: formData,
+  });
 }
 
 async function displayFiles() {
@@ -119,7 +155,7 @@ async function displayFiles() {
       decryptButton.textContent = 'Decrypt File';
       decryptButton.addEventListener('click', function () {
         // Call your decryption function here
-        decryptFile(file_data);
+        decryptFile(file_data, user_email);
       });
       cellDecryptButton.appendChild(decryptButton);
 

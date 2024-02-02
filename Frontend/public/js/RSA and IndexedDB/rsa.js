@@ -31,7 +31,7 @@ export async function encryptDataWithPublicKey(data, key) {
     );
 }
 
-function decryptDataWithPrivateKey(data, key) {
+export function decryptDataWithPrivateKey(data, key) {
     data = stringToArrayBuffer(data);
     return window.crypto.subtle.decrypt(
         {
@@ -133,7 +133,7 @@ export async function importPublicKey(pem) {
     );
 }
 
-async function importPrivateKeyFromJWK(jwk) {
+export async function importPrivateKeyFromJWK(jwk) {
     const privateKey = await window.crypto.subtle.importKey(
       'jwk',
       jwk,

@@ -177,8 +177,8 @@ export async function shareFile() {
                 formData.append('email', share_target_email);
                 
                 const response = await fetch('http://localhost:3000/get_pubkey', {
-                method: 'POST',
-                body: formData,
+                    method: 'POST',
+                    body: formData,
                 });
 
                 const responseData = await response.json();

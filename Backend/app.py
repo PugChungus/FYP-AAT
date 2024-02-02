@@ -685,6 +685,128 @@ def decrypt_files():
     except Exception as e:
         print("Error processing Files:", str(e))
         return {"isValid": False, "error": str(e)}, 500
+    
+@app.route('/decrypt2', methods=['POST'])
+def decrypt_files2():
+    try:
+        authorization_header = request.headers.get('Authorization')
+
+        if authorization_header is None:
+            return "Token is Invalid"
+        
+        isValid = check_token_validity(authorization_header)
+        
+        if not isValid:
+            print('Invalid Token.')
+            return "Invalid Token."
+        else:
+            print('Valid Token')
+
+        uploaded_files = request.files.getlist('files')
+        total_size_bytes = sum(get_file_size(file_storage) for file_storage in uploaded_files)
+        print(total_size_bytes)
+
+        max_size_gb = 1
+        max_size_bytes = max_size_gb * 1024 * 1024 * 1024
+
+        if total_size_bytes > max_size_bytes:
+            return jsonify({'error': 'Total file size exceeds 1 GB limit'}), 400
+        print(uploaded_files)
+
+        hex_key = request.form['hex']
+        key = bytes.fromhex(hex_key)
+
+        for uploaded_file in uploaded_files:
+            # filename = secure_filename(uploaded_file.filename)
+            file_name, file_extension = os.path.splitext(uploaded_file.filename)
+
+            if file_extension.lower() not in {'.enc', '.zip'}:
+                return jsonify("error"), 500
+
+            if file_name.startswith("encrypted_"):
+                file_name = file_name.replace("encrypted_", "decrypted_")
+                print(file_name, 'changed')
+
+            if file_extension.lower() == '.zip':
+                decrypted_zip_data = BytesIO()
+
+                with zipfile.ZipFile(uploaded_file, 'r') as zip_ref:
+                    for zip_file_info in zip_ref.infolist():
+                        zip_file_name = zip_file_info.filename
+                        file_name2, file_extension2 = os.path.splitext(zip_file_name)
+
+                        if zip_file_name.lower().endswith('.enc'):
+                            file_data = zip_ref.read(zip_file_name)
+                            header_bytes_unpadded = unpad(file_data[:48], 48)
+                            nonce = file_data[48:60]
+                            ciphertext_unpadded = unpad(file_data[60:-16], 16)
+                            tag = file_data[-16:]
+
+                            aes_gcm = AES.new(key, AES.MODE_GCM, nonce=nonce)
+                            aes_gcm.update(header_bytes_unpadded)
+                            plaintext = aes_gcm.decrypt_and_verify(ciphertext_unpadded, tag)
+                            extension = unpad(plaintext[:16], 16)
+                            file_data = plaintext[16:]
+
+                            original_extension = extension.decode('utf-8')
+                            file_with_original_extension = f'{file_name2}{original_extension}'
+                            print(file_with_original_extension)
+
+                            with zipfile.ZipFile(decrypted_zip_data, 'a', zipfile.ZIP_STORED, allowZip64=True) as zipf:
+                                zipf.writestr(file_with_original_extension, file_data)
+
+                    decrypted_zip_data.seek(0)
+                    join_file_name = f'{file_name}{file_extension}'
+                    decrypted_data_dict[join_file_name] = decrypted_zip_data.getvalue()
+
+                    for keys, value in decrypted_data_dict.items():
+                        print(keys, 'key')
+
+                    # Print the number of files within decrypted_zip_data
+                    num_files_in_zip = len(zipfile.ZipFile(decrypted_zip_data).infolist())
+                    print(f"Number of files in decrypted_zip_data: {num_files_in_zip}")
+
+                file_extension = file_extension.replace('.', '')
+
+                WideFileName = join_file_name.encode("utf-8").decode("latin-1")
+                # Set the Content-Disposition header to specify the filename
+                response = Response(decrypted_zip_data.getvalue(), content_type='application/octet-stream')
+                response.headers['Content-Disposition'] = f'attachment; filename="{WideFileName}"'
+                return response
+                # return jsonify(decrypted_extension=file_extension)
+            
+            else:
+                file_data = uploaded_file.read()
+                header_bytes_unpadded = unpad(file_data[:48], 48)
+                nonce = file_data[48:60]
+                ciphertext_unpadded = unpad(file_data[60:-16], 16)
+                tag = file_data[-16:]
+
+                aes_gcm = AES.new(key, AES.MODE_GCM, nonce=nonce)
+                aes_gcm.update(header_bytes_unpadded)
+                plaintext = aes_gcm.decrypt_and_verify(ciphertext_unpadded, tag)
+                extension = unpad(plaintext[:16], 16)
+                file_data = plaintext[16:]
+            
+                original_extension = extension.decode('utf-8')
+                file_with_original_extension = f'{file_name}{original_extension}'
+
+                decrypted_data_dict[file_with_original_extension] = file_data
+
+                file_extension = original_extension.replace('.', '')
+                
+                WideFileName = file_with_original_extension.encode("utf-8").decode("latin-1")
+                # Set the Content-Disposition header to specify the filename
+                response = Response(file_data, content_type='application/octet-stream')
+                response.headers['Content-Disposition'] = f'attachment; filename="{WideFileName}"'
+                return response
+
+                # return jsonify(decrypted_extension=file_extension)
+
+    except Exception as e:
+        print("Error processing Files:", str(e))
+        return {"isValid": False, "error": str(e)}, 500
+
 
 @app.route('/clear_history', methods=['POST'])
 def clear_history():
@@ -847,18 +969,20 @@ def decrypt_history():
 @app.route('/unpad', methods=['POST'])
 def unpad():
     file_data_string = request.form.get('file')
+    # print(file_data_string)
+    data = file_data_string[:-1024]
     key = file_data_string[-1024:]
+    print(key)
+    data_bytes = data.encode('utf-8')
     key_bytes = key.encode('utf-8')
-    print(len(key_bytes))
-    print(key_bytes)
+    # print(key_bytes)
     original_key = unpadding(key_bytes)
+    print(original_key)
 
-    # Convert buffer object to bytes
-    file_data_bytes = bytes(file_data_string, 'latin-1')
+    original_key_base64 = base64.b64encode(original_key).decode('utf-8')
+    data_base64 = base64.b64encode(data_bytes).decode()
 
-    print(file_data_bytes)
-
-    return jsonify({'result': 'yes'}), 200
+    return jsonify({'key': original_key_base64, 'file': data_base64}), 200
 
 @app.route('/send_file/<filename>', methods=['POST'])
 def send_file_to_user(filename):
