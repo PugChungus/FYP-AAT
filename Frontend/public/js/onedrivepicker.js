@@ -1,16 +1,13 @@
 
 
 import { sendFileToBackend } from "./virustotal.js";
-import { isValidFileExtension } from "./decrypt.js";
+
 
     document.getElementById('launchPicker').addEventListener('click', function(event) {
         event.preventDefault();
         launchPicker();
       });
-      document.getElementById('decryptlaunchPicker').addEventListener('click', function(event) {
-        event.preventDefault();
-        decryptlaunchPicker();
-      });
+      
     const msalParams = {
         auth: {
             authority:  "https://login.microsoftonline.com/consumers",
