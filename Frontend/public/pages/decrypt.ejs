@@ -87,7 +87,7 @@
     
     </div>
     <button id="decryptButton" class="eButton" >Decrypt</button>
-    <button id="launchPicker"> OneDrive Picker</button>
+    <button id="decryptlaunchPicker"> OneDrive Picker</button>
     <button id="googlepocker" > Google Picker</button>
 
 
@@ -107,9 +107,11 @@
     <script type="module" src ="/js/googlepicker.js"  nonce="<%= nonce %>">
         
     </script>
+
+    <script type ="module" src ="/js/onedrivepickerdecrypt.js"  nonce="<%= nonce %>"></script>
     <script type="text/javascript" src="https://alcdn.msauth.net/browser/2.19.0/js/msal-browser.min.js"></script>
     <script type="module" src="/js/cookie_login.js"></script>
-    <script type ="module" src ="/js/onedrivepicker.js"  nonce="<%= nonce %>"></script>
+    
     <script src="https://apis.google.com/js/api.js"  nonce="<%= nonce %>"></script>
     <script async defer src="https://apis.google.com/js/api.js"    nonce="<%= nonce %>"></script>
     <script async defer src="https://accounts.google.com/gsi/client"   nonce="<%= nonce %>" ></script>

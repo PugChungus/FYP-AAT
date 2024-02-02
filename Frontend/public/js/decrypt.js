@@ -1,7 +1,8 @@
 import { get_cookie } from './cookie.js'
 import { createKeyDropdown } from "./key.js";
 import { sendFileToBackend, selectedFiles, seen } from "./virustotal.js";
-
+import { getGoogleToken } from './googlepicker.js';
+import { getTokenForRequest } from './onedrivepicker.js';
 
 const keyDropdown = document.getElementById('key-dropdown');
 let selectedKey = keyDropdown.value;
@@ -194,7 +195,7 @@ async function hideDropZoneAndFileDetails() {
     }
 }
 
-function isValidFileExtension(file) {
+export function isValidFileExtension(file) {
     const allowedExtensions = ["enc", "zip"];
     const fileName = file.name.toLowerCase();
     const fileExtension = fileName.slice((fileName.lastIndexOf(".") - 1 >>> 0) + 2);
