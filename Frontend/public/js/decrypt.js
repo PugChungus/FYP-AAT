@@ -9,7 +9,7 @@ let selectedKey = keyDropdown.value;
 let decryptedExtension;
 let decryptedExtensionList = [];
 
-document.getElementById('decryptButton').addEventListener('click', uploadFilez);
+
 
 createKeyDropdown()
 
@@ -620,3 +620,4 @@ async function uploadtoOneDrive (type,name){
 
 
 }
+document.getElementById('decryptButton').addEventListener('click', uploadFilez);
