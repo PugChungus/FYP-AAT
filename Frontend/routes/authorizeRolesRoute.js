@@ -50,7 +50,12 @@ export async function checkTokenValidity(authorizationHeader) {
     const headerString = authorizationHeader.toString();
 
     // Extract the token from the Authorization header
-    const token = headerString.split(' ')[1];
+    const [bearer, token] = headerString.split(' ');
+
+    if (bearer !== 'Bearer' || token == 'undefined') {
+        // Invalid format, return false
+        return false;
+    }
 
     console.log('this is da token', token)
 

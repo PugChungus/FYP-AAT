@@ -61,12 +61,28 @@ export function showKeyRotationWarning() {
     <div class="card-body">
       <h5 class="card-title">Key Rotation Warning</h5>
       <p class="card-text">This will destroy all your old public and private keys and create new ones. Old messages encrypted with your public key will not be retrievable. Do you wish to proceed?</p>
+      
+      <div class="form-group">
+        <label for="rotateConfirmation">Type 'rotate keys' to confirm:</label>
+        <input type="text" class="form-control" id="rotateConfirmation" placeholder="Type here">
+      </div>
+
       <button type="button" class="btn btn-danger" id="denyRotation">Deny</button>
       <button type="button" class="btn btn-success" id="confirmRotation">Confirm</button>
     </div>`;
 
   // Append cardDiv to the document
   document.body.appendChild(cardDiv);
+
+  const rotateConfirmationInput = document.getElementById('rotateConfirmation');
+
+  rotateConfirmationInput.addEventListener('input', () => {
+    const confirmationPhrase = 'rotate keys';
+    const userEnteredPhrase = rotateConfirmationInput.value.trim().toLowerCase();
+  
+    // Enable the "Confirm" button only when the correct phrase is entered
+    confirmRotationButton.disabled = userEnteredPhrase !== confirmationPhrase;
+  });
 
   // Retrieve the elements and add event listeners after appending to the DOM
   const denyRotationButton = document.getElementById('denyRotation');
