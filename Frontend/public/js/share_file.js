@@ -145,7 +145,7 @@ async function executeSQLQuery(userInput) {
 //     const padLength = paddedData.charCodeAt(paddedData.length - 1);
 //     return paddedData.slice(0, -padLength);
 // }
-
+document.getElementById('confirmShare').addEventListener('click',shareFile);
 export async function shareFile() {
 
     // encrypt the key using frontend rsa after that we will get the encrypted key using rsa
