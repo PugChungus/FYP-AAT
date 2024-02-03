@@ -57,18 +57,6 @@ IV = get_random_bytes(16)
 IV2 =get_random_bytes(16)
 IVFP = get_random_bytes(16)
 
-def btoa(s):
-    # Encode the string to bytes
-    bytes_data = s.encode('utf-8')
-
-    # Encode bytes to base64
-    base64_data = base64.b64encode(bytes_data)
-
-    # Decode the base64 bytes to a UTF-8 string
-    result = base64_data.decode('utf-8')
-
-    return result
-
 def fetch_latest_keys():
     try:
         response = requests.get('http://localhost:3000/keys')
@@ -966,6 +954,7 @@ def send_file_to_user(filename):
         print(key, 'key')
 
     key = request.form.get('key')
+    key_bytes = key.encode('utf-8')
     shared_to_email = request.form.get('email')
     shared_by_email = request.form.get('email2')
 
@@ -980,7 +969,8 @@ def send_file_to_user(filename):
         return 'File not found', 404
     
     delimiter = '|!|'
-    key_bytes_base64 = btoa(key)
+    key_bytes_base64 = base64.b64encode(key_bytes).decode('utf-8')
+    print(key_bytes_base64)
     encrypted_data_base64 = base64.b64encode(encrypted_data).decode('utf-8')
 
     concat = key_bytes_base64 + delimiter + encrypted_data_base64
@@ -1446,7 +1436,7 @@ def verify_account():
     try:
         # Get the token from the request body
         data = request.json
-        token = data.get('token', '')
+        token = data.get('token', '')  
         print("POWER OF FRIENDSHIP:", token)
 
         # Assuming you have a function is_valid_token for token validation
