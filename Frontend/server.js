@@ -117,7 +117,8 @@ app.set('views', path.join(__dirname, 'public', 'pages'));
 
 // Set up a route to render your HTML file
 app.get('/', async (req, res) => {
-    const isValid = await checkTokenValidity(`Bearer ${req.cookies.jwtToken}`);
+    const isValid = await checkTokenValidity(`Bearer: ${req.cookies.jwtToken}`);
+    console.log("JWTTOKENNN:", `Bearer: ${req.cookies.jwtToken}` )
     
     if (isValid === true) {
         return res.redirect('/home');
@@ -192,6 +193,14 @@ app.get('/fileInbox', authorizeRoles(), (req, res) => {
 
 app.get('/resetpassword', (req, res) => {
     res.render('resetpassword', {user: req})
+})
+
+app.get('/disabletfa', (req, res) => {
+    res.render('disabletfa', {user: req})
+})
+
+app.get('/deleteaccount', (req, res) => {
+    res.render('deleteaccount', {user: req})
 })
 
 app.post('/send_email_from_login', (req, res) => {

@@ -25,7 +25,10 @@ async function encryptEmail(email) {
   }
 }
 
+document.querySelector('.signin-form').addEventListener('submit', verifyTOTP);
 document.getElementById('submit').addEventListener('click', login);
+
+
 
 
 export async function login(event) {
@@ -318,3 +321,4 @@ export async function verifyTOTP(event) {
     console.error('Error during OTP verification:', error);
   }
 }
+

@@ -1324,6 +1324,7 @@ def check_email_route():
     else:
         return jsonify({'status': 'not exists'})
     
+#Start of Email Verication Email Code
 
 token_evpayload = {
     'token': '',
@@ -1519,6 +1520,10 @@ def decrypt_user_data_route():
     decrypted_user_data = decrypt_user_data(encrypted_user_data)
     return jsonify({'decryptedUserData': decrypted_user_data})
 
+#End of email verification code
+
+#Start of forget password email code
+
 token_fppayload = {
     'token': '',
     'hashed_token': '',
@@ -1667,7 +1672,7 @@ def reset_password():
         print("POWER OF FRIENDSHIP:", token)
 
         # Assuming you have a function is_valid_token for token validation
-        if is_valid_token(token, token_fppayload):  # Provide token_evpayload as the second argument
+        if is_valid_tokenfp(token, token_fppayload):  # Provide token_evpayload as the second argument
             print("CHECKED")
             print('OMG:', token_fppayload)
             
@@ -1727,6 +1732,317 @@ def a_reset_password():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+#End of forget password email code
+    
+#Start of Disable 2fa Email code
+    
+token_dtfapayload = {
+    'token': '',
+    'hashed_token': '',
+    'expiration': 0,
+    'email': ''
+}
+
+@app.route('/email_disabletfa', methods=['POST'])
+def email_disabletfa():
+    data = request.get_json()
+    print(f"Received JSON data: {data}")
+    emailaddress = data.get('email','')
+
+    expiration_time = datetime.utcnow() + timedelta(minutes=15)
+    expiration_timestamp = int(expiration_time.timestamp())
+
+    verification_token = secrets.token_urlsafe(32)
+    print("VERFICATION TOKEN:", verification_token)
+
+    hashed_token = hashlib.sha256(verification_token.encode()).hexdigest()
+
+    print("Checking THis hash:", hashed_token)
+
+    token_dtfapayload['token'] = verification_token
+    token_dtfapayload['hashed_token'] = hashed_token
+    token_dtfapayload['expiration'] = expiration_timestamp
+    token_dtfapayload['email'] = emailaddress
+    configuration = sib_api_v3_sdk.Configuration()
+    configuration.api_key['api-key'] = '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'
+
+    api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
+    subject = "Email Verification"
+    html_content = f"""
+    <html>
+        <head>
+            <style>
+                body {{
+                    background-color: #f4f4f4;
+                    margin: 0;
+                    padding: 0;
+                }}
+                h1 {{
+                    color: #333333;
+                }}
+                p {{
+                    color: #666666;
+                }}
+                a {{
+                    display: inline-block;
+                    padding: 10px 20px;
+                    margin-top: 20px;
+                    background-color: #3498db;
+                    color: #ffffff;
+                    text-decoration: none;
+                    border-radius: 5px;
+                }}
+                a:hover {{
+                    background-color: #2980b9;
+                }}
+            </style>
+        </head>
+        <body>
+            <h1>Disable Your 2 Factor Authorization</h1>
+            <p>Please Click On the Button below to Disable your 2 Factor Authorization.</p>
+            <a href="http://localhost:3000/disabletfa?token={hashed_token}">Verify Email</a>
+        </body>
+    </html>
+    """
+    sender = {"name":"JTR Support","email":"jtrhelp123@gmail.com"}
+    print(f"Recipient's email address: {emailaddress}")
+    to = [{'email': emailaddress}]
+    cc = None
+    bcc =None
+    reply_to = None
+    headers = {"Some-Custom-Name":"unique-id-1234"}
+    params = {"parameter":"My param value","subject":"New Subject"}
+    send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(to=to, bcc=bcc, cc=cc, reply_to=reply_to, headers=headers, html_content=html_content, sender=sender, subject=subject)
+
+    try:
+        api_response = api_instance.send_transac_email(send_smtp_email)
+        pprint(api_response)
+        return jsonify({'message': 'Email sent successfully'})
+    except ApiException as e:
+        print("Exception when calling SMTPApi->send_transac_email: %s\n" % e)
+        return jsonify({'error': 'Failed to send email'})
+    
+def is_valid_tokendtfa(hashed_token, token_dtfapayload):
+    token = token_dtfapayload['token']
+    print("It's not about the journey:", token)
+    expiration_timestamp = token_dtfapayload['expiration']
+
+    # Validate the expiration
+    current_timestamp = int(datetime.utcnow().timestamp())
+    if current_timestamp > expiration_timestamp:
+        return False
+
+    # Validate the hashed token
+    hash_object = hashlib.sha256(f"{token}".encode()).hexdigest()
+    print('but the friends we made along the way:', hash_object)
+    if hashed_token == hash_object:
+        print("MET")
+        return True
+    
+    print("NYET")
+    return False
+
+@app.route('/verify_disable_tfa', methods=['POST'])
+def disable_tfa():
+    try:
+        # Get the token from the request body
+        data = request.json
+        token = data.get('token', '')
+        print('Checking this particular payload:', token_dtfapayload)
+        print("POWER OF FRIENDSHIP:", token)
+
+        # Assuming you have a function is_valid_token for token validation
+        if is_valid_tokendtfa(token, token_dtfapayload):  # Provide token_evpayload as the second argument
+            print("CHECKED")
+            print('OMG:', token_dtfapayload)
+            
+            if token_dtfapayload['email'] in token_dtfapayload['email']:
+                email = token_dtfapayload['email']
+                print("account ID:", email)
+
+                try:
+            # Proceed with the database update for username only
+                    sql = "UPDATE user_account SET is_2fa_enabled = 0, tfa_secret = NULL  WHERE email_address = %s"
+                    connection = pool.connection()
+
+                    with connection.cursor() as cursor:
+                        cursor.execute(sql, (email))
+                    connection.commit()
+
+                    return jsonify({'message': 'Password updated successfully'})
+
+                except Exception as e:
+                        connection.rollback()
+                        return jsonify({'error': str(e)}), 500
+    
+
+            return jsonify({'Validation': 'success'})
+
+        else:
+            # Return error response
+            print("Id aint here broski")
+            return jsonify({'Validation': 'failed'})
+
+    except Exception as e:
+        print(f"Error processing request: {e}")
+        return jsonify({'activation_status': 'error'})
+
+#End of Disable 2fa Email code
+    
+#start of delete account email code
+    
+token_dapayload = {
+    'token': '',
+    'hashed_token': '',
+    'expiration': 0,
+    'email': ''
+}
+
+@app.route('/email_deletea', methods=['POST'])
+def email_deletea():
+    data = request.get_json()
+    print(f"Received JSON data: {data}")
+    emailaddress = data.get('email','')
+
+    expiration_time = datetime.utcnow() + timedelta(minutes=15)
+    expiration_timestamp = int(expiration_time.timestamp())
+
+    verification_token = secrets.token_urlsafe(32)
+    print("VERFICATION TOKEN:", verification_token)
+
+    hashed_token = hashlib.sha256(verification_token.encode()).hexdigest()
+
+    print("Checking THis hash:", hashed_token)
+
+    token_dapayload['token'] = verification_token
+    token_dapayload['hashed_token'] = hashed_token
+    token_dapayload['expiration'] = expiration_timestamp
+    token_dapayload['email'] = emailaddress
+    configuration = sib_api_v3_sdk.Configuration()
+    configuration.api_key['api-key'] = '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'
+
+    api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
+    subject = "Email Verification"
+    html_content = f"""
+    <html>
+        <head>
+            <style>
+                body {{
+                    background-color: #f4f4f4;
+                    margin: 0;
+                    padding: 0;
+                }}
+                h1 {{
+                    color: #333333;
+                }}
+                p {{
+                    color: #666666;
+                }}
+                a {{
+                    display: inline-block;
+                    padding: 10px 20px;
+                    margin-top: 20px;
+                    background-color: #3498db;
+                    color: #ffffff;
+                    text-decoration: none;
+                    border-radius: 5px;
+                }}
+                a:hover {{
+                    background-color: #2980b9;
+                }}
+            </style>
+        </head>
+        <body>
+            <h1>Delete Your Account</h1>
+            <p>Please Click On the Button below to Delete your Account.</p>
+            <a href="http://localhost:3000/deleteaccount?token={hashed_token}">Delete Account</a>
+        </body>
+    </html>
+    """
+    sender = {"name":"JTR Support","email":"jtrhelp123@gmail.com"}
+    print(f"Recipient's email address: {emailaddress}")
+    to = [{'email': emailaddress}]
+    cc = None
+    bcc =None
+    reply_to = None
+    headers = {"Some-Custom-Name":"unique-id-1234"}
+    params = {"parameter":"My param value","subject":"New Subject"}
+    send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(to=to, bcc=bcc, cc=cc, reply_to=reply_to, headers=headers, html_content=html_content, sender=sender, subject=subject)
+
+    try:
+        api_response = api_instance.send_transac_email(send_smtp_email)
+        pprint(api_response)
+        return jsonify({'message': 'Email sent successfully'})
+    except ApiException as e:
+        print("Exception when calling SMTPApi->send_transac_email: %s\n" % e)
+        return jsonify({'error': 'Failed to send email'})
+    
+def is_valid_tokenda(hashed_token, token_dapayload):
+    token = token_dapayload['token']
+    print("It's not about the journey:", token)
+    expiration_timestamp = token_dapayload['expiration']
+
+    # Validate the expiration
+    current_timestamp = int(datetime.utcnow().timestamp())
+    if current_timestamp > expiration_timestamp:
+        return False
+
+    # Validate the hashed token
+    hash_object = hashlib.sha256(f"{token}".encode()).hexdigest()
+    print('but the friends we made along the way:', hash_object)
+    if hashed_token == hash_object:
+        print("MET")
+        return True
+    
+    print("NYET")
+    return False
+
+@app.route('/verify_delete_account', methods=['POST'])
+def delete_account():
+    try:
+        # Get the token from the request body
+        data = request.json
+        token = data.get('token', '')
+        print('Checking this particular payload:', token_dtfapayload)
+        print("POWER OF FRIENDSHIP:", token)
+
+        # Assuming you have a function is_valid_token for token validation
+        if is_valid_tokenda(token, token_dapayload):  # Provide token_evpayload as the second argument
+            print("CHECKED")
+            print('OMG:', token_dapayload)
+            
+            if token_dapayload['email'] in token_dapayload['email']:
+                email = token_dapayload['email']
+                print("account ID:", email)
+
+                try:
+            # Proceed with the database update for username only
+                    sql = "DELETE FROM user_account WHERE email_address = %s"
+                    connection = pool.connection()
+
+                    with connection.cursor() as cursor:
+                        cursor.execute(sql, (email))
+                    connection.commit()
+
+                    return jsonify({'message': 'Account Deleted successfully', 'email':email})
+
+                except Exception as e:
+                        connection.rollback()
+                        return jsonify({'error': str(e)}), 500
+    
+
+            return jsonify({'Validation': 'success', 'email': email})
+
+        else:
+            # Return error response
+            print("Id aint here broski")
+            return jsonify({'Validation': 'failed'})
+
+    except Exception as e:
+        print(f"Error processing request: {e}")
+        return jsonify({'activation_status': 'error'})
 
 
 

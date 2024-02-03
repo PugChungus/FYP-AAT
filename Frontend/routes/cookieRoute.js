@@ -37,7 +37,7 @@ cookieRouter.post('/blacklist_token', async (req, res) => {
         const jwtToken = req.cookies.jwtToken;
         const cookie_from_frontend = req.headers.authorization
         const isValid = await checkTokenValidity(cookie_from_frontend)
-        console.log(isValid)
+        console.log("STONKERS:", isValid)
            
         if (isValid === true) {
             console.log('Valid token');
@@ -69,7 +69,7 @@ cookieRouter.get('/checkTokenValidity', async (req, res) => {
         return res.status(401).json({ isValid: false });
     }
 
-    const isValid = await checkTokenValidity(`Bearer ${jwtToken}`);
+    const isValid = await checkTokenValidity(`Bearer: ${jwtToken}`);
 
     if (isValid === true) {
         res.status(200).json({ isValid: true });

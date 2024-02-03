@@ -17,13 +17,19 @@
                 <div class="col-md-6 col-lg-4">
                     <div class="login-wrap p-0">
                         <h3 class="mb-4 text-center">Two-Factor Authentication</h3>
-                        <form action="#" class="signin-form" onsubmit="module.verifyTOTP(event)">
+                        <form action="#" class="signin-form">
                             <div class="form-group">
                                 <label for="otp-field">Enter OTP:</label>
                                 <input type="text" autocomplete="off" id="otp-field" class="form-control" placeholder="6-digit OTP" required>
                             </div>
                             <div class="form-group">
-                                <button type="submit" class="form-control btn btn-primary submit px-3 text-center">Submit OTP</button>
+                                <button type="submit" id="tfaform" class="form-control btn btn-primary submit px-3 text-center">Submit OTP</button>
+                            </div>
+                            <div class="form-group d-md-flex text-center">
+                                <div class="w-100">
+                                    <!-- Updated the link to a button -->
+                                    <button type="button" id="tfa" class="form-control btn btn-secondary px-3 text-center">Forget 2FA</button>
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -32,17 +38,18 @@
         </div>
     </section>
 
-    <script type="text/javascript">
+    <script type="text/javascript" nonce="<%= nonce %>">
         const module = {};
     </script>
     <!-- <script src="/js/bootstrap.min.js"></script> -->
-    <script src="/js/jquery.min.js"></script>
-    <script src="/js/main.js"></script>
-    <script src="/js/popper.js"></script>
-    <script type="module">
-        import { verifyTOTP } from '/js/account.js';
+    <script src="/js/jquery.min.js" nonce="<%= nonce %>"></script>
+    <script src="/js/main.js" nonce="<%= nonce %>"></script>
+    <script src="/js/popper.js" nonce="<%= nonce %>"></script>
+    <script type="module" nonce="<%= nonce %>">
+        import { verifyTOTP, } from '/js/account.js';
 
         module.verifyTOTP = verifyTOTP       </script>
+    <script type="module" src="/js/disabletfa.js" nonce="<%= nonce %>"></script>
     <script src="https://unpkg.com/@otplib/preset-browser@^12.0.0/buffer.js"></script>
     <script src="https://unpkg.com/@otplib/preset-browser@^12.0.0/index.js"></script>
 
