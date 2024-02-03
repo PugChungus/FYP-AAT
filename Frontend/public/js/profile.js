@@ -353,14 +353,19 @@ export async function deleteAccount() {
 
 }
 
-document.getElementById('rotationButton').addEventListener('click', function(event) {
-  event.preventDefault();
-  showKeyRotationWarning();
-  return false;
-});
-
-document.getElementById('deleteButton').addEventListener('click', function(event) {
+const rotationButton = document.getElementById('rotationButton');
+if (rotationButton) {
+    rotationButton.addEventListener('click', function(event) {
+        event.preventDefault();
+        showKeyRotationWarning();
+        return false;
+    });
+}
+const deletebutt = document.getElementById('deleteButton');
+if (deletebutt){
+deletebutt.addEventListener('click', function(event) {
 event.preventDefault();
 deleteAccount();
 return false;
 });
+}
