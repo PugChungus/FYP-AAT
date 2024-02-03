@@ -134,7 +134,7 @@ export async function login(event) {
       
       if (loginData.result) {
         console.log(data.result)
-        // document.cookie = `jwtToken=${data.JWTtoken}; SameSite=Strict; Secure`;
+        document.cookie = `jwtToken=${data.JWTtoken}; SameSite=Strict; Secure`;
         const count = loginData.result[0]['count(*)']
         console.log(count)
         if (count === 1) {

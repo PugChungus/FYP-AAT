@@ -3,10 +3,6 @@ import { deleteIndexDB } from "./RSA and IndexedDB/IndexedDB.js";
 import * as QRCode from 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/+esm'
 import { showKeyRotationWarning } from '../js/RSA and IndexedDB/key_regen.js';
 
-
-
-
-
 let id
 
 export async function get_email_via_id() {
@@ -101,8 +97,7 @@ document.addEventListener('DOMContentLoaded', async function () {
       </label>
       <span>Enable Two-Factor Authentication</span>
     </div>
-    <button type="button" class="btn btn-danger" id="rotationButton" onclick="showKeyRotationWarning()">Key Rotation</button>
-    <button type="button" class="btn btn-danger" id="deleteButton" onclick="deleteAccount()">Delete Account</button>
+    
   `;
 
   const imgElement = document.getElementById('profile-picture');

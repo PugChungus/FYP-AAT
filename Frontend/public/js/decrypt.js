@@ -1,7 +1,7 @@
 import { get_cookie } from './cookie.js'
 import { createKeyDropdown } from "./key.js";
 import { sendFileToBackend, selectedFiles, seen } from "./virustotal.js";
-import { getGoogleToken } from './googlepicker.js';
+import { getGoogleToken } from './googlepickerdecrypt.js';
 import { getTokenForRequest } from './onedrivepickerdecrypt.js';
 
 const keyDropdown = document.getElementById('key-dropdown');
