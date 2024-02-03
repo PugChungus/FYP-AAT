@@ -45,14 +45,30 @@
 
         <div id="shareModal" class="modal" style="display: none;">
             <div class="modal-content">
-              <span class="close" id="closeModal">&times;</span>
-              <h2>Share</h2>
-              <input type="text" id="userNameInput" placeholder="Search for username">
-              <div id="userDropdown" class="dropdown-content"></div>
-              <div id="selectedUserDiv" class="selected-user"></div>
-              <button id="confirmShare" >Share</button>
+                <span class="close" id="closeModal">&times;</span>
+                <h2>Share</h2>
+        
+                <div class="file-type-options">
+                    <label id="standaloneText" for="standaloneRadio">
+                        <input type="radio" id="standaloneRadio" name="fileType" value="standalone" checked>
+                        Standalone
+                    </label>
+        
+                    <label id="zipText" for="zipRadio">
+                        <input type="radio" id="zipRadio" name="fileType" value="zip">
+                        Zip
+                    </label>
+                </div>
+        
+                <input type="text" id="userNameInput" placeholder="Search for username">
+                <div id="userDropdown" class="dropdown-content"></div>
+        
+                <div id="selectedUserDiv" class="selected-user"></div>
+        
+                <button id="confirmShare">Share</button>
             </div>
         </div>
+        
 
     </div>
 

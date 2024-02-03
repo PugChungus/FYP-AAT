@@ -233,6 +233,15 @@ export async function showModal() {
 
     const closeModal = document.getElementById('closeModal');
     const userNameInput = document.getElementById('userNameInput');
+    const standaloneRadio = document.getElementById('standaloneRadio');
+    const zipRadio = document.getElementById('zipRadio');
+    const standaloneText = document.getElementById('standaloneText');
+    const zipText = document.getElementById('zipText');
+
+    standaloneRadio.style.display = 'none'
+    zipRadio.style.display = 'none'
+    standaloneText.style.display = 'none'
+    zipText.style.display = 'none'
 
     closeModal.addEventListener('click', () => {
         modal.style.display = 'none'; // Hide the modal when the close button is clicked
@@ -247,6 +256,46 @@ export async function showModal() {
         if (event.target === modal) {
             modal.style.display = 'none';
         }
+    });
+
+    // Append the selectedUsersContainer to the body
+    // document.body.appendChild(selectedUsersContainer);
+}
+
+export async function showModalMul() {
+    const modal = document.getElementById('shareModal');
+
+    modal.style.display = 'block'; // Show the modal
+
+    const closeModal = document.getElementById('closeModal');
+    const userNameInput = document.getElementById('userNameInput');
+    const standaloneRadio = document.getElementById('standaloneRadio');
+    const zipRadio = document.getElementById('zipRadio');
+
+    closeModal.addEventListener('click', () => {
+        modal.style.display = 'none'; // Hide the modal when the close button is clicked
+    });
+
+    userNameInput.addEventListener('input', function () {
+        const userInput = userNameInput.value.toLowerCase();
+        executeSQLQuery(userInput);
+    });
+
+    window.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+
+    // Handle radio button selection
+    standaloneRadio.addEventListener('change', () => {
+        // Handle standalone option selected
+        console.log('Standalone selected');
+    });
+
+    zipRadio.addEventListener('change', () => {
+        // Handle zip option selected
+        console.log('Zip selected');
     });
 
     // Append the selectedUsersContainer to the body
