@@ -1,5 +1,6 @@
 import { decryptDataWithPrivateKey, importPrivateKeyFromJWK, arrayBufferToString } from "./RSA and IndexedDB/rsa.js";
 import { get_private_key } from "./RSA and IndexedDB/IndexedDB.js";
+import { get_cookie } from "./cookie.js";
 import { ab2str } from "./RSA and IndexedDB/rsa_keygen.js";
 
 async function get_email_via_id() {
@@ -56,32 +57,28 @@ function checkKeyExistence(dbName, objectStoreName, keyToCheck) {
   });
 }
 
-async function decryptFile(file_data, user_email) {
-  console.log(typeof(file_data))
+async function decryptFile(file_data, file_name, user_email) {
   const file_data1 = ab2str(file_data.data);
   const delimiter = '|!|';
   const parts = file_data1.split(delimiter);
-  const key_part = parts[0];
-  console.log(key_part)
-  const key = atob(parts[0]);
-  const uint8Array = new Uint8Array(key.length);
-  for (let i = 0; i < key.length; i++) {
-    uint8Array[i] = key.charCodeAt(i);
+
+  const keyBase64 = atob(parts[0]);
+  const keyUint8Array = new Uint8Array(keyBase64.length);
+  for (let i = 0; i < keyBase64.length; i++) {
+    keyUint8Array[i] = keyBase64.charCodeAt(i);
   }
-
-  // Create a TextDecoder instance for UTF-8
-  const decoder = new TextDecoder('utf-8');
-
-  // Decode the UTF-8 bytes to a string
-  const decodedString = decoder.decode(uint8Array);
-  console.log(decodedString);
-
-
-
-  const encrypted_data = atob(parts[1]);
-  console.log(key)
-  console.log(typeof(key))
-  console.log(encrypted_data)
+  const keyDecoder = new TextDecoder('utf-8');
+  const decodedKeyString = keyDecoder.decode(keyUint8Array);
+  console.log(decodedKeyString);
+  
+  const encryptedDataBase64 = atob(parts[1]);
+  const encryptedDataUint8Array = new Uint8Array(encryptedDataBase64.length);
+  for (let i = 0; i < encryptedDataBase64.length; i++) {
+    encryptedDataUint8Array[i] = encryptedDataBase64.charCodeAt(i);
+  }
+  const encryptedBlob = new Blob([encryptedDataUint8Array], { type: "application/octet-stream" });
+  const encryptedFile = new File([encryptedBlob], file_name, { type: "application/octet-stream" });
+  console.log(encryptedFile)
 
   const key_from_indexed_db = await get_private_key(user_email)
   const private_key = key_from_indexed_db.privateKey
@@ -92,30 +89,59 @@ async function decryptFile(file_data, user_email) {
 
   const private_key_obj2 = await importPrivateKeyFromJWK(private_key_obj)
   console.log(private_key_obj2)
-     
+  
+  const formData = new FormData();
+
   try {
-    decryptDataWithPrivateKey(decodedString, private_key_obj2).then((result) => {
-        const rdata = arrayBufferToString(result);
-        console.log(rdata)
+    const result = await decryptDataWithPrivateKey(decodedKeyString, private_key_obj2)
+    const rdata = arrayBufferToString(result);
+    formData.append('hex', rdata)
+    console.log(rdata)
         // const outputDiv = document.getElementById('output2');
         // outputDiv.innerHTML = '<p id="fun2">' + rdata + '</p>';
-    });
   } catch (error) {
       console.error('Decryption error:', error);
   }
 
+  formData.append('files', encryptedFile);
   
+  const jwtToken = await get_cookie()
 
-  // formData.append('hex', rdata)
-  // formData.append('files', decodedResult);
+  const response2 = await fetch('http://localhost:5000/decrypt2', {
+    method: 'POST',
+    headers: {
+        'Authorization': `Bearer: ${jwtToken}`
+    },
+    body: formData,
+  });
 
-  // const response2 = await fetch('http://localhost:5000/decrypt2', {
-  //   method: 'POST',
-  //   headers: {
-  //       'Authorization': `Bearer: ${jwtToken}`
-  //   },
-  //   body: formData,
-  // });
+  if (response2.ok) {
+    const blob = await response2.blob();
+
+    var filename = "";
+    var disposition = response2.headers.get('Content-Disposition')
+    console.log(disposition)
+
+    if (disposition && disposition.indexOf('attachment') !== -1) {
+        var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+        var matches = filenameRegex.exec(disposition);
+
+        if (matches && matches[1]) {
+            filename = matches[1].replace(/['"]/g, '');
+        }
+    }
+
+    const objectUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.download = filename;
+    link.href = objectUrl;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(objectUrl);
+  } else {
+    alert('Decryption Failed')
+  }
 }
 
 async function displayFiles() {
@@ -171,7 +197,7 @@ async function displayFiles() {
       decryptButton.textContent = 'Decrypt File';
       decryptButton.addEventListener('click', function () {
         // Call your decryption function here
-        decryptFile(file_data, user_email);
+        decryptFile(file_data, file_name, user_email);
       });
       cellDecryptButton.appendChild(decryptButton);
 

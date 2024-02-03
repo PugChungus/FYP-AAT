@@ -31,9 +31,9 @@ export async function encryptDataWithPublicKey(data, key) {
     );
 }
 
-export function decryptDataWithPrivateKey(data, key) {
+export async function decryptDataWithPrivateKey(data, key) {
     data = stringToArrayBuffer(data);
-    return window.crypto.subtle.decrypt(
+    return await window.crypto.subtle.decrypt(
         {
             name: "RSA-OAEP",
             //label: Uint8Array([...]) //optional

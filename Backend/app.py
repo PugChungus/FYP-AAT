@@ -750,8 +750,9 @@ def decrypt_files2():
                 WideFileName = join_file_name.encode("utf-8").decode("latin-1")
                 # Set the Content-Disposition header to specify the filename
                 response = Response(decrypted_zip_data.getvalue(), content_type='application/octet-stream')
+                response.headers.add("Access-Control-Expose-Headers", "Content-Disposition")
                 response.headers['Content-Disposition'] = f'attachment; filename="{WideFileName}"'
-                return response
+                return response, 200
                 # return jsonify(decrypted_extension=file_extension)
             
             else:
@@ -777,8 +778,9 @@ def decrypt_files2():
                 WideFileName = file_with_original_extension.encode("utf-8").decode("latin-1")
                 # Set the Content-Disposition header to specify the filename
                 response = Response(file_data, content_type='application/octet-stream')
+                response.headers.add("Access-Control-Expose-Headers", "Content-Disposition")
                 response.headers['Content-Disposition'] = f'attachment; filename="{WideFileName}"'
-                return response
+                return response, 200
 
                 # return jsonify(decrypted_extension=file_extension)
 
