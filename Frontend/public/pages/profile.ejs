@@ -25,7 +25,7 @@
         </div>
     </section>
 
-    <script>
+    <script nonce="<%= nonce %>">
         document.addEventListener("DOMContentLoaded", function () {
             // Store the initial source page in session storage
             var currentPage = window.location.pathname;
@@ -35,23 +35,17 @@
 
     </script>
 
-    <script type="text/javascript">
+    <script type="text/javascript" nonce="<%= nonce %>">
         const module = {};
     </script>
 
-    <script type="module" src="../js/profile.js"></script>
-    <script src="../js/goback.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-    <script type="module"> 
+    <script type="module" src="../js/profile.js" nonce="<%= nonce %>"></script>
+    <script src="../js/goback.js" nonce="<%= nonce %>"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous" nonce="<%= nonce %>"></script>
+    <script type="module" nonce="<%= nonce %>"> 
             import * as QRCode from 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/+esm' 
     </script>
-    <script type="module">
-        import { showKeyRotationWarning } from '../js/RSA and IndexedDB/key_regen.js';
-        import { deleteAccount } from '../js/profile.js';
-
-        module.showKeyRotationWarning = showKeyRotationWarning 
-        module.deleteAccount = deleteAccount
-    </script>
+    <script type="module" src="../js/profile.js" nonce="<%= nonce %>"></script>
 
 </body>
 </html>

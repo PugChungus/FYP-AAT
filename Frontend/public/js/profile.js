@@ -1,6 +1,10 @@
 import { get_cookie } from "./cookie.js";
 import { deleteIndexDB } from "./RSA and IndexedDB/IndexedDB.js";
 import * as QRCode from 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/+esm'
+import { showKeyRotationWarning } from '../js/RSA and IndexedDB/key_regen.js';
+
+
+
 
 
 let id
@@ -97,8 +101,8 @@ document.addEventListener('DOMContentLoaded', async function () {
       </label>
       <span>Enable Two-Factor Authentication</span>
     </div>
-    <button type="button" class="btn btn-danger" id="rotationButton" onclick="module.showKeyRotationWarning()">Key Rotation</button>
-    <button type="button" class="btn btn-danger" id="deleteButton" onclick="module.deleteAccount()">Delete Account</button>
+    <button type="button" class="btn btn-danger" id="rotationButton" onclick="showKeyRotationWarning()">Key Rotation</button>
+    <button type="button" class="btn btn-danger" id="deleteButton" onclick="deleteAccount()">Delete Account</button>
   `;
 
   const imgElement = document.getElementById('profile-picture');
@@ -354,3 +358,14 @@ export async function deleteAccount() {
 
 }
 
+document.getElementById('rotationButton').addEventListener('click', function(event) {
+  event.preventDefault();
+  showKeyRotationWarning();
+  return false;
+});
+
+document.getElementById('deleteButton').addEventListener('click', function(event) {
+event.preventDefault();
+deleteAccount();
+return false;
+});

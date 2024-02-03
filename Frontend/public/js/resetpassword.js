@@ -43,7 +43,7 @@ export async function resetPassword() {
 
         console.log("WOAHHH:", data['message']);
         
-        if (data['message'] ===  "Username updated successfully") {
+        if (data['message'] ===  "Password updated successfully") {
             alert("Password Changed Succesfully. Redirecting to login page to login")
             window.location.href = '/'
         }
