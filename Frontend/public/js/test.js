@@ -77,8 +77,11 @@ async function encrypt() {
 
     const responseData = await response.json();
     const public_key = responseData.result[0][0]['public_key']
+    console.log(public_key)
     const public_key_obj = await importPublicKey(public_key);
+    console.log(public_key_obj)
     const result = await encryptDataWithPublicKey(shared_data, public_key_obj);
+    console.log(result)
     const rdata = arrayBufferToString(result);
     const outputDiv = document.getElementById('output');
     outputDiv.innerHTML = '<p id="fun">' + rdata + '</p>';
@@ -89,7 +92,6 @@ encrypt()
 
 async function decrypt() {
     const user_email = await get_email_via_id();
-    const checkKey = await checkKeyExistence(`${user_email}_db`, `${user_email}__Object_Store`, 'Private Key');
     const key_from_indexed_db = await get_private_key(user_email)
 
     const private_key = key_from_indexed_db.privateKey

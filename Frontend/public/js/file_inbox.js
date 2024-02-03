@@ -56,17 +56,28 @@ function checkKeyExistence(dbName, objectStoreName, keyToCheck) {
   });
 }
 
-function stringToArrayBuffer(str) {
-  const encoder = new TextEncoder('utf-8');
-  return encoder.encode(str).buffer;
-}
-
 async function decryptFile(file_data, user_email) {
-
+  console.log(typeof(file_data))
   const file_data1 = ab2str(file_data.data);
   const delimiter = '|!|';
   const parts = file_data1.split(delimiter);
+  const key_part = parts[0];
+  console.log(key_part)
   const key = atob(parts[0]);
+  const uint8Array = new Uint8Array(key.length);
+  for (let i = 0; i < key.length; i++) {
+    uint8Array[i] = key.charCodeAt(i);
+  }
+
+  // Create a TextDecoder instance for UTF-8
+  const decoder = new TextDecoder('utf-8');
+
+  // Decode the UTF-8 bytes to a string
+  const decodedString = decoder.decode(uint8Array);
+  console.log(decodedString);
+
+
+
   const encrypted_data = atob(parts[1]);
   console.log(key)
   console.log(typeof(key))
@@ -81,11 +92,18 @@ async function decryptFile(file_data, user_email) {
 
   const private_key_obj2 = await importPrivateKeyFromJWK(private_key_obj)
   console.log(private_key_obj2)
-  
-  decryptDataWithPrivateKey(key, private_key_obj2).then((result) => {
-    const rdata = arrayBufferToString(result);
-    console.log(rdata)
-  });
+     
+  try {
+    decryptDataWithPrivateKey(decodedString, private_key_obj2).then((result) => {
+        const rdata = arrayBufferToString(result);
+        console.log(rdata)
+        // const outputDiv = document.getElementById('output2');
+        // outputDiv.innerHTML = '<p id="fun2">' + rdata + '</p>';
+    });
+  } catch (error) {
+      console.error('Decryption error:', error);
+  }
+
   
 
   // formData.append('hex', rdata)

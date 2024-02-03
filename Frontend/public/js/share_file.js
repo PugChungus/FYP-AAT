@@ -169,6 +169,7 @@ export async function shareFile() {
                 const jsonString = sessionStorage.getItem(selectedKey);
                 const keyData = JSON.parse(jsonString);
                 const keyValue = keyData.keyValue; //DEK AES KEY
+                console.log(keyValue, typeof(keyValue))
                 const share_target_email = selectedUsers[selectedUserIndex]
                 console.log(keyValue)
                 console.log(share_target_email);
@@ -182,9 +183,12 @@ export async function shareFile() {
                 });
 
                 const responseData = await response.json();
-                const public_key = responseData.result[0][0]['public_key']
+                const public_key = responseData.result[0][0]['public_key'];
+                console.log(public_key)
                 const public_key_obj = await importPublicKey(public_key);
+                console.log(public_key_obj)
                 const result = await encryptDataWithPublicKey(keyValue, public_key_obj);
+                console.log(result)
                 const rdata = arrayBufferToString(result);
                 console.log(rdata)
                 console.log(typeof(rdata))
