@@ -330,7 +330,7 @@ export async function deleteAccount() {
       return
     }
 
-    const response2v = await fetch(`http://localhost:5000/email_disabletfa`, {
+    const response2v = await fetch(`http://localhost:5000/email_deletea`, {
       method: 'POST',
       headers : {
         'Content-Type' : 'application/json',

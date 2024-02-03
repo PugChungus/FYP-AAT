@@ -1,4 +1,4 @@
-import { deleteIndexDB } from "./RSA and IndexedDB/IndexedDB";
+import { deleteIndexDB } from "./RSA and IndexedDB/IndexedDB.js";
 
 async function validateThisTFA() {
     try {
@@ -26,7 +26,7 @@ async function validateThisTFA() {
 
             // Create a new element with a message
             const messageElement = document.createElement('div');
-            if (data.Validation === 'success') {
+            if (data.message === 'Account Deleted successfully') {
                 messageElement.innerHTML =
                     '<p style="color: green;">Two-Factor Authentication has been disabled. Redirecting to the login page...</p>';
                 deleteIndexDB(data.email)

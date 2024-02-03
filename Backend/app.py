@@ -2024,7 +2024,7 @@ def delete_account():
                         cursor.execute(sql, (email))
                     connection.commit()
 
-                    return jsonify({'message': 'Password updated successfully'})
+                    return jsonify({'message': 'Account Deleted successfully', 'email':email})
 
                 except Exception as e:
                         connection.rollback()
