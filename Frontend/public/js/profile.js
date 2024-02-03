@@ -45,7 +45,6 @@ async function verifyOTP(email, otp, secret) {
       body: formData,
     });
 
-    print("NATYYYAY:" ,response)
 
     if (response.ok) {
       const data = await response.json();
@@ -155,6 +154,8 @@ document.addEventListener('DOMContentLoaded', async function () {
             const cookie = await get_cookie();
 
             const jwtToken = await get_cookie();
+            console.log("cookie:",cookie)
+            console.log("jwttoken:", jwtToken)
 
             const qrResponse = await fetch('http://localhost:5000/generate_2fa_qr_code', {
                 method: 'POST',
@@ -314,6 +315,7 @@ export async function deleteAccount() {
 
     const formData = new FormData();
     formData.append('id', id)
+    console.log('Profile Delete Token:', jwtToken)
 
     const response1 = await fetch('http://localhost:3000/blacklist_token', {
       method: 'POST',
@@ -328,20 +330,19 @@ export async function deleteAccount() {
       return
     }
 
-    const response2 = await fetch('http://localhost:3000/delete_account', {
+    const response2v = await fetch(`http://localhost:5000/email_disabletfa`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer: ${jwtToken}`
+      headers : {
+        'Content-Type' : 'application/json',
       },
-      body: formData,
-    });
+      body : JSON.stringify({ email: email})
+    })
 
-    // For example, show an alert for demonstration purposes
-    if (response2.ok) {
-      deleteIndexDB(email)
-      window.alert('Account deleted successfully.');
-      window.location.href = 'http://localhost:3000';
-    } else {
+    const isEmailSent = await response2v.json()
+  
+    if (isEmailSent.message === 'Email sent successfully') {
+      alert('An Email has been sent to delete your account. Account will not be deleted until link in email is opened. ')
+    }else {
       window.alert('Account deletion failed.');
     }
 

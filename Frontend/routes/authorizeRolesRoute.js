@@ -11,7 +11,7 @@ export function authorizeRoles() {
                 return res.status(401).render('accessdenied');
             }
 
-            const isValid = await checkTokenValidity(`Bearer ${jwtToken}`);
+            const isValid = await checkTokenValidity(`Bearer: ${jwtToken}`);
 
             if (isValid) {
                 const decodedToken = jwt.verify(jwtToken, keys.secretJwtKey);
@@ -52,7 +52,7 @@ export async function checkTokenValidity(authorizationHeader) {
     // Extract the token from the Authorization header
     const [bearer, token] = headerString.split(' ');
 
-    if (bearer !== 'Bearer' || token == 'undefined') {
+    if (bearer !== 'Bearer:' || token == 'undefined') {
         // Invalid format, return false
         return false;
     }

@@ -49,7 +49,7 @@ tfaRouter.post('/disable2fa', async (req, res) => {
 tfaRouter.post('/enable2fa', async (req, res) => {
     try {
         const cookie_from_frontend =  req.headers.authorization
-        const isValid = checkTokenValidity(`Bearer ${cookie_from_frontend}`)
+        const isValid = checkTokenValidity(`Bearer: ${cookie_from_frontend}`)
        
         if (!isValid) {
             console.log("Error Validating Key")
