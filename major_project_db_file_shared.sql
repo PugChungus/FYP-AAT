@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.34, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.27, for Win64 (x86_64)
 --
--- Host: 127.0.0.1    Database: major_project_db
+-- Host: localhost    Database: major_project_db
 -- ------------------------------------------------------
--- Server version	8.0.35
+-- Server version	8.0.27
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -28,12 +28,13 @@ CREATE TABLE `file_shared` (
   `file_name` varchar(255) NOT NULL,
   `shared_by` int NOT NULL,
   `shared_to` int NOT NULL,
+  `date_shared` datetime NOT NULL,
   PRIMARY KEY (`share_id`),
   KEY `fkey_shared_by_idx` (`shared_by`),
   KEY `fkey_shared_to_idx` (`shared_to`),
   CONSTRAINT `fkey_shared_by` FOREIGN KEY (`shared_by`) REFERENCES `user_account` (`account_id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `fkey_shared_to` FOREIGN KEY (`shared_to`) REFERENCES `user_account` (`account_id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=78 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -54,4 +55,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-01-31 10:38:51
+-- Dump completed on 2024-02-04 15:06:52
