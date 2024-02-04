@@ -168,11 +168,11 @@ export async function login(event) {
           alert("Login Failed");
         }
       } else {
-        alert("Login Failed here  ");
+        alert("Login Failed");
       }
     }
 } else {
-      alert('You do not have an email registered with us.');
+      alert('Login Failed');
     }
   } catch (error) {
     console.error('Error during fetch:', error);

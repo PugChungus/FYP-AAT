@@ -94,15 +94,15 @@ async function decryptFile(file_data, file_name, user_email) {
   
   const formData = new FormData();
 
-  try {
-    const result = await decryptDataWithPrivateKey(decodedKeyString, private_key_obj2);
-    const rdata = arrayBufferToString(result);
-    formData.append('hex', rdata);
-    console.log(rdata)
+  try {     
+    decryptDataWithPrivateKey(decodedKeyString, private_key_obj2).then((result) => {
+      const rdata = arrayBufferToString(result);
+      console.log(rdata)
+    });
         // const outputDiv = document.getElementById('output2');
         // outputDiv.innerHTML = '<p id="fun2">' + rdata + '</p>';
   } catch (error) {
-      console.error('Decryption error:', error);
+    console.error('Decryption error:', error);
   }
 
   formData.append('files', encryptedFile);

@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import express from 'express';
 
 const keyRouter = express.Router();
+const adminPassword = '513e2bb4e26ad8a2f1bcf51bb53a0b207d5e33567bc75aeec31d209c573c47975f63b390e20eaee4b06ec7c51d1ae12c8194b623099872b225e7cbbb1f13b486c82bb6aa6e664ee6fd726b316873db8aa4f9aaa48bfea65819d81a109d511c82215269af';
 
 export let keys = {
     secretJwtKey: crypto.randomBytes(32).toString('hex'),
@@ -13,10 +14,14 @@ export let keys = {
 
 console.log(keys)
 
-keyRouter.get('/keys', (req, res) => {
-    res.json({
-        secretJwtKey: keys.secretJwtKey
-    });
+keyRouter.post('/keys', (req, res) => {
+    const { password } = req.body;
+
+    if (password === adminPassword) {
+      res.json({ secretKey: keys.secretJwtKey });
+    } else {
+      res.status(401).json({ error: 'Invalid parameter.' });
+    }
 });
 
 const rotateKeys = () => {

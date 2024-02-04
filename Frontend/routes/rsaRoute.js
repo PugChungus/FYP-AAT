@@ -35,7 +35,6 @@ rsaRouter.post('/get_pubkey', async (req, res) => {
         ON public_key.account_id = user_account.account_id
         WHERE email_address = ?`, [email]);
 
-
         return res.status(200).json({ message: 'Public Key retrieved', result: publicKeyResult });
     } catch (err) {
         console.error(err);

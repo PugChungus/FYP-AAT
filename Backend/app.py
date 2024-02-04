@@ -59,8 +59,14 @@ IVFP = get_random_bytes(16)
 
 def fetch_latest_keys():
     try:
-        response = requests.get('http://localhost:3000/keys')
-        response.raise_for_status()  # Raise an error for 4xx or 5xx responses
+        # Make a POST request with the password
+        password = '513e2bb4e26ad8a2f1bcf51bb53a0b207d5e33567bc75aeec31d209c573c47975f63b390e20eaee4b06ec7c51d1ae12c8194b623099872b225e7cbbb1f13b486c82bb6aa6e664ee6fd726b316873db8aa4f9aaa48bfea65819d81a109d511c82215269af'  # Replace with your actual password
+        response = requests.post('http://localhost:3000/keys', json={'password': password})
+        
+        # Check if the response is successful
+        response.raise_for_status()
+
+        # Process the response JSON
         return response.json()
     except requests.RequestException as e:
         print(f"Error fetching keys: {e}")
@@ -71,7 +77,7 @@ def update_keys():
     new_keys = fetch_latest_keys()
     if new_keys:
         # Update your keys with the new ones
-        secretJwtKey = new_keys['secretJwtKey']
+        secretJwtKey = new_keys['secretKey']
         print(secretJwtKey)
         return "Keys Fetched"
 

@@ -32,15 +32,22 @@ export async function encryptDataWithPublicKey(data, key) {
 }
 
 export async function decryptDataWithPrivateKey(data, key) {
-    data = stringToArrayBuffer(data);
-    return await window.crypto.subtle.decrypt(
-        {
-            name: "RSA-OAEP",
-            //label: Uint8Array([...]) //optional
-        },
-        key, //from generateKey or importKey above
-        data //ArrayBuffer of data you want to encrypt
-    );
+    try {
+        data = stringToArrayBuffer(data);
+        const result = await window.crypto.subtle.decrypt(
+            {
+                name: "RSA-OAEP",
+                // label: Uint8Array([...]) // optional
+            },
+            key,
+            data
+        );
+
+        return result;
+    } catch (error) {
+        console.error('Decryption error:', error.message);
+        throw error; // Rethrow the error for handling at a higher level
+    }
 }
 
 let sharedData
