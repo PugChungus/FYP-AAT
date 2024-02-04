@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 });
 
 function handleSignOut() {
-  fetch('http://localhost:3000/logout', {
+fetch('http://localhost:3000/logout', {
     method: 'GET',
   })
   .then(response => {
@@ -57,10 +57,9 @@ function clearInputBoxes() {
   document.getElementById('password-field').value = '';
 }
 
+const signOutIcon = document.getElementById('signOutIcon')
+
 signOutIcon.addEventListener('click', function() {
   handleSignOut();
 });
 
-signOutText.addEventListener('click', function() {
-  handleSignOut();
-});
