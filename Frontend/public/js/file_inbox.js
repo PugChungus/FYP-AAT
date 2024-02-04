@@ -95,9 +95,9 @@ async function decryptFile(file_data, file_name, user_email) {
   const formData = new FormData();
 
   try {
-    const result = await decryptDataWithPrivateKey(decodedKeyString, private_key_obj2)
+    const result = await decryptDataWithPrivateKey(decodedKeyString, private_key_obj2);
     const rdata = arrayBufferToString(result);
-    formData.append('hex', rdata)
+    formData.append('hex', rdata);
     console.log(rdata)
         // const outputDiv = document.getElementById('output2');
         // outputDiv.innerHTML = '<p id="fun2">' + rdata + '</p>';
