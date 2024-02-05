@@ -28,6 +28,10 @@
     margin-bottom: 10px;
 }
 
+.file-drop-area:-moz-drag-over {
+    background-color: silver;
+}
+
 .button-container {
     display: flex;
     flex-direction: column;
@@ -76,7 +80,7 @@
 
 .file-entry-container {
     margin-bottom: 10px; /* Add margin between file entries */
-    border: 2px solid silver; /* Add border property */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Add box shadow property */
     border-radius: 5px;
     padding: 10px;
 }
@@ -175,4 +179,10 @@
 
 .download-container {
     display: none;
+}
+
+.file-drop-area.drag-over {
+    background-color: #d4edda; /* Set the background color when dragging over */
+    border-color: #c3e6cb; /* Set the border color when dragging over */
+    color: #155724; /* Set the text color when dragging over */
 }

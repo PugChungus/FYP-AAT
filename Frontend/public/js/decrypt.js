@@ -279,7 +279,7 @@ async function decrypt(file, i) {
 
             formData2.append('files', file);
             formData2.append('key_name', keyName);
-            formData2.append('type', 'decryption')
+            formData2.append('type', 'Decryption')
             formData2.append('id', id)
 
             const jwtToken = await get_cookie()
@@ -555,26 +555,13 @@ async function uploadtoOneDrive (type,name){
             const headers = new Headers();
             headers.append('Authorization', 'Bearer: ' + accesstoken);
 
-            // Construct the request body
-            console.log(files)
-            const formData = new FormData();
-            formData.append('metadata', new Blob([JSON.stringify({ name: fileNameWithEnc })], { type: 'application/json' }));
-            formData.append('file', blob);
+            // Step 1: Create Upload Session
+            const uploadUrl = await createUploadSession(accesstoken, fileNameWithEnc);
+            console.log(uploadUrl)
+            // Step 2: Upload File to Session
+            const uploadResult = await uploadFileInChunks(uploadUrl, blobe);
 
-            console.log(formData)
-            // Make the POST request
-            fetch(OneDriveAPI, {
-                method: 'POST',
-                headers,
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Files uploaded successfully:', data);
-            })
-            .catch(error => {
-                console.error('Error uploading file:', error);
-            });
+            console.log('Upload result:', uploadResult);
         }
     } else {
         
@@ -618,7 +605,71 @@ async function uploadtoOneDrive (type,name){
 }
 }
        
+async function createUploadSession(accesstoken, fileNameWithEnc) {
+    
+    const url = `https://graph.microsoft.com/v1.0/me/drive/root:/${fileNameWithEnc}:/createUploadSession`;
+    const options = {
+      method: 'POST',
+      headers: {
+        'Authorization': accesstoken,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        "item": {
+          "@microsoft.graph.conflictBehavior": "rename", // or "replace" or "fail"
+          "name": fileNameWithEnc
+        },
+        // Add additional options here if necessary
+      })
+    };
+  
+    try {
+      const response = await fetch(url, options);
+      const data = await response.json();
+      return data.uploadUrl;
+    } catch (error) {
+      console.error('Error creating upload session:', error);
+      throw error;
+    }
+  };
 
+
+
+
+async function uploadFileInChunks(uploadUrl, fileBlob) {
+const CHUNK_SIZE = 25 * 1024 * 1024; // 320 KiB in bytes
+const fileSize = fileBlob.size;
+let start = 0;
+
+while (start < fileSize) {
+    const end = Math.min(start + CHUNK_SIZE, fileSize);
+    const chunk = fileBlob.slice(start, end); // Create a slice of the file for this chunk
+    const contentRange = `bytes ${start}-${end - 1}/${fileSize}`;
+
+    const headers = {
+        'Content-Length': `${chunk.size}`,
+        'Content-Range': contentRange
+    };
+
+    // Attempt to upload the chunk
+    const response = await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: headers,
+        body: chunk
+    });
+
+    if (!response.ok) {
+        // Handle errors or retry as necessary
+        throw new Error('Failed to upload chunk');
+    }
+
+    // Prepare for the next chunk
+    start = end;
+}
+
+// Optionally, handle the final response or confirmation as needed
+return { success: true, message: 'File uploaded in chunks successfully' };
+}
 
 }
 document.getElementById('decryptButton').addEventListener('click', uploadFilez);

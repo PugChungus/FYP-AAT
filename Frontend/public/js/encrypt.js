@@ -57,6 +57,9 @@ export function handleDragOver(event) {
     event.preventDefault();
 }
 
+document.getElementById('drop-area').addEventListener('dragover', handleDragOver)
+document.getElementById('drop-area').addEventListener('drop', handleDrop)
+
 
 document.getElementById('encryptButton').addEventListener('click', function() {
    uploadFiles();
@@ -145,7 +148,7 @@ async function encrypt(file, i) {
 
             formData2.append('files', file);
             formData2.append('key_name', keyName);
-            formData2.append('type', 'encryption')
+            formData2.append('type', 'Encryption')
             formData2.append('id', id)
 
             console.log("Checking for this bs:", jwtToken)
@@ -556,7 +559,7 @@ async function uploadtoOneDrive (type,name){
             const uploadUrl = await createUploadSession(accesstoken, fileNameWithEnc);
             console.log(uploadUrl)
             // Step 2: Upload File to Session
-            const uploadResult = await uploadFileToSession(uploadUrl, blobe);
+            const uploadResult = await uploadFileInChunks(uploadUrl, blobe);
 
             console.log('Upload result:', uploadResult);
 
@@ -655,20 +658,41 @@ async function createUploadSession(accesstoken, fileNameWithEnc) {
 
 
 
-async function uploadFileToSession(uploadUrl, fileBlob) {
-    const headers = {
-        'Content-Length': `${fileBlob.size}`, // Set the size of the file
-        'Content-Range': `bytes 0-${fileBlob.size - 1}/${fileBlob.size}` // The range of bytes you're uploading
-    };
 
-    const response = await fetch(uploadUrl, {
-        method: 'PUT',
-        headers: headers,
-        body: fileBlob // The actual file blob
-    });
-    return response.json(); // Response from the upload session
+async function uploadFileInChunks(uploadUrl, fileBlob) {
+    const CHUNK_SIZE = 25 * 1024 * 1024; // 320 KiB in bytes
+    const fileSize = fileBlob.size;
+    let start = 0;
+
+    while (start < fileSize) {
+        const end = Math.min(start + CHUNK_SIZE, fileSize);
+        const chunk = fileBlob.slice(start, end); // Create a slice of the file for this chunk
+        const contentRange = `bytes ${start}-${end - 1}/${fileSize}`;
+
+        const headers = {
+            'Content-Length': `${chunk.size}`,
+            'Content-Range': contentRange
+        };
+
+        // Attempt to upload the chunk
+        const response = await fetch(uploadUrl, {
+            method: 'PUT',
+            headers: headers,
+            body: chunk
+        });
+
+        if (!response.ok) {
+            // Handle errors or retry as necessary
+            throw new Error('Failed to upload chunk');
+        }
+
+        // Prepare for the next chunk
+        start = end;
+    }
+
+    // Optionally, handle the final response or confirmation as needed
+    return { success: true, message: 'File uploaded in chunks successfully' };
 }
-
 
 
 // OneDrive MSAL Documentation -->https://learn.microsoft.com/en-us/javascript/api/@azure/msal-browser/browsercachemanager?view=msal-js-latest
