@@ -6,3 +6,51 @@
 #header {
     margin-bottom: 10px;
 }
+
+.flex-container {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+.keydiv,
+.historydiv,
+.fileinboxdiv {
+    flex: 1;
+    margin: 10px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease-in-out;
+    font-size: 20px;
+}
+
+.keydiv:hover,
+.historydiv:hover,
+.fileinboxdiv:hover {
+    transform: scale(1.05);
+}
+
+.keyheader,
+.historyheader,
+.fileinboxheader {
+    transition: transform 0.3s ease-in-out;
+}
+
+.keyheader:hover,
+.historyheader:hover,
+.fileinboxheader:hover {
+    background-color: rgb(198, 194, 194);
+    border-radius: 5px;
+
+}
+
+@media only screen and (max-width: 768px) {
+    .keydiv,
+    .historydiv,
+    .fileinboxdiv {
+        flex: 1 100%;
+    }
+}
