@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.34, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.27, for Win64 (x86_64)
 --
--- Host: 127.0.0.1    Database: major_project_db
+-- Host: localhost    Database: major_project_db
 -- ------------------------------------------------------
--- Server version	8.0.35
+-- Server version	8.0.27
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -37,7 +37,7 @@ CREATE TABLE `history` (
   KEY `account_id_idx` (`account_id`),
   KEY `fkey_account_id` (`account_id`),
   CONSTRAINT `fkey_account_id` FOREIGN KEY (`account_id`) REFERENCES `user_account` (`account_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=62 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=229 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -46,6 +46,7 @@ CREATE TABLE `history` (
 
 LOCK TABLES `history` WRITE;
 /*!40000 ALTER TABLE `history` DISABLE KEYS */;
+INSERT INTO `history` VALUES (222,'2024-02-04 10:28:58','Major Project Plan.docx','320.82 KB',148,'encryption','w'),(223,'2024-02-04 10:30:35','Major Project Plan.docx','320.82 KB',148,'encryption','w'),(224,'2024-02-05 02:41:32','Major Project Plan.docx','324.98 KB',148,'encryption','w'),(225,'2024-02-05 03:09:46','Major Project Plan.docx','324.98 KB',148,'encryption','w'),(226,'2024-02-05 03:13:11','Major Project Plan.docx','324.98 KB',148,'encryption','w'),(227,'2024-02-05 03:18:12','Major Project Plan.docx','324.98 KB',148,'encryption','w'),(228,'2024-02-05 03:25:23','Major Project Plan.docx','324.98 KB',148,'encryption','w');
 /*!40000 ALTER TABLE `history` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -58,4 +59,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-01-31 10:38:51
+-- Dump completed on 2024-02-05 11:31:44
