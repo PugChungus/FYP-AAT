@@ -57,6 +57,9 @@ export function handleDragOver(event) {
     event.preventDefault();
 }
 
+document.getElementById('drop-area').addEventListener('dragover', handleDragOver)
+document.getElementById('drop-area').addEventListener('drop', handleDrop)
+
 
 document.getElementById('encryptButton').addEventListener('click', function() {
    uploadFiles();
