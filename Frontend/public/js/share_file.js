@@ -57,6 +57,10 @@ async function executeSQLQuery(userInput) {
                 imgElement.src = objectURL;
                 imgElement.classList.add('user-avatar');
 
+                imgElement.style.maxHeight = '200px'; // Change the value as needed
+                imgElement.style.maxWidth = '200px'; // Change the value as needed
+
+
                 // Create username element
                 const usernameElement = document.createElement('span');
                 usernameElement.textContent = username;
@@ -150,9 +154,9 @@ async function executeSQLQuery(userInput) {
 //     const padLength = paddedData.charCodeAt(paddedData.length - 1);
 //     return paddedData.slice(0, -padLength);
 // }
-document.getElementById('confirmShare').addEventListener('click',shareFile);
-export async function shareFile() {
 
+export async function shareFile(type) {
+    console.log(type)
     // encrypt the key using frontend rsa after that we will get the encrypted key using rsa
     // make a post request to a new python route that will have the encrypted key formdata
     // it will append the encrypted key from the formdata to the start of the file
@@ -214,29 +218,56 @@ export async function shareFile() {
 
                     const share_by_email = await get_email_via_id()
                     formData.append('email2', share_by_email)
-        
-                    const filename = files[fileIndex].name;
-        
-                    const numberOfDots = (filename.match(/\./g) || []).length;
-        
-                    if (numberOfDots === 1 || numberOfDots > 1) {
-                        fileNameWithoutExtension = filename.split('.').slice(0, -1).join('.');
+
+                    if (type == 'individual') {
+
+                        const filename = files[fileIndex].name;
+            
+                        const numberOfDots = (filename.match(/\./g) || []).length;
+            
+                        if (numberOfDots === 1 || numberOfDots > 1) {
+                            fileNameWithoutExtension = filename.split('.').slice(0, -1).join('.');
+                        } else {
+                            fileNameWithoutExtension = filename;
+                        }
+            
+                        const fileNameWithEnc = `${fileNameWithoutExtension}.enc`;
+
+                        const response2 = await fetch(`http://localhost:5000/send_file/${fileNameWithEnc}`, {
+                            method: 'POST',
+                            headers : {
+                                'Authorization' : `Bearer: ${jwtToken}`
+                            },
+                            body: formData,
+                        });
+
+                        if (response2.ok) {
+                            alert(`File ${fileNameWithEnc} successfully shared with ${share_target_email}.`)
+                        }
+                    } else if (type == 'zip') {
+                        const filename = 'encrypted.zip';
+                        const zipFolderName = window.prompt('Enter the name for the zip folder (without extension)');
+                        if (zipFolderName) {
+                            formData.append('zip_name', `${zipFolderName}.zip`);
+
+                            const response2 = await fetch(`http://localhost:5000/send_zip/${filename}`, {
+                                method: 'POST',
+                                headers : {
+                                    'Authorization' : `Bearer: ${jwtToken}`
+                                },
+                                body: formData,
+                            });
+
+                            if (response2.ok) {
+                                alert(`File ${zipFolderName}.zip successfully shared with ${share_target_email}.`)
+                            }
+    
+                        } else {
+                            alert('Please name the zip file for sharing.')
+                        }
+
                     } else {
-                        fileNameWithoutExtension = filename;
-                    }
-        
-                    const fileNameWithEnc = `${fileNameWithoutExtension}.enc`;
-
-                    const response2 = await fetch(`http://localhost:5000/send_file/${fileNameWithEnc}`, {
-                        method: 'POST',
-                        headers : {
-                            'Authorization' : `Bearer: ${jwtToken}`
-                        },
-                        body: formData,
-                    });
-
-                    if (response2.ok) {
-                        alert(`File ${fileNameWithEnc} successfully shared with ${share_target_email}.`)
+                        alert('Selection not in range.')
                     }
                 } else {
                     alert(`User: ${share_target_email} public key does not exist.`)
@@ -279,6 +310,11 @@ export async function showModal() {
         }
     });
 
+    document.getElementById('confirmShare').addEventListener('click', async function() {
+        await shareFile('individual');
+        window.location.href = "http://localhost:3000/encrypt"
+    });
+    
     // Append the selectedUsersContainer to the body
     // document.body.appendChild(selectedUsersContainer);
 }
@@ -288,6 +324,7 @@ export async function showModalMul() {
 
     modal.style.display = 'block'; // Show the modal
 
+    const confirmShareButton = document.getElementById('confirmShare');
     const closeModal = document.getElementById('closeModal');
     const userNameInput = document.getElementById('userNameInput');
     const standaloneRadio = document.getElementById('standaloneRadio');
@@ -317,6 +354,25 @@ export async function showModalMul() {
     zipRadio.addEventListener('change', () => {
         // Handle zip option selected
         console.log('Zip selected');
+    });
+
+    confirmShareButton.addEventListener('click', async function() {
+        // Check which radio button is selected
+        if (standaloneRadio.checked) {
+            console.log('Standalone option selected');
+            await shareFile('individual');
+            window.location.href = "http://localhost:3000/encrypt"
+            // Add your logic for standalone option
+        } else if (zipRadio.checked) {
+            console.log('Zip option selected');
+            await shareFile('zip');
+            window.location.href = "http://localhost:3000/encrypt"
+            // Add your logic for zip option
+        } else {
+            alert('No option selected.')
+        }
+
+        // Continue with the rest of your logic or form submission
     });
 
     // Append the selectedUsersContainer to the body

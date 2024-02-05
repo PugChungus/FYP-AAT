@@ -1014,6 +1014,81 @@ def send_file_to_user(filename):
 
     return 'File shared successfully.', 200
 
+@app.route('/send_zip/<filename>', methods=['POST'])
+def send_zip_file_to_user(filename):
+    authorization_header = request.headers.get('Authorization')
+    print("Send User Authorizataion: ", authorization_header)
+
+    if authorization_header is None:
+        return "Token is Invalid"
+        
+    isValid = check_token_validity(authorization_header)
+    if not isValid:
+        print('Invalid Token.')
+        return "Invalid Token."
+    else:
+        print('Valid Token')
+
+    print(filename, 'file')
+
+    # Assuming encrypted_data_dict is a global dictionary
+    for key, value in encrypted_data_dict.items():
+        print(key, 'key')
+
+    key_base64 = request.form.get('key')
+    shared_to_email = request.form.get('email')
+    shared_by_email = request.form.get('email2')
+
+    print(key_base64)
+
+    if not key_base64 or not shared_to_email or not shared_by_email:
+        abort(400, 'Invalid request data')
+
+    encrypted_zip_data = BytesIO()
+
+    with zipfile.ZipFile(encrypted_zip_data, 'w', zipfile.ZIP_STORED, allowZip64=True) as zipf:
+        for encrypted_filename, encrypted_data in encrypted_data_dict.items():
+            # Add the encrypted data to the ZIP archive with the encrypted filename
+            print(encrypted_filename, file=sys.stderr)
+            zipf.writestr(encrypted_filename, encrypted_data)
+            
+    zip_filename = f'encrypted.zip'
+
+    encrypted_zip_data.seek(0)
+    encrypted_data_dict[zip_filename] = encrypted_zip_data.getvalue()
+    encrypted_zip_data.seek(0)
+    encrypted_zip_data.truncate(0)
+
+    for keys, value in encrypted_data_dict.items():
+        print(keys, file=sys.stderr)
+    encrypted_data = encrypted_data_dict.get(filename, None)
+
+    if encrypted_data is None:
+        return 'File not found', 404
+    
+    delimiter = '|!|'
+    encrypted_data_base64 = base64.b64encode(encrypted_data).decode('utf-8')
+
+    concat = key_base64 + delimiter + encrypted_data_base64
+    file_name =  request.form.get('zip_name')
+
+    connection = pool.connection()
+    try:
+        with connection.cursor() as cursor:
+            sql = """INSERT INTO file_shared (file, file_name, date_shared, shared_by, shared_to)
+                    VALUES (%s, %s, now(),
+                            (SELECT ua1.account_id FROM user_account ua1 WHERE ua1.email_address = %s),
+                            (SELECT ua2.account_id FROM user_account ua2 WHERE ua2.email_address = %s))"""
+            cursor.execute(sql, (concat, file_name, shared_by_email, shared_to_email))
+        connection.commit()
+    except Exception as e:
+        print(f"Error inserting into database: {e}", file=sys.stderr)
+        return 'Internal Server Error', 500
+    finally:
+        connection.close()
+
+    return 'File shared successfully.', 200
+
 @app.route('/download_single_encrypted_file/<filename>', methods=['GET'])
 def download_single_encrypted_file(filename):
     print(filename, file=sys.stderr)
