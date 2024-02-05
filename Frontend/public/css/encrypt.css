@@ -172,3 +172,7 @@
     margin-right: 5px; /* Add spacing between the icon and text */
     margin-top: 6px;
 }
+
+.download-container {
+    display: none;
+}

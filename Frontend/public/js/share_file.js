@@ -229,6 +229,9 @@ export async function shareFile() {
 
                     const response2 = await fetch(`http://localhost:5000/send_file/${fileNameWithEnc}`, {
                         method: 'POST',
+                        headers : {
+                            'Authorization' : `Bearer: ${jwtToken}`
+                        },
                         body: formData,
                     });
 

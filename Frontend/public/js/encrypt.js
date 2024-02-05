@@ -263,28 +263,15 @@ keyDropdown.addEventListener('change', function () {
 });
 
 
+let downloadButton;
 
 async function hideDropZoneAndFileDetails() {
     const dropZone = document.querySelector('.drag-zone-container');
     const fileDetails = document.querySelector('.file-details-container');
     const dropZoneEncasement = document.querySelector('.encasement-container');
     const encryptButton = document.getElementById('encryptButton');
-    const downloadButton = document.createElement('button');
-    const shareButton = document.createElement('button');
-    const googleupload = document.createElement('button');
-    const onedriveupload = document.createElement('button');
+    const downloadContainer = document.querySelector('.download-container');
 
-    shareButton.id = 'shareButton';
-    shareButton.textContent = 'Share File';
-
-    downloadButton.id = 'downloadButton';
-    downloadButton.textContent = 'Download Encrypted Files';
-
-    googleupload.id = 'uploadgoogleButton';
-    googleupload.textContent = 'Upload To GoogleDrive';
-
-    onedriveupload.id = 'onedrivebutton';
-    onedriveupload.textContent = 'Upload To OneDrive';
 
     // Append the download button to the document or display it wherever needed
     // document.body.appendChild(downloadButton);
@@ -295,13 +282,15 @@ async function hideDropZoneAndFileDetails() {
     fileDetails.style.display = 'none';
     encryptButton.style.display = 'none';
     dropZoneEncasement.style.display = 'none';
+    downloadContainer.style.display = 'block'
+    const googlebutton = document.getElementById('uploadgoogleButton')
+    const onedrivebutton = document.getElementById('UploadToOneDrive')
+    const downloadButton = document.getElementById('downloadButton');
+    const shareButton = document.getElementById('shareButton');
 
     if (selectedFiles.files.length >= 2) {
         // Create a card div for file download options
-        const cardDiv = document.createElement('div');
-        cardDiv.id = 'downloadCard';
         // Create Google Button
-        const googlebutton = document.createElement('button');
         googlebutton.textContent ="Download Zip to google";
         googlebutton.addEventListener('click', async () => {
             const googleFolderName = window.prompt('Enter the name for the zip folder (without extension)');
@@ -310,7 +299,6 @@ async function hideDropZoneAndFileDetails() {
             }
         })
         //Create One Drive
-        const onedrivebutton = document.createElement('button');
         onedrivebutton.textContent ="Download Zip to onedrive";
         onedrivebutton.addEventListener('click', async () => {
             const onedriveFolderName = window.prompt('Enter the name for the zip folder (without extension)');
@@ -329,8 +317,8 @@ async function hideDropZoneAndFileDetails() {
                 fileDetails.style.display = 'block';
                 encryptButton.style.display = 'block';
                 dropZoneEncasement.style.display = 'block';
-                googleupload.style.display = 'none';
-                onedriveupload.style.display = 'none';
+                googlebutton.style.display = 'none';
+                onedrivebutton.style.display = 'none';
                 downloadButton.style.display = 'none';
                 selectedFiles.files = []
                 var div = document.getElementById("file-details-container");
@@ -347,8 +335,8 @@ async function hideDropZoneAndFileDetails() {
             fileDetails.style.display = 'block';
             encryptButton.style.display = 'block';
             dropZoneEncasement.style.display = 'block';
-            googleupload.style.display = 'none';
-            onedriveupload.style.display = 'none';
+            googlebutton.style.display = 'none';
+            onedrivebutton.style.display = 'none';
             downloadButton.style.display = 'none';
             selectedFiles.files = []
             var div = document.getElementById("file-details-container");
@@ -374,16 +362,6 @@ async function hideDropZoneAndFileDetails() {
         })
 
 
-        // Append buttons to the card div
-        cardDiv.appendChild(googlebutton)
-        cardDiv.appendChild(onedrivebutton)
-        cardDiv.appendChild(zipButton);
-        cardDiv.appendChild(individualButton);
-        cardDiv.appendChild(individualGoogle);
-        cardDiv.appendChild(individualOnedrive);
-        cardDiv.appendChild(shareFiles);
-
-
 
         // Append the card div to the document or display it wherever needed
         document.body.appendChild(cardDiv);
@@ -403,36 +381,35 @@ async function hideDropZoneAndFileDetails() {
             fileDetails.style.display = 'block';
             encryptButton.style.display = 'block';
             dropZoneEncasement.style.display = 'block';
-            googleupload.style.display = 'none';
-            onedriveupload.style.display = 'none';
+            googlebutton.style.display = 'none';
+            onedrivebutton.style.display = 'none';
             downloadButton.style.display = 'none';
+            shareButton.style.display = 'none';
             selectedFiles.files = []
             var div = document.getElementById("file-details-container");
             div.innerHTML = "";
             seen.clear();
+            downloadContainer.style.display = 'block'
         });
 
-        googleupload.style.display = 'block';
-        googleupload.textContent = 'Upload File To Google';  // Reuse the existing variable
+        googlebutton.style.display = 'block';
+        googlebutton.textContent = 'Upload File To Google';  // Reuse the existing variable
         
         // Add click event listener to the download button
-        googleupload.addEventListener('click', async () => {
+        googlebutton.addEventListener('click', async () => {
             uploadtoGoogle('individual');
         });
         
         
-        onedriveupload.style.display = 'block';
-        onedriveupload.textContent = 'Upload File to OneDrive';  // Reuse the existing variable
+        onedrivebutton.style.display = 'block';
+        onedrivebutton.textContent = 'Upload File to OneDrive';  // Reuse the existing variable
         
         // Add click event listener to the download button
-        onedriveupload.addEventListener('click', async () => {
+        onedrivebutton.addEventListener('click', async () => {
             uploadtoOneDrive('individual');
         });
         // Append the download button to the document or display it wherever needed
-        document.body.appendChild(downloadButton);
-        document.body.appendChild(shareButton);
-        document.body.appendChild(googleupload);
-        document.body.appendChild(onedriveupload);
+
     }
 }
 
