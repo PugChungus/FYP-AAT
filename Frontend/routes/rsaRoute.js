@@ -1,15 +1,18 @@
 import express, { Router } from 'express';
 import { pool } from '../db-connection.js';
 import e from 'express';
+import { checkTokenValidity } from './authorizeRolesRoute.js';
 
 const rsaRouter = express.Router();
 
 rsaRouter.post('/get_shared_files', async (req, res) => {
     try {
         const id = req.body.id;
-
-        // Now, you have the account_id, and you can use it in the next INSERT statement
-        const file_rows = await pool.execute(`
+        const cookie_from_frontend = req.headers.authorization
+        const isValid = await checkTokenValidity(cookie_from_frontend)
+        if (isValid === true) {
+            console.log('Valid token');
+            const file_rows = await pool.execute(`
             SELECT file_shared.*, user_account.email_address AS shared_by_email
             FROM file_shared
             INNER JOIN user_account ON file_shared.shared_by = user_account.account_id
@@ -18,6 +21,10 @@ rsaRouter.post('/get_shared_files', async (req, res) => {
         `, [id]);
 
         return res.status(200).json({ message: 'Shared files retrieved', file_rows });
+        } else {
+            return res.status(401).json({ error: 'Invalid Token' });
+        }
+
     } catch (err) {
         console.error(err);
         return res.status(500).json({ error: 'Internal Server Error' });
@@ -25,25 +32,37 @@ rsaRouter.post('/get_shared_files', async (req, res) => {
 });
 
 rsaRouter.post('/get_pubkey', async (req, res) => {
-    try {
-        const email = req.body.email;
 
-        // Now, you have the account_id, and you can use it in the next INSERT statement
-        const publicKeyResult = await pool.execute(`SELECT public_key
-        FROM public_key
-        INNER JOIN user_account
-        ON public_key.account_id = user_account.account_id
-        WHERE email_address = ?`, [email]);
+    const cookie_from_frontend = req.headers.authorization
+    const isValid = await checkTokenValidity(cookie_from_frontend)
 
-        if (publicKeyResult[0].length === 0) {
-            return res.status(404).json({ error: 'Public Key not found for the provided email' });
+    if (isValid === true) {
+        console.log('Valid token');
+        try {
+            const email = req.body.email;
+    
+            // Now, you have the account_id, and you can use it in the next INSERT statement
+            const publicKeyResult = await pool.execute(`SELECT public_key
+            FROM public_key
+            INNER JOIN user_account
+            ON public_key.account_id = user_account.account_id
+            WHERE email_address = ?`, [email]);
+
+            
+            if (publicKeyResult[0].length === 0) {
+                return res.status(404).json({ error: 'Public Key not found for the provided email' });
+            }
+
+    
+            return res.status(200).json({ message: 'Public Key retrieved', result: publicKeyResult });
+        } catch (err) {
+            console.error(err);
+            return res.status(500).json({ error: 'Internal Server Error' });
         }
-
-        return res.status(200).json({ message: 'Public Key retrieved', result: publicKeyResult });
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({ error: 'Internal Server Error' });
+    } else {
+        return res.status(401).json({ error: 'Invalid Token' });
     }
+
 })
 
 

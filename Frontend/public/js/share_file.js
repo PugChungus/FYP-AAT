@@ -2,6 +2,7 @@ import { selectedKey } from "./encrypt.js";
 import { importPublicKey, encryptDataWithPublicKey, arrayBufferToString } from "./RSA and IndexedDB/rsa.js";
 import { selectedFiles } from "./virustotal.js";
 import { get_email_via_id } from "./profile.js";
+import { get_cookie } from "./cookie.js";
 
 let selectedUsers = [];
 let previouslySelectedUsers = [];
@@ -12,10 +13,14 @@ let previouslySelectedUsers = [];
 async function executeSQLQuery(userInput) {
     const formData = new FormData();
     formData.append('search', userInput);
+    const jwtToken = await get_cookie()
 
     try {
         const response = await fetch('http://localhost:3000/search_users', {
             method: 'POST',
+            headers: {
+                'Authorization': `Bearer: ${jwtToken}`,
+                },
             body: formData,
         });
 
@@ -176,9 +181,13 @@ export async function shareFile() {
 
                 const formData = new FormData();
                 formData.append('email', share_target_email);
+                const jwtToken = await get_cookie()
                 
                 const response = await fetch('http://localhost:3000/get_pubkey', {
                     method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer: ${jwtToken}`,
+                        },
                     body: formData,
                 });
                 
@@ -227,6 +236,20 @@ export async function shareFile() {
                     }
                 } else {
                     alert(`User: ${share_target_email} public key does not exist.`)
+                }
+    
+                const fileNameWithEnc = `${fileNameWithoutExtension}.enc`;
+
+                const response2 = await fetch(`http://localhost:5000/send_file/${fileNameWithEnc}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer: ${jwtToken}`,
+                        },
+                    body: formData,
+                });
+
+                if (response2.ok) {
+                    alert(`File ${fileNameWithEnc} successfully shared with ${share_target_email}.`)
                 }
             }
         }

@@ -230,6 +230,7 @@ async function decrypt(file, i) {
     const formData = new FormData();
 
     if (selectedKey.length === 0) {
+        console.log(selectedKey)
         alert('  Selected')
         return false; // Return false indicating decryption failure
     }
@@ -460,7 +461,7 @@ async function uploadtoGoogle (type,name){
         const accessToken = await getGoogleToken();
         console.log(accessToken)
         const headers = new Headers({
-            'Authorization': `Bearer ${accessToken}`,
+            'Authorization': `Bearer: ${accessToken}`,
             'Content-Type': 'application/octet-stream', // Set content type to binary
         });
         
@@ -493,7 +494,7 @@ async function uploadtoGoogle (type,name){
         const updateResponse = await fetch(updateFilenameAPI, {
             method: 'PATCH',
             headers: {
-                'Authorization': `Bearer ${accessToken}`,
+                'Authorization': `Bearer: ${accessToken}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(updateFilenameData),
@@ -552,7 +553,7 @@ async function uploadtoOneDrive (type,name){
             const blob = await fetch(backendurl).then(response => response.blob());
         
             const headers = new Headers();
-            headers.append('Authorization', 'Bearer ' + accesstoken);
+            headers.append('Authorization', 'Bearer: ' + accesstoken);
 
             // Construct the request body
             console.log(files)
@@ -563,7 +564,7 @@ async function uploadtoOneDrive (type,name){
             console.log(formData)
             // Make the POST request
             fetch(OneDriveAPI, {
-                method: 'PUT',
+                method: 'POST',
                 headers,
                 body: formData
             })
@@ -589,7 +590,7 @@ async function uploadtoOneDrive (type,name){
         const accessToken = await getTokenForRequest();
         console.log(accessToken)
         const headers = new Headers({
-            'Authorization': `Bearer ${accessToken}`,
+            'Authorization': `Bearer: ${accessToken}`,
             'Content-Type': 'application/octet-stream', // Set content type to binary
         });
         console.log(headers)

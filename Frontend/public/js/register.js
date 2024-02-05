@@ -25,19 +25,19 @@ async function checkUsername() {
     });
 
     // Check if the request was successful (status code 200)
-    if (response.ok) {
-      const data = await response.json();
-      if (data.exists) {
-        // Username already exists
-        alert('Username already exists');
-      } else {
-        // Username is available
-        alert('Username is available');
-      }
-    } else {
-      // Handle non-successful status codes
-      alert('Failed to check username');
-    }
+    // if (response.ok) {
+    //   const data = await response.json();
+    //   if (data.exists) {
+    //     // Username already exists
+    //     alert('Username already exists');
+    //   } else {
+    //     // Username is available
+    //     alert('Username is available');
+    //   }
+    // } else {
+    //   // Handle non-successful status codes
+    //   alert('Failed to check username');
+    // }
   } catch (error) {
     // Handle any other errors
     console.error(error);
