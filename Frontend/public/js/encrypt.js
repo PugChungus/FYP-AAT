@@ -570,31 +570,43 @@ async function uploadtoOneDrive (type,name){
             
             const backendurl = `http://localhost:5000/download_single_encrypted_file/${fileNameWithEnc}`
 
-            const blob = await fetch(backendurl).then(response => response.blob());
+            const blobe = await fetch(backendurl).then(response => response.blob());
             const headers = new Headers();
 
             
             headers.append('Authorization', 'Bearer: ' + accesstoken);
 
-            // Construct the request body
-            const formData = new FormData();
-            formData.append('metadata', new Blob([JSON.stringify({ name: fileNameWithEnc })], { type: 'application/json' }));
-            formData.append('file', blob, fileNameWithEnc);
-                console.log(accesstoken)
-            // Make the POST request
-            fetch(OneDriveAPI, {
-                method: 'PUT',
-                headers,
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('File uploaded successfully:', data);
-            })
-            .catch(error => {
-                console.error('Error uploading file:', error);
-            });
+            // Step 1: Create Upload Session
+            const uploadUrl = await createUploadSession(accesstoken, fileNameWithEnc);
+            console.log(uploadUrl)
+            // Step 2: Upload File to Session
+            const uploadResult = await uploadFileToSession(uploadUrl, blobe);
+
+            console.log('Upload result:', uploadResult);
+
         }
+
+
+
+            // Construct the request body
+        //     const formData = new FormData();
+        //     formData.append('metadata', new Blob([JSON.stringify({ name: fileNameWithEnc })], { type: 'application/json' }));
+        //     formData.append('file', blob, fileNameWithEnc);
+        //         console.log(accesstoken)
+        //     // Make the POST request
+        //     fetch(OneDriveAPI, {
+        //         method: 'POST',
+        //         headers,
+        //         body: formData
+        //     })
+        //     .then(response => response.json())
+        //     .then(data => {
+        //         console.log('File uploaded successfully:', data);
+        //     })
+        //     .catch(error => {
+        //         console.error('Error uploading file:', error);
+        //     });
+        // }
     } else {
         const filenamefordrive = `${name}.zip`
         const filename = 'encrypted.zip'
@@ -619,7 +631,7 @@ async function uploadtoOneDrive (type,name){
 
         try {
             const response = await fetch(OneDriveAPI, {
-                method: "PUT",
+                method: "POST",
                 headers,
                 body: blob,
               });
@@ -635,6 +647,52 @@ async function uploadtoOneDrive (type,name){
 }
 }
 }
+
+
+async function createUploadSession(accesstoken, fileNameWithEnc) {
+    
+        const url = `https://graph.microsoft.com/v1.0/me/drive/root:/${fileNameWithEnc}:/createUploadSession`;
+        const options = {
+          method: 'POST',
+          headers: {
+            'Authorization': accesstoken,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            "item": {
+              "@microsoft.graph.conflictBehavior": "rename", // or "replace" or "fail"
+              "name": fileNameWithEnc
+            },
+            // Add additional options here if necessary
+          })
+        };
+      
+        try {
+          const response = await fetch(url, options);
+          const data = await response.json();
+          return data.uploadUrl;
+        } catch (error) {
+          console.error('Error creating upload session:', error);
+          throw error;
+        }
+      };
+
+
+
+async function uploadFileToSession(uploadUrl, fileBlob) {
+    const headers = {
+        'Content-Length': `${fileBlob.size}`, // Set the size of the file
+        'Content-Range': `bytes 0-${fileBlob.size - 1}/${fileBlob.size}` // The range of bytes you're uploading
+    };
+
+    const response = await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: headers,
+        body: fileBlob // The actual file blob
+    });
+    return response.json(); // Response from the upload session
+}
+
 
 
 // OneDrive MSAL Documentation -->https://learn.microsoft.com/en-us/javascript/api/@azure/msal-browser/browsercachemanager?view=msal-js-latest
