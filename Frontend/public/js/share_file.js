@@ -238,20 +238,6 @@ export async function shareFile() {
                 } else {
                     alert(`User: ${share_target_email} public key does not exist.`)
                 }
-    
-                const fileNameWithEnc = `${fileNameWithoutExtension}.enc`;
-
-                const response2 = await fetch(`http://localhost:5000/send_file/${fileNameWithEnc}`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer: ${jwtToken}`,
-                        },
-                    body: formData,
-                });
-
-                if (response2.ok) {
-                    alert(`File ${fileNameWithEnc} successfully shared with ${share_target_email}.`)
-                }
             }
         }
     }
