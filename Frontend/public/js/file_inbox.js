@@ -61,7 +61,7 @@ function checkKeyExistence(dbName, objectStoreName, keyToCheck) {
   });
 }
 
-async function decryptFile(file_data, file_name, user_email) {
+async function decryptFile(file_data, file_name, user_email, share_id) {
   const file_data1 = ab2str(file_data.data);
   const delimiter = '|!|';
   const parts = file_data1.split(delimiter);
@@ -147,6 +147,26 @@ async function decryptFile(file_data, file_name, user_email) {
   } catch (error) {
     console.error('Decryption error:', error);
   }
+  
+  const formData2 = new FormData();
+  formData2.append('share_id', share_id)
+  console.log(share_id)
+
+  const jwtToken = await get_cookie();
+
+  const response = await fetch('http://localhost:3000/delete_shared_files', {
+    method: 'POST',
+    headers: {
+        'Authorization': `Bearer: ${jwtToken}`
+    },
+    body: formData2,
+  });
+
+  if (response.ok) {
+    alert(`File ${file_name} has been removed.`)
+    window.location.href='http://localhost:3000/fileInbox'
+  }
+
 }
 
 async function displayFiles() {
@@ -159,7 +179,7 @@ async function displayFiles() {
 
   const formData = new FormData();
   formData.append('id', id);
-  const jwtToken = await get_cookie()
+  const jwtToken = await get_cookie();
 
   const response = await fetch('http://localhost:3000/get_shared_files', {
     method: 'POST',
@@ -177,6 +197,8 @@ async function displayFiles() {
     var file_data = tables[i]['file'];
     console.log(file_data)
     var shared_email = tables[i]['shared_by_email'];
+    var share_id = tables[i]['share_id'];
+    console.log(share_id)
     var file_name = tables[i]['file_name'];
     var date = new Date(tables[i]['date_shared']).toLocaleString();
 
@@ -204,10 +226,13 @@ async function displayFiles() {
       var cellDecryptButton = document.createElement('td');
       var decryptButton = document.createElement('button');
       decryptButton.textContent = 'Decrypt File';
-      decryptButton.addEventListener('click', function () {
-        // Call your decryption function here
-        decryptFile(file_data, file_name, user_email);
-      });
+
+      (function (currentFileData, currentFileName, currentUserEmail, currentSharedId) {
+        decryptButton.addEventListener('click', function () {
+          decryptFile(currentFileData, currentFileName, currentUserEmail, currentSharedId);
+        });
+      })(file_data, file_name, user_email, share_id);
+
       cellDecryptButton.appendChild(decryptButton);
 
       // Append cells to the row

@@ -20,7 +20,28 @@ rsaRouter.post('/get_shared_files', async (req, res) => {
             ORDER BY file_shared.date_shared DESC
         `, [id]);
 
-        return res.status(200).json({ message: 'Shared files retrieved', file_rows });
+            return res.status(200).json({ message: 'Shared files retrieved', file_rows });
+        } else {
+            return res.status(401).json({ error: 'Invalid Token' });
+        }
+
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+rsaRouter.post('/delete_shared_files', async (req, res) => {
+    try {
+        const id = req.body.share_id;
+        console.log(id)
+        const cookie_from_frontend = req.headers.authorization
+        const isValid = await checkTokenValidity(cookie_from_frontend)
+        if (isValid === true) {
+            console.log('Valid token');
+            const delete_row = await pool.execute(`DELETE FROM file_shared WHERE share_id = ?`, [id]);
+
+            return res.status(200).json({ message: `Share_id: ${id} deleted` });
         } else {
             return res.status(401).json({ error: 'Invalid Token' });
         }
