@@ -223,12 +223,11 @@ export async function shareFile() {
                 }
     
                 const fileNameWithEnc = `${fileNameWithoutExtension}.enc`;
-                const accessToken = get_cookie()
 
                 const response2 = await fetch(`http://localhost:5000/send_file/${fileNameWithEnc}`, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer: ${accessToken}`,
+                        'Authorization': `Bearer: ${jwtToken}`,
                         },
                     body: formData,
                 });

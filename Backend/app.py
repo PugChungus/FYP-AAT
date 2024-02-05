@@ -873,6 +873,7 @@ def display_history():
 def encrypt_history():
     try:
         authorization_header = request.headers.get('Authorization')
+        print("Authorization_header", authorization_header) 
 
         if authorization_header is None:
             return "Token is Invalid"
@@ -956,6 +957,7 @@ def decrypt_history():
 @app.route('/send_file/<filename>', methods=['POST'])
 def send_file_to_user(filename):
     authorization_header = request.headers.get('Authorization')
+    print("Send User Authorizataion: ", authorization_header)
 
     if authorization_header is None:
         return "Token is Invalid"

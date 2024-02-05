@@ -117,9 +117,9 @@ async function encrypt(file, i) {
     console.log(file)
     formData.append('clear', i);
     console.log(formData)
+    const jwtToken = await get_cookie()
 
     try {
-        const jwtToken = await get_cookie()
         const response = await fetch('http://localhost:5000/encrypt', {
             method: 'POST',
             headers: {
@@ -148,7 +148,7 @@ async function encrypt(file, i) {
             formData2.append('type', 'encryption')
             formData2.append('id', id)
 
-            const jwtToken = await get_cookie()
+            console.log("Checking for this bs:", jwtToken)
 
             const response2 = await fetch('http://localhost:5000/add_to_encryption_history', {
                 method: 'POST',
