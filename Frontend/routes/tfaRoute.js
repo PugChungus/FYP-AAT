@@ -35,11 +35,19 @@ tfaRouter.post('/get2faStatus', async (req, res) => {
 tfaRouter.post('/disable2fa', async (req, res) => {
     try {
         const { id } = req.body;
+        const cookie_from_frontend = req.headers.authorization
+        const isValid = await checkTokenValidity(cookie_from_frontend)
 
-        const sql = 'UPDATE user_account SET is_2fa_enabled = 0 WHERE account_id = ?'
-        const values = [id];
-        await pool.query(sql, values);
-        res.json({ message: '2FA Disabled'});
+        if (isValid === true) {
+            console.log('Valid token');
+            const sql = 'UPDATE user_account SET is_2fa_enabled = 0 WHERE account_id = ?'
+            const values = [id];
+            await pool.query(sql, values);
+            res.json({ message: '2FA Disabled'});
+        } else {
+            return res.status(401).json({ error: 'Invalid Token' });
+        }
+
     } catch (error) {
         console.error('Error Disabling 2FA:', error)
         res.status(500).json({error: 'Internal Server Error'})

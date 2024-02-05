@@ -955,6 +955,19 @@ def decrypt_history():
 
 @app.route('/send_file/<filename>', methods=['POST'])
 def send_file_to_user(filename):
+    authorization_header = request.headers.get('Authorization')
+
+    if authorization_header is None:
+        return "Token is Invalid"
+        
+    isValid = check_token_validity(authorization_header)
+    if not isValid:
+            print('Invalid Token.')
+            return "Invalid Token."
+    else:
+        print('Valid Token')
+
+
     print(filename, 'file')
 
     # Assuming encrypted_data_dict is a global dictionary

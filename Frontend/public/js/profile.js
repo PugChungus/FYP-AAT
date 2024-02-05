@@ -15,9 +15,13 @@ export async function get_email_via_id() {
 
   const formData = new FormData();
   formData.append('id', id);
+  const jwtToken = await get_cookie()
 
   const response = await fetch('http://localhost:3000/get_account', {
     method: 'POST',
+    headers: {
+      'Authorization': `Bearer: ${jwtToken}`
+    },
     body: formData,
   });
 
@@ -66,11 +70,15 @@ document.addEventListener('DOMContentLoaded', async function () {
 
   const data1 = await newResponse.json(); // await here
   id = data1['id_username']['id'];
+  const jwtToken = await get_cookie()
 
   const formData = new FormData();
   formData.append('id', id);
   const response = await fetch('http://localhost:3000/get_account', {
     method: 'POST',
+    headers: {
+      'Authorization': `Bearer: ${jwtToken}`
+    },
     body: formData,
   });
   const data = await response.json();
@@ -270,9 +278,13 @@ document.addEventListener('DOMContentLoaded', async function () {
         try {
             const formData = new FormData();
             formData.append('id', id);
+            const jwtToken = await get_cookie()
 
             const response = await fetch('http://localhost:3000/disable2fa', {
                 method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${jwtToken}`,
+                  },
                 body: formData,
             });
 

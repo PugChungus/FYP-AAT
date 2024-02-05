@@ -1,6 +1,7 @@
 import { encryptDataWithPublicKey, decryptDataWithPrivateKey, importPrivateKeyFromJWK, importPublicKey, arrayBufferToString } from "./RSA and IndexedDB/rsa.js";
 import { get_private_key } from "./RSA and IndexedDB/IndexedDB.js";
 import { ab2str } from "./RSA and IndexedDB/rsa_keygen.js";
+import { get_cookie } from "./cookie.js";
 
 let shared_data = 'miner poison control'
 let shared_data2
@@ -22,9 +23,14 @@ async function get_email_via_id() {
   
     const formData = new FormData();
     formData.append('id', id);
+
+    const jwtToken = await get_cookie()
   
     const response = await fetch('http://localhost:3000/get_account', {
       method: 'POST',
+      headers: {
+        'Authorization': `Bearer: ${jwtToken}`
+      },
       body: formData,
     });
   

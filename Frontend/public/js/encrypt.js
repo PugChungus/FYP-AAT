@@ -462,7 +462,7 @@ async function uploadtoGoogle (type,name){
             const blob = await fetch(backendurl).then(response => response.blob());
         
             const headers = new Headers();
-            headers.append('Authorization', 'Bearer ' + accesstoken);
+            headers.append('Authorization', 'Bearer: ' + accesstoken);
 
             // Construct the request body
             console.log(files)
@@ -496,7 +496,7 @@ async function uploadtoGoogle (type,name){
         const accessToken = await getGoogleToken();
         console.log(accessToken)
         const headers = new Headers();
-        headers.append('Authorization', `Bearer ${accessToken}`);
+        headers.append('Authorization', `Bearer: ${accessToken}`);
         console.log(headers)
         const formData = new FormData();
         const fileNameOnDrive = `${name}.zip`;
@@ -523,7 +523,7 @@ async function uploadtoGoogle (type,name){
         const updateResponse = await fetch(updateFilenameAPI, {
             method: 'PATCH',
             headers: {
-                'Authorization': `Bearer ${accessToken}`,
+                'Authorization': `Bearer: ${accessToken}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(updateFilenameData),
@@ -574,7 +574,7 @@ async function uploadtoOneDrive (type,name){
             const headers = new Headers();
 
             
-            headers.append('Authorization', 'Bearer ' + accesstoken);
+            headers.append('Authorization', 'Bearer: ' + accesstoken);
 
             // Construct the request body
             const formData = new FormData();
@@ -609,7 +609,7 @@ async function uploadtoOneDrive (type,name){
         const accessToken = await getTokenForRequest();
         console.log(accessToken)
         const headers = new Headers();
-        headers.append('Authorization', `Bearer ${accessToken}`);
+        headers.append('Authorization', `Bearer: ${accessToken}`);
         console.log(headers)
         const formData = new FormData();
         const fileNameOnDrive = `${name}.zip`;

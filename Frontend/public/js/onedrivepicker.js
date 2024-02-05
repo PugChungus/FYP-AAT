@@ -238,7 +238,7 @@ import { sendFileToBackend } from "./virustotal.js";
                                     console.log("accessToken is here:" + token)
                                     let response = await fetch(downloadItemUrl, {
                                         headers: new Headers({
-                                        authorization: "Bearer " + token,
+                                        authorization: "Bearer: " + token,
                                         }),
                                     });
                                     
@@ -410,7 +410,7 @@ import { sendFileToBackend } from "./virustotal.js";
                                     console.log("accessToken is here:" + token)
                                     let response = await fetch(downloadItemUrl, {
                                         headers: new Headers({
-                                        authorization: "Bearer " + token,
+                                        authorization: "Bearer: " + token,
                                         }),
                                     });
                                     

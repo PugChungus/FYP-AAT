@@ -13,9 +13,14 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     const formData = new FormData();
     formData.append('id', id);
+
+    const jwtToken = await get_cookie()
   
     const response = await fetch('http://localhost:3000/get_account', {
       method: 'POST',
+      headers: {
+        'Authorization': `Bearer: ${jwtToken}`
+      },
       body: formData,
     });
     
