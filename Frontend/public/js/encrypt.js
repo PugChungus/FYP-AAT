@@ -355,9 +355,8 @@ async function hideDropZoneAndFileDetails() {
             uploadtoOneDrive('individual');
         });
 
-        const shareFiles = document.createElement('button');
-        shareFiles.textContent = 'Share Files';
-        shareFiles.addEventListener('click', async() => {
+        shareButton.textContent = 'Share Files';
+        shareButton.addEventListener('click', async() => {
             showModalMul();
         })
 
