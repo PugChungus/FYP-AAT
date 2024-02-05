@@ -56,7 +56,7 @@ import { sendFileToBackend } from "./virustotal.js";
         
         const
         authParams = 
-        { scopes: ["OneDrive.ReadWrite"],
+        { scopes: ["Files.ReadWrite"],
         prompt: "select_account" };
         // per examples we fall back to popup
         try {

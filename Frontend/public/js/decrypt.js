@@ -230,6 +230,7 @@ async function decrypt(file, i) {
     const formData = new FormData();
 
     if (selectedKey.length === 0) {
+        console.log(selectedKey)
         alert('  Selected')
         return false; // Return false indicating decryption failure
     }
@@ -563,7 +564,7 @@ async function uploadtoOneDrive (type,name){
             console.log(formData)
             // Make the POST request
             fetch(OneDriveAPI, {
-                method: 'PUT',
+                method: 'POST',
                 headers,
                 body: formData
             })

@@ -242,13 +242,14 @@ import { isValidFileExtension } from "./decrypt.js";
                                         authorization: "Bearer " + token,
                                         }),
                                     });
-                                    
-                                    let file = new File([await response.blob()], firstItem.name);
+                                    const blobe = await response.blob();
+                                    let file = new File([blobe], firstItem.name);
                                     const isValidFileExtensionResult = isValidFileExtension(file);
 
                                     if (!isValidFileExtensionResult) {
                                         return "End of function.";
                                     }
+
                                     sendFileToBackend(file)
                                 }
                                 else{

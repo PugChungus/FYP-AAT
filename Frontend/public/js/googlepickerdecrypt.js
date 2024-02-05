@@ -188,7 +188,11 @@ document.getElementById('googlepocker').addEventListener('click', function(event
             //const base64 = `data:${mimeType};base64,${await this.blobToBase64(blob)}`;
             // Now you have the file content as a base64-encoded string - proceed as desired
             const file = new File([blobe], document[google.picker.Document.NAME]);
-            isValidFileExtension(file)
+            const isValidFileExtensionResult = isValidFileExtension(file);
+
+            if (!isValidFileExtensionResult) {
+                return "End of function.";
+            }
             sendFileToBackend(file)
             
           } else {
