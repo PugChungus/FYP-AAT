@@ -190,6 +190,8 @@ export async function shareFile() {
                         },
                     body: formData,
                 });
+
+                let fileNameWithoutExtension;
                 
                 if (response.ok) {
                     const responseData = await response.json();
@@ -214,7 +216,6 @@ export async function shareFile() {
                     formData.append('email2', share_by_email)
         
                     const filename = files[fileIndex].name;
-                    let fileNameWithoutExtension;
         
                     const numberOfDots = (filename.match(/\./g) || []).length;
         
