@@ -181,49 +181,53 @@ export async function shareFile() {
                     method: 'POST',
                     body: formData,
                 });
+                
+                if (response.ok) {
+                    const responseData = await response.json();
+                    console.log(responseData)
+                    const public_key = responseData.result[0][0]['public_key'];
+                    console.log(public_key)
+                    const public_key_obj = await importPublicKey(public_key);
+                    console.log(public_key_obj)
+                    const result = await encryptDataWithPublicKey(keyValue, public_key_obj);
+                    console.log(result)
+                    const rdata = arrayBufferToString(result);
+                    console.log(rdata)
+                    console.log(typeof(rdata))
+                    const rdata_base64 = btoa(rdata)
+                    console.log(rdata_base64)
+                    const rdata_original = atob(rdata_base64)
+                    console.log(rdata_original)
 
-                const responseData = await response.json();
-                const public_key = responseData.result[0][0]['public_key'];
-                console.log(public_key)
-                const public_key_obj = await importPublicKey(public_key);
-                console.log(public_key_obj)
-                const result = await encryptDataWithPublicKey(keyValue, public_key_obj);
-                console.log(result)
-                const rdata = arrayBufferToString(result);
-                console.log(rdata)
-                console.log(typeof(rdata))
-                const rdata_base64 = btoa(rdata)
-                console.log(rdata_base64)
-                const rdata_original = atob(rdata_base64)
-                console.log(rdata_original)
+                    formData.append('key', rdata_base64)
 
-                formData.append('key', rdata_base64)
+                    const share_by_email = await get_email_via_id()
+                    formData.append('email2', share_by_email)
+        
+                    const filename = files[fileIndex].name;
+                    let fileNameWithoutExtension;
+        
+                    const numberOfDots = (filename.match(/\./g) || []).length;
+        
+                    if (numberOfDots === 1 || numberOfDots > 1) {
+                        fileNameWithoutExtension = filename.split('.').slice(0, -1).join('.');
+                    } else {
+                        fileNameWithoutExtension = filename;
+                    }
+        
+                    const fileNameWithEnc = `${fileNameWithoutExtension}.enc`;
 
-                const share_by_email = await get_email_via_id()
-                formData.append('email2', share_by_email)
-    
-                const filename = files[fileIndex].name;
-                let fileNameWithoutExtension;
-    
-                const numberOfDots = (filename.match(/\./g) || []).length;
-    
-                if (numberOfDots === 1 || numberOfDots > 1) {
-                    fileNameWithoutExtension = filename.split('.').slice(0, -1).join('.');
+                    const response2 = await fetch(`http://localhost:5000/send_file/${fileNameWithEnc}`, {
+                        method: 'POST',
+                        body: formData,
+                    });
+
+                    if (response2.ok) {
+                        alert(`File ${fileNameWithEnc} successfully shared with ${share_target_email}.`)
+                    }
                 } else {
-                    fileNameWithoutExtension = filename;
+                    alert(`User: ${share_target_email} public key does not exist.`)
                 }
-    
-                const fileNameWithEnc = `${fileNameWithoutExtension}.enc`;
-
-                const response2 = await fetch(`http://localhost:5000/send_file/${fileNameWithEnc}`, {
-                    method: 'POST',
-                    body: formData,
-                });
-
-                if (response2.ok) {
-                    alert(`File ${fileNameWithEnc} successfully shared with ${share_target_email}.`)
-                }
-    
             }
         }
     }

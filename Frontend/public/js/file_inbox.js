@@ -97,54 +97,51 @@ async function decryptFile(file_data, file_name, user_email) {
   const formData = new FormData();
 
   try {     
-    decryptDataWithPrivateKey(key_decoded, private_key_obj2).then((result) => {
-      const rdata = arrayBufferToString(result);
-      console.log(rdata)
+    const result = await decryptDataWithPrivateKey(key_decoded, private_key_obj2);
+    const rdata = arrayBufferToString(result);
+
+    formData.append('hex', rdata)
+    formData.append('files', encryptedFile);
+  
+    const jwtToken = await get_cookie()
+  
+    const response2 = await fetch('http://localhost:5000/decrypt2', {
+      method: 'POST',
+      headers: {
+          'Authorization': `Bearer: ${jwtToken}`
+      },
+      body: formData,
     });
-        // const outputDiv = document.getElementById('output2');
-        // outputDiv.innerHTML = '<p id="fun2">' + rdata + '</p>';
+  
+    if (response2.ok) {
+      const blob = await response2.blob();
+  
+      var filename = "";
+      var disposition = response2.headers.get('Content-Disposition')
+      console.log(disposition)
+  
+      if (disposition && disposition.indexOf('attachment') !== -1) {
+          var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+          var matches = filenameRegex.exec(disposition);
+  
+          if (matches && matches[1]) {
+              filename = matches[1].replace(/['"]/g, '');
+          }
+      }
+  
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = objectUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(objectUrl);
+    } else {
+      alert('Decryption Failed')
+    }
   } catch (error) {
     console.error('Decryption error:', error);
-  }
-
-  formData.append('files', encryptedFile);
-  
-  const jwtToken = await get_cookie()
-
-  const response2 = await fetch('http://localhost:5000/decrypt2', {
-    method: 'POST',
-    headers: {
-        'Authorization': `Bearer: ${jwtToken}`
-    },
-    body: formData,
-  });
-
-  if (response2.ok) {
-    const blob = await response2.blob();
-
-    var filename = "";
-    var disposition = response2.headers.get('Content-Disposition')
-    console.log(disposition)
-
-    if (disposition && disposition.indexOf('attachment') !== -1) {
-        var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-        var matches = filenameRegex.exec(disposition);
-
-        if (matches && matches[1]) {
-            filename = matches[1].replace(/['"]/g, '');
-        }
-    }
-
-    const objectUrl = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.download = filename;
-    link.href = objectUrl;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(objectUrl);
-  } else {
-    alert('Decryption Failed')
   }
 }
 
