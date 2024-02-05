@@ -1,5 +1,5 @@
 // home2.js
-
+import { get_cookie } from "./cookie.js"; 
 import { keyDropdown, getAllKeyData, createKeyDropdown } from "./key.js";
 
 function updateKeyDisplay() {
@@ -58,9 +58,57 @@ function updateKeyDisplay() {
     keydiv.appendChild(counterElement);
     keydiv.appendChild(expandButton);
 }
+async function updateFileInbox() {
+    const newResponse = await fetch('http://localhost:3000/get_data_from_cookie', {
+      method: 'POST',
+    });
+  
+    const data1 = await newResponse.json(); // await here
+    const id = data1['id_username']['id'];
+  
+    const formData = new FormData();
+    formData.append('id', id);
+    const jwtToken = await get_cookie();
+  
+    const response = await fetch('http://localhost:3000/get_shared_files', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer: ${jwtToken}`,
+       },
+      body: formData,
+    });
+  
+    const data = await response.json();
+  
+    var tables = data['file_rows'][0];
+    const fileinboxheader = document.querySelector('.fileinboxheader');
+    const sharedEmailContainer = document.getElementById('recentSenders');
+    const fileInboxCounter = document.getElementById('fileInboxCounter');
+
+    // Update the fileInboxCounter with the length of tables
+    fileInboxCounter.textContent = tables.length;
+
+    for (let i = 0; i < tables.length; i++) {
+        var shared_email = tables[i]['shared_by_email'];
+
+        // Append shared_email with a line break to the sharedEmailContainer
+        const sharedEmailElement = document.createElement('div');
+        sharedEmailElement.classList.add('shared-email');
+        sharedEmailElement.textContent = shared_email;
+        sharedEmailContainer.appendChild(sharedEmailElement);
+    }
+
+    // Check if the number of shared-email elements is greater than or equal to 5
+    if (sharedEmailContainer.children.length >= 5) {
+        // Apply a specific style to make the sharedEmailContainer scrollable
+        sharedEmailContainer.style.overflowY = 'auto';
+        sharedEmailContainer.style.maxHeight = '100px'; // Adjust the max height as needed
+    }
+}
 
 // Call the function to initially display keys
 document.addEventListener('DOMContentLoaded', updateKeyDisplay);
+document.addEventListener('DOMContentLoaded', updateFileInbox);
 
 // Add an event listener to keyDropdown to update display on change
 if (keyDropdown) {
@@ -69,3 +117,17 @@ if (keyDropdown) {
 
 // Add an event listener to update display when the page is loaded
 window.addEventListener('load', updateKeyDisplay);
+
+document.querySelector('.keyheader').addEventListener('click', function() {
+    window.location.href = '/keymanagement'
+})
+
+document.querySelector('.historyheader').addEventListener('click', function() {
+    window.location.href = '/history'
+})
+
+document.querySelector('.fileinboxheader').addEventListener('click', function() {
+    window.location.href = '/fileInbox'
+})
+
+

@@ -279,7 +279,7 @@ async function decrypt(file, i) {
 
             formData2.append('files', file);
             formData2.append('key_name', keyName);
-            formData2.append('type', 'decryption')
+            formData2.append('type', 'Decryption')
             formData2.append('id', id)
 
             const jwtToken = await get_cookie()

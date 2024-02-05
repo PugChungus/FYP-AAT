@@ -44,6 +44,7 @@
 .fileinboxheader:hover {
     background-color: rgb(198, 194, 194);
     border-radius: 5px;
+    cursor: pointer;
 
 }
 

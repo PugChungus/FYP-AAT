@@ -148,7 +148,7 @@ async function encrypt(file, i) {
 
             formData2.append('files', file);
             formData2.append('key_name', keyName);
-            formData2.append('type', 'encryption')
+            formData2.append('type', 'Encryption')
             formData2.append('id', id)
 
             console.log("Checking for this bs:", jwtToken)
