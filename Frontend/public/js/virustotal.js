@@ -1,6 +1,5 @@
 import { get_cookie } from "./cookie.js";
 
-
 export const selectedFiles = {
     files: []
 };
@@ -83,7 +82,7 @@ async function performScan(formData) {
     }
 }
 
-function displayFileDetails(file, formData) {
+function displayFileDetails(file, formData, index) {
     const fileDetailsContainer = document.getElementById('file-details-container');
 
     // Create a div element for each file
@@ -104,22 +103,27 @@ function displayFileDetails(file, formData) {
     const removeButton = document.createElement('button');
     removeButton.textContent = 'Remove';
     removeButton.addEventListener('click', () => {
-        // Remove the file container from the details container
-        fileDetailsContainer.removeChild(fileContainer);
+        // Use the index or unique identifier to remove the file from the array
         const fileNameParts = file.name.split('.');
         const fileExtension = fileNameParts.length > 1 ? fileNameParts.pop() : '';
         const fileNameWithoutExtension = fileNameParts.join('');
         console.log(fileNameWithoutExtension)
-        seen.delete(fileNameWithoutExtension);
+
+        // Find the index of the file to be removed
+        const indexToRemove = selectedFiles.files.findIndex(file => file.name);
+        if (indexToRemove !== -1) {
+            // Splice the file from the array
+            selectedFiles.files.splice(indexToRemove, 1);
+
+            // Remove the file container from the details container
+            fileDetailsContainer.removeChild(fileContainer);
+        }
         // You can also perform additional logic or updates here
     });
     fileContainer.appendChild(removeButton);
 
     // Perform the scan after displaying file details
 }
-
-
-
 
 function formatFileSize(size) {
     const kilobyte = 1024;
