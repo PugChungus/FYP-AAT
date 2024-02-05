@@ -961,14 +961,13 @@ def send_file_to_user(filename):
     for key, value in encrypted_data_dict.items():
         print(key, 'key')
 
-    key = request.form.get('key')
-    key_bytes = key.encode('utf-8')
+    key_base64 = request.form.get('key')
     shared_to_email = request.form.get('email')
     shared_by_email = request.form.get('email2')
 
-    print(key)
+    print(key_base64)
 
-    if not key or not shared_to_email or not shared_by_email:
+    if not key_base64 or not shared_to_email or not shared_by_email:
         abort(400, 'Invalid request data')
 
     encrypted_data = encrypted_data_dict.get(filename, None)
@@ -977,11 +976,9 @@ def send_file_to_user(filename):
         return 'File not found', 404
     
     delimiter = '|!|'
-    key_bytes_base64 = base64.b64encode(key_bytes).decode('utf-8')
-    print(key_bytes_base64)
     encrypted_data_base64 = base64.b64encode(encrypted_data).decode('utf-8')
 
-    concat = key_bytes_base64 + delimiter + encrypted_data_base64
+    concat = key_base64 + delimiter + encrypted_data_base64
 
     WideFileName = filename.encode("utf-8").decode("latin-1")
 

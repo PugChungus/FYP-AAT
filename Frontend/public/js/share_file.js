@@ -192,8 +192,12 @@ export async function shareFile() {
                 const rdata = arrayBufferToString(result);
                 console.log(rdata)
                 console.log(typeof(rdata))
+                const rdata_base64 = btoa(rdata)
+                console.log(rdata_base64)
+                const rdata_original = atob(rdata_base64)
+                console.log(rdata_original)
 
-                formData.append('key', rdata)
+                formData.append('key', rdata_base64)
 
                 const share_by_email = await get_email_via_id()
                 formData.append('email2', share_by_email)
