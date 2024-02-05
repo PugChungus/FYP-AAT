@@ -1,202 +1,144 @@
-body {
-    font-family: 'lato', sans-serif;
-  }
-  .container {
-    max-width: 1000px;
-    margin-left: auto;
-    margin-right: auto;
-    padding-left: 10px;
-    padding-right: 10px;
-    padding-top: 10px;
-  }
-  
-  h2 {
-    font-size: 26px;
-    margin: 20px 0;
-    text-align: center;
-    small {
-      font-size: 0.5em;
-    }
-  }
-  
-  .responsive-table {
-    li {
-      border-radius: 3px;
-      padding: 25px 30px;
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 25px;
-    }
-    .table-header {
-      background-color: #95A5A6;
-      font-size: 14px;
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      margin-top: 3px;
-    }
-    .table-row {
-      background-color: #ffffff;
-      box-shadow: 0px 0px 9px 0px rgba(0,0,0,0.1);
-      height: 40px;
-      display: flex;
-      align-items: center;
-    }
+.responsive-table li {
+  border-radius: 3px;
+  padding: 15px; /* Adjust the padding to make more space */
+  display: flex;
+  justify-content: space-between;
 
-
-    /* .table-row:hover {
-        background-color: silver;
-    } */
-    .col-1 {
-      flex-basis: 10%;
-    }
-    .col-2 {
-      flex-basis: 40%;
-    }
-    .col-3 {
-      flex-basis: 25%;
-    }
-    .col-4 {
-      flex-basis: 25%;
-    }
-    
-    @media all and (max-width: 767px) {
-      .table-header {
-        display: none;
-      }
-      li {
-        display: block;
-      }
-      .col {
-        
-        flex-basis: 100%;
-        
-      }
-      .col {
-        display: flex;
-        padding: 10px 0;
-        &:before {
-          color: #6C7A89;
-          padding-right: 10px;
-          content: attr(data-label);
-          flex-basis: 50%;
-          text-align: right;
-        }
-      }
-    }
-  }
-
-  .Header {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    padding-bottom: 15px;
-}
-
-.Header h2 {
-    margin: 0; /* Remove default margin to prevent extra space */
-}
-
-.buttons {
-    margin-left: auto; /* Move buttons to the right */
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.keyHead {
-    position: absolute;
-}
-
-a.importKey,
-a.generateKey {
-    display: flex;
-    align-items: center; /* Center content vertically */
-    color: black;
-    margin-right: 10px;
-    border-radius: 5px;
-    text-decoration: none;
-    padding: 5px;
-}
-
-a.importKey:hover,
-a.generateKey:hover {
-    background-color: silver;
-}
-    
-
-/* Adjust the line-height based on the height of your icons */
-a.importKey i,
-a.generateKey i {
-    line-height: 1;
-
-}
-
-a.importKey {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-a.importKey i {
-    margin-bottom: 2px; /* Adjusted margin to move the icon up */
-}
-
-#keyCard {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 20px;
-    background-color: #fff;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    z-index: 9999;
-}
-
-#keyCardClose {
-    cursor: pointer;
-    position: absolute;
-    top: 10px;
-    right: 10px;
-}
-
-.responsive-table .table-header {
-    display: flex;
-}
-
-.col-right {
-    margin-left: auto;
 }
 
 .responsive-table .table-row {
+  background-color: #494949;
+  box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.1);
+  height: 70px; /* Increase the height for more space */
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  border-radius: 10px;
 }
 
-.responsive-table .col-right {
-  text-align: right;
-  flex-basis: 15%; /* Adjust the width as needed */
+.responsive-table .table-row:hover {
+  background-color: #ccc6c6;
+  box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.1);
+  height: 70px; /* Increase the height for more space */
+  display: flex;
+  align-items: center;
+  border-radius: 10px;
 }
 
-.icon-spacer {
+
+.responsive-table .col {
+  flex-basis: 16%; /* Adjust the flex-basis for each column to control width */
+}
+
+
+
+.buttons {
+  margin: 10px 0; /* Add margin for better spacing */
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+
+a.importKey,
+a.generateKey {
+  display: flex;
+  align-items: center;
+  color: black;
+  margin: 10px 0; /* Add margin for better spacing */
+  border-radius: 5px;
+  text-decoration: none;
+  padding: 10px;
+}
+
+/* Add other styles as needed */
+/* Add these styles for the dynamically generated table */
+.responsive-table .col-1,
+.responsive-table .col-2,
+.responsive-table .col-3,
+.responsive-table .col-4,
+.responsive-table .col-5,
+.responsive-table .col-6 {
+  padding: 10px; /* Adjust padding for better spacing */
+}
+
+.responsive-table .table-row {
+  background-color: #f8f9fa; /* Adjust background color */
+  border-radius: 5px; /* Add border-radius for rounded corners */
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 15px; /* Adjust margin for better separation between rows */
+}
+
+/* Optional: Add hover effect on table rows */
+.responsive-table .table-row:hover {
+  background-color: #e2e6ea; /* Adjust hover background color */
+}
+
+
+
+
+/* Style the alert for better visibility */
+.alert {
+  padding: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.col.col-1 {
+  flex-basis: 40%; /* Adjust the percentage based on your design */
+}
+/* Optional: Style the header for better visibility */
+/* Add this CSS to your existing stylesheets or create a new one */
+
+.historyButton i {
+  font-size: 24px;
+  position: relative;
+  cursor: pointer;
+  display: inline-block;
   margin-right: 10px;
 }
 
-
-
-.responsive-table .col-right i.bxs-download:hover {
-  border-radius: 5px;
-  background-color: silver;
-  padding: 2px;
+.hover-text {
+  position: absolute;
+  top: 10%;
+  left: 93%; /* Position it to the right of the icon */
+  transform: translate(-40%, -30%); /* Center both vertically and horizontally */
+  background-color: #020202;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
 }
 
-.responsive-table .col-right i.bxs-x-circle:hover {
-  border-radius: 5px;
-  background-color: silver;
-  padding: 2px;
+.Header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
 }
+
+.historyButton i {
+  font-size: 24px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.historyButton:hover .hover-text {
+  opacity: 1;
+}
+
+.keyHead {
+  text-align: center;
+  flex-grow: 1;
+}
+
+.keyHead h2 {
+  margin: 0; /* Remove default margin to avoid extra space */
+}
+
+
 

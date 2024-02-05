@@ -10,37 +10,37 @@ function appendRowToTable(index, fileName, file_size, key_name, type, time) {
 
   // Id column using row index
   const col0 = document.createElement('div');
-  col0.className = `col col-0`;
+  col0.className = `col col-1`;
   col0.textContent = index + 1;  // Adding 1 to start counting from 1
   newRow.appendChild(col0);
 
   // File Name column
   const col1 = document.createElement('div');
-  col1.className = `col col-1`;
+  col1.className = `col col-2`;
   col1.textContent = fileName;
   newRow.appendChild(col1);
 
   // File Size column
   const col2 = document.createElement('div');
-  col2.className = `col col-2`;
+  col2.className = `col col-3`;
   col2.textContent = file_size;
   newRow.appendChild(col2);
 
   // Key Name column
   const col3 = document.createElement('div');
-  col3.className = `col col-3`;
+  col3.className = `col col-4`;
   col3.textContent = key_name;
   newRow.appendChild(col3);
 
   // Type column
   const col4 = document.createElement('div');
-  col4.className = `col col-4`;
+  col4.className = `col col-5`;
   col4.textContent = type;
   newRow.appendChild(col4);
 
   // Time column
   const col5 = document.createElement('div');
-  col5.className = `col col-5`;
+  col5.className = `col col-6`;
   col5.textContent = time;
   newRow.appendChild(col5);
 
