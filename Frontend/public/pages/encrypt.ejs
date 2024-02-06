@@ -137,12 +137,10 @@
     <script src="/js/toprofilePage.js"  nonce="<%= nonce %>" ></script>
     <script src="/js/encryptProgress.js" nonce="<%= nonce %>"></script>
     <script type="module" nonce="<%= nonce %>">
-        import { uploadFiles, handleDragOver, handleDrop } from '../js/encrypt.js';
+        import { uploadFiles } from '../js/encrypt.js';
         import { shareFile } from '../js/share_file.js';
 
         module.uploadFiles = uploadFiles        
-        module.handleDragOver = handleDragOver
-        module.handleDrop = handleDrop
         module.shareFile = shareFile
     </script>
     

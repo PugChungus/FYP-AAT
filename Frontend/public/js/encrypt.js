@@ -14,10 +14,13 @@ createKeyDropdown()
 
 document.getElementById('file-input-encrypt').addEventListener('change', handleFileUpload);
 
-const existingFileEntries = new Set();
+
 
 export function handleFileUpload(event) {
+    const existingFileEntries = new Set();
     const newFiles = event.target.files;
+    console.log("NewFiles:", newFiles)
+    console.log('ExistingFilesEntries:', existingFileEntries)
     selectedKey = keyDropdown.value;
 
     // Loop through each dropped file
@@ -29,9 +32,18 @@ export function handleFileUpload(event) {
             existingFileEntries.add(file.name);
         } else {
             // If exists, you may want to handle it (skip or show a message)
+            console.log('existingFIles or whatever', existingFileEntries)
+            console.log('newfiles or whatever', newFiles)
+
             alert(`File ${file.name} already exists. Skipping...`);
         }
     }
+
+    existingFileEntries.forEach(entry => {
+        if (!Array.from(newFiles).find(file => file.name === entry)) {
+            existingFileEntries.delete(entry);
+        }
+    });
 }
 
 export function handleDrop(event) {
@@ -47,7 +59,9 @@ export function handleDrop(event) {
             sendFileToBackend(file);
             existingFileEntries.add(file.name);
         } else {
-            // If exists, you may want to handle it (skip or show a message)
+            // If exists, you may want to handle it (skip or show a message
+            console.log('existingFIles or whatever', existingFileEntries)
+            console.log('newfiles or whatever', newFiles)
             console.log(`File ${file.name} already exists. Skipping...`);
         }
     }

@@ -36,6 +36,7 @@ export async function sendFileToBackend(file) {
         const scanResult = await performScan(formData);
 
         if (scanResult.isValid) {
+            console.log('Selected Files:', selectedFiles.files)
             selectedFiles.files.push(file);
             if (seen.has(fileNameWithoutExtension)) {
                 alert('Duplicate file name');
@@ -117,17 +118,20 @@ function displayFileDetails(file, formData, index) {
         const fileExtension = fileNameParts.length > 1 ? fileNameParts.pop() : '';
         const fileNameWithoutExtension = fileNameParts.join('');
         console.log(fileNameWithoutExtension)
-        console.log("Selecasdj ad:", selectedFiles)
+        console.log("Selecasdj ad:", selectedFiles.files)
 
         // Find the index of the file to be removed
         const indexToRemove = selectedFiles.files.findIndex(f => f === file);
         if (indexToRemove !== -1) {
             // Splice the file from the array
-            selectedFiles.files.splice(indexToRemove, 1);
-
+            let toremove =selectedFiles.files.splice(indexToRemove, 1);
+            console.log("Seen?:", seen)
+            
+            seen.delete(fileNameWithoutExtension)
+            console.log("Seen?:", seen)
             // Remove the file container from the details container
             fileDetailsContainer.removeChild(fileContainer);
-            console.log("Updated FIles:", selectedFiles)
+            console.log("Updated FIles:", selectedFiles.files)
         }
         // You can also perform additional logic or updates here
     });
