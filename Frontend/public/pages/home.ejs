@@ -19,7 +19,7 @@
     <header class="header" id="header">
         <div class="header_toggle"> <i class='bx bx-menu' id="header-toggle"></i> </div>
         <div class="header_img" id="profile-pic"> 
-            <img id="profile-picture" src="../images/account_circle_FILL0_wght200_GRAD200_opsz24.png" alt="Profile Picture">
+            <img id="profile-picture" src="../images/account.png" alt="Profile Picture">
         </div>
     </header>
     <div class="l-navbar" id="nav-bar">
@@ -77,11 +77,14 @@
             <div class="listkeys"></div>
         </div>
         <div class="historydiv">
-            <div class="historyheader">History {counter}<i class='bx bx-chevron-right'></i></div>
+            <div class="historyheader">
+                History (<span id="historyCounter"></span>)<i class='bx bx-chevron-right'></i>
+            </div>
+            <div id="recentHistory" class="recent-history"></div>
         </div>
         <div class="fileinboxdiv">
             <div class="fileinboxheader">
-                Files Received <span id="fileInboxCounter"></span> <i class='bx bx-chevron-right'></i>
+                Files Received (<span id="fileInboxCounter"></span>) <i class='bx bx-chevron-right'></i>
             </div>
             <div id="recentSenders" class="recent-senders"></div>
         </div>

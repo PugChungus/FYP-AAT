@@ -49,7 +49,7 @@ async function executeSQLQuery(userInput) {
                     const blob = new Blob([uint8Array]);
                     objectURL = URL.createObjectURL(blob);
                 } else {
-                    objectURL = "../images/account_circle_FILL0_wght200_GRAD200_opsz24.png";
+                    objectURL = "../images/account.png";
                 }
 
                 // Create image element for user avatar

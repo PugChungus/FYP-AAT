@@ -137,6 +137,7 @@ async function register() {
         formData.append('email', email);
         formData.append('password', password);
         formData.append('confirmPassword', confirmPassword);
+        console.log("FormData", formData)
   
         try {
           const response = await fetch('http://localhost:3000/create_account', {

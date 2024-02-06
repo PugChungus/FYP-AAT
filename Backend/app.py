@@ -11,7 +11,7 @@ from pprint import pprint
 from Crypto.Util.Padding import pad, unpad
 from base64 import b64encode, b64decode
 from datetime import datetime, timezone
-from PIL import Image
+from PIL import Image, ImageDraw
 from io import BytesIO
 from flask_cors import CORS
 import pymysql
@@ -32,9 +32,16 @@ import time
 import schedule
 import sib_api_v3_sdk
 import requests
+import numpy as np 
+from io import BytesIO
 
 app = Flask(__name__)
-CORS(app)
+cors_config = {
+    "origins": ["http://localhost:3000","http://localhost:5000" ],
+    "methods": ["GET", "POST", "PUT", "DELETE"],
+    
+}
+CORS(app,resources={r"*": cors_config})
 
 # Connect to the MySQL database
 pool = PooledDB(
@@ -2136,6 +2143,7 @@ def delete_account():
     except Exception as e:
         print(f"Error processing request: {e}")
         return jsonify({'activation_status': 'error'})
+
 
 
 

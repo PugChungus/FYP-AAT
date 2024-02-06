@@ -1,92 +1,114 @@
-body {
-  font-family: Arial, sans-serif;
-  background-color: #f4f4f4;
+/* Global Reset */
+* {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f8f9fa;
+  color: #333;
+}
+
 header {
-  background-color: #333;
-  color: white;
+  background-color: black;
+  color: #fff;
+  padding: 20px;
   text-align: center;
-  padding: 1em;
+}
+
+nav {
+  margin-top: 10px;
+}
+
+nav a {
+  color: #fff;
+  text-decoration: none;
+  padding: 5px 10px;
 }
 
 section {
-  margin: 20px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-h1 {
-  color: white;
-}
-
-p {
-  color: #555;
-}
-
-a {
-  color: #007BFF;
-  text-decoration: none;
-}
-
-a:hover {
-  text-decoration: underline;
-}
-
-.card {
-  width: 300px;
-  margin: 20px auto;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.card-body {
-  padding: 16px;
-}
-
-.card-title {
-  font-size: 1.2em;
-  margin-bottom: 10px;
-}
-
-.card-text {
-  color: #555;
+.profile-picture-container {
+  max-width: 500px;
+  max-height: 500px;
   margin-bottom: 20px;
 }
 
+#profile-picture {
+  width: 100%;
+  height: auto;
+}
+
+.user-info {
+  text-align: center;
+}
+
+.user-info h2 {
+  margin-bottom: 10px;
+}
+
+.user-info p {
+  margin-bottom: 5px;
+}
+
 .btn {
+  margin-top: 10px;
   cursor: pointer;
-  padding: 8px 16px;
-  margin-right: 10px;
-  border-radius: 4px;
-  font-size: 0.9em;
 }
 
-.btn-danger {
-  background-color: #d9534f;
-  color: #fff;
+.card2fa {
+  max-width: 400px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-top: 20px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.card-header {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.card-header button {
+  background-color: transparent;
   border: none;
+  font-size: 20px;
+  cursor: pointer;
 }
 
-.btn-success {
-  background-color: #5cb85c;
-  color: #fff;
-  border: none;
+.card-body {
+  padding: 20px;
 }
 
-.switch {
+.card-title {
+  margin-bottom: 10px;
+}
+
+label.switch {
   position: relative;
   display: inline-block;
   width: 60px;
   height: 34px;
 }
 
-.switch input {
-  display: none;
+label.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
 }
 
-.slider {
+span.slider {
   position: absolute;
   cursor: pointer;
   top: 0;
@@ -94,10 +116,12 @@ a:hover {
   right: 0;
   bottom: 0;
   background-color: #ccc;
+  -webkit-transition: .4s;
   transition: .4s;
+  border-radius: 34px;
 }
 
-.slider:before {
+span.slider:before {
   position: absolute;
   content: "";
   height: 26px;
@@ -105,63 +129,17 @@ a:hover {
   left: 4px;
   bottom: 4px;
   background-color: white;
+  -webkit-transition: .4s;
   transition: .4s;
-}
-
-input:checked + .slider {
-  background-color: #2196F3;
-}
-
-input:focus + .slider {
-  box-shadow: 0 0 1px #2196F3;
-}
-
-input:checked + .slider:before {
-  transform: translateX(26px);
-}
-
-/* Optional: Add some additional styles to make it look better */
-.slider.round {
-  border-radius: 34px;
-}
-
-.slider.round:before {
   border-radius: 50%;
 }
 
-#2fa-section {
-  margin-top: 10px;
+input:checked + .slider {
+  background-color: #007bff;
 }
 
-.card2fa {
-  position: fixed;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 300px;
-  margin: 20px auto;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  background-color: #fff;
-  z-index: 9999;
-}
-
-.card-header {
-  background-color: #f8f9fa;
-  padding: 10px;
-}
-
-.card-body {
-  padding: 20px;
-}
-
-/* Style for the close button */
-.close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  font-size: 1.5em;
-  cursor: pointer;
-  color: #000;
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
 }
