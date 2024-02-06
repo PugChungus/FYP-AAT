@@ -25,10 +25,16 @@ async function encryptEmail(email) {
   }
 }
 
-document.querySelector('.signin-form').addEventListener('submit', verifyTOTP);
-document.getElementById('submit').addEventListener('click', login);
-
-
+//document.querySelector('.signin-form').addEventListener('submit', verifyTOTP);
+const signInForm = document.querySelector('.signin-form');
+if (signInForm) {
+  signInForm.addEventListener('submit', verifyTOTP);
+} 
+//document.getElementById('submit').addEventListener('click', login);
+const submitButton = document.getElementById('submit');
+if (submitButton) {
+  submitButton.addEventListener('click', login);
+} 
 
 
 export async function login(event) {
