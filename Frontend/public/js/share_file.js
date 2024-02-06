@@ -167,60 +167,68 @@ export async function shareFile(type) {
     const files = selectedFiles.files;
     const totalFiles = files.length;
 
+    let zipFolderName;
+    if (type === 'zip') {
+        zipFolderName = window.prompt('Enter the name for the zip folder (without extension)');
+        if (!zipFolderName) {
+            alert('Please name the zip file for sharing.');
+            return; // Abort sharing process if zip folder name is not provided
+        }
+    }
+
     for (let selectedUserIndex = 0; selectedUserIndex < selectedUsers.length; selectedUserIndex++) {
-        for (let fileIndex = 0; fileIndex < totalFiles; fileIndex++) {
-            if (keyItem === null) {  
-                if (selectedKey.startsWith("key_")){
-                    const selectedKeyDisplay = selectedKey.replace('key_', '');
-                    alert(`Encryption key ${selectedKeyDisplay} used to previously encrypt the file was removed.`);
-                }
-            } else {
-                const jsonString = sessionStorage.getItem(selectedKey);
-                const keyData = JSON.parse(jsonString);
-                const keyValue = keyData.keyValue; //DEK AES KEY
-                console.log(keyValue, typeof(keyValue))
-                const share_target_email = selectedUsers[selectedUserIndex]
-                console.log(keyValue)
-                console.log(share_target_email);
+        if (keyItem === null) {  
+            if (selectedKey.startsWith("key_")) {
+                const selectedKeyDisplay = selectedKey.replace('key_', '');
+                alert(`Encryption key ${selectedKeyDisplay} used to previously encrypt the file was removed.`);
+            }
+        } else {
+            const jsonString = sessionStorage.getItem(selectedKey);
+            const keyData = JSON.parse(jsonString);
+            const keyValue = keyData.keyValue; //DEK AES KEY
+            console.log(keyValue, typeof(keyValue))
+            const share_target_email = selectedUsers[selectedUserIndex]
+            console.log(keyValue)
+            console.log(share_target_email);
 
-                const formData = new FormData();
-                formData.append('email', share_target_email);
-                const jwtToken = await get_cookie()
-                
-                const response = await fetch('http://localhost:3000/get_pubkey', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer: ${jwtToken}`,
-                        },
-                    body: formData,
-                });
+            const formData = new FormData();
+            formData.append('email', share_target_email);
+            const jwtToken = await get_cookie()
+            
+            const response = await fetch('http://localhost:3000/get_pubkey', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer: ${jwtToken}`,
+                    },
+                body: formData,
+            });
 
-                let fileNameWithoutExtension;
-                
-                if (response.ok) {
-                    const responseData = await response.json();
-                    console.log(responseData)
-                    const public_key = responseData.result[0][0]['public_key'];
-                    console.log(public_key)
-                    const public_key_obj = await importPublicKey(public_key);
-                    console.log(public_key_obj)
-                    const result = await encryptDataWithPublicKey(keyValue, public_key_obj);
-                    console.log(result)
-                    const rdata = arrayBufferToString(result);
-                    console.log(rdata)
-                    console.log(typeof(rdata))
-                    const rdata_base64 = btoa(rdata)
-                    console.log(rdata_base64)
-                    const rdata_original = atob(rdata_base64)
-                    console.log(rdata_original)
+            let fileNameWithoutExtension;
+            
+            if (response.ok) {
+                const responseData = await response.json();
+                console.log(responseData)
+                const public_key = responseData.result[0][0]['public_key'];
+                console.log(public_key)
+                const public_key_obj = await importPublicKey(public_key);
+                console.log(public_key_obj)
+                const result = await encryptDataWithPublicKey(keyValue, public_key_obj);
+                console.log(result)
+                const rdata = arrayBufferToString(result);
+                console.log(rdata)
+                console.log(typeof(rdata))
+                const rdata_base64 = btoa(rdata)
+                console.log(rdata_base64)
+                const rdata_original = atob(rdata_base64)
+                console.log(rdata_original)
 
-                    formData.append('key', rdata_base64)
+                formData.append('key', rdata_base64)
 
-                    const share_by_email = await get_email_via_id()
-                    formData.append('email2', share_by_email)
+                const share_by_email = await get_email_via_id()
+                formData.append('email2', share_by_email)
 
-                    if (type == 'individual') {
-
+                if (type == 'individual') {
+                    for (let fileIndex = 0; fileIndex < totalFiles; fileIndex++) {
                         const filename = files[fileIndex].name;
             
                         const numberOfDots = (filename.match(/\./g) || []).length;
@@ -244,34 +252,34 @@ export async function shareFile(type) {
                         if (response2.ok) {
                             alert(`File ${fileNameWithEnc} successfully shared with ${share_target_email}.`)
                         }
-                    } else if (type == 'zip') {
-                        const filename = 'encrypted.zip';
-                        const zipFolderName = window.prompt('Enter the name for the zip folder (without extension)');
-                        if (zipFolderName) {
-                            formData.append('zip_name', `${zipFolderName}.zip`);
+                    }
+                } else if (type == 'zip') {
+                    const filename = 'encrypted.zip';
+                    // const zipFolderName = window.prompt('Enter the name for the zip folder (without extension)');
+                    if (zipFolderName) {
+                        formData.append('zip_name', `${zipFolderName}.zip`);
 
-                            const response2 = await fetch(`http://localhost:5000/send_zip/${filename}`, {
-                                method: 'POST',
-                                headers : {
-                                    'Authorization' : `Bearer: ${jwtToken}`
-                                },
-                                body: formData,
-                            });
+                        const response2 = await fetch(`http://localhost:5000/send_zip/${filename}`, {
+                            method: 'POST',
+                            headers : {
+                                'Authorization' : `Bearer: ${jwtToken}`
+                            },
+                            body: formData,
+                        });
 
-                            if (response2.ok) {
-                                alert(`File ${zipFolderName}.zip successfully shared with ${share_target_email}.`)
-                            }
-    
-                        } else {
-                            alert('Please name the zip file for sharing.')
+                        if (response2.ok) {
+                            alert(`File ${zipFolderName}.zip successfully shared with ${share_target_email}.`)
                         }
 
                     } else {
-                        alert('Selection not in range.')
+                        alert('Please name the zip file for sharing.')
                     }
+
                 } else {
-                    alert(`User: ${share_target_email} public key does not exist.`)
+                    alert('Selection not in range.')
                 }
+            } else {
+                alert(`User: ${share_target_email} public key does not exist.`)
             }
         }
     }
