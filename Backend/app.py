@@ -34,7 +34,12 @@ import sib_api_v3_sdk
 import requests
 
 app = Flask(__name__)
-CORS(app)
+cors_config = {
+    "origins": ["http://localhost:3000","http://localhost:5000" ],
+    "methods": ["GET", "POST", "PUT", "DELETE"],
+    
+}
+CORS(app,resources={r"*": cors_config})
 
 # Connect to the MySQL database
 pool = PooledDB(
