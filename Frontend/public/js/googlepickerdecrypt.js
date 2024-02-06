@@ -166,7 +166,7 @@ document.getElementById('googlepocker').addEventListener('click', function(event
   async function pickerCallback(data) {
       if (data.action === google.picker.Action.PICKED) {
           const headers = {
-              Authorization: `Bearer: ${accessToken}` // Include the access token in the Authorization header
+              Authorization: `Bearer ${accessToken}` // Include the access token in the Authorization header
     
             };
           const document = data[google.picker.Response.DOCUMENTS][0];
