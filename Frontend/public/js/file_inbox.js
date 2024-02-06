@@ -1,7 +1,11 @@
 import { decryptDataWithPrivateKey, importPrivateKeyFromJWK, arrayBufferToString } from "./RSA and IndexedDB/rsa.js";
 import { get_private_key } from "./RSA and IndexedDB/IndexedDB.js";
 import { get_cookie } from "./cookie.js";
-import { ab2str } from "./RSA and IndexedDB/rsa_keygen.js";
+
+function ab2str(buf) {
+  const decoder = new TextDecoder('utf-8'); // Assuming UTF-8 encoding, adjust if needed
+  return decoder.decode(new Uint8Array(buf));
+}
 
 async function get_email_via_id() {
   const newResponse = await fetch('http://localhost:3000/get_data_from_cookie', {
