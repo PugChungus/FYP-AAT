@@ -105,14 +105,11 @@ const corsOptions = {
   },
   credentials: true, // Allow cookies
 };
-app.use(cors(corsOptions));
-
-  
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-
+app.use(cors(corsOptions));
 app.use(upload.any());
 app.use(cors());
 app.use(cookieParser());
@@ -220,17 +217,17 @@ app.get('/deleteaccount', (req, res) => {
     res.render('deleteaccount', {user: req})
 })
 
-app.post('/send_email_from_login', (req, res) => {
-  const email = req.body.email;
+// app.post('/send_email_from_login', (req, res) => {
+//   const email = req.body.email;
 
-  // Process the email as needed
-  console.log('Received email from login:', email);
+//   // Process the email as needed
+//   console.log('Received email from login:', email);
 
-  // You can now use the email in your verification logic, store it in the database, etc.
+//   // You can now use the email in your verification logic, store it in the database, etc.
 
-  // Send a response back to the client
-  res.json({ message: 'Email received successfully' });
-});
+//   // Send a response back to the client
+//   res.json({ message: 'Email received successfully' });
+// });
 
 app.listen (port, () => {
     console.log(`Server is running at http://localhost:${port}`);

@@ -74,14 +74,6 @@ async function decryptFile(file_data, file_name, user_email, share_id) {
   const key_decoded = atob(parts[0]);
   console.log(key_decoded)
   console.log(typeof(key_decoded))
-  // const keyUint8Array = new Uint8Array(keyBase64.length);
-  // for (let i = 0; i < keyBase64.length; i++) {
-  //   keyUint8Array[i] = keyBase64.charCodeAt(i);
-  // }
-  // const keyDecoder = new TextDecoder('utf-8');
-  // const decodedKeyString = keyDecoder.decode(keyUint8Array);
-  // console.log(decodedKeyString);
-  // console.log(typeof(decodedKeyString));
   
   const encryptedDataBase64 = atob(parts[1]);
   const encryptedDataUint8Array = new Uint8Array(encryptedDataBase64.length);
