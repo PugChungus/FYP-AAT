@@ -70,6 +70,16 @@
                     <div class="button-container">
                         <label for="file-input-decrypt" class="btn btn-primary rounded-pill">SELECT FILES</label>
                         <input type="file" id="file-input-decrypt" name="files" multiple style="display: none;">
+                        <div class="drive-picker-buttons">
+                            <button id="decryptlaunchPicker" class="btn btn-info">
+                                <img src="../images/onedrive-1.svg" alt="OneDrive Icon" class="svg-icon">
+                                 OneDrive Picker
+                            </button>
+                            <button id="googlepocker" class="btn btn-danger" >
+                                <img src="../images/google-drive.svg" alt="Google Drive Icon" class="svg-icon"> 
+                                 Google Picker
+                            </button>
+                        </div>
                        
                     </div>
                 </div>
@@ -89,8 +99,6 @@
     
     </div>
     <button id="decryptButton" class="eButton" >Decrypt</button>
-    <button id="decryptlaunchPicker"> OneDrive Picker</button>
-    <button id="googlepocker" > Google Picker</button>
 
 
     <script type="text/javascript" nonce="<%= nonce %>">

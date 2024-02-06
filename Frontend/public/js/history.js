@@ -18,6 +18,7 @@ function appendRowToTable(index, fileName, file_size, key_name, type, time) {
   const col1 = document.createElement('div');
   col1.className = `col col-2`;
   col1.textContent = fileName;
+  col1.title = fileName
   newRow.appendChild(col1);
 
   // File Size column
