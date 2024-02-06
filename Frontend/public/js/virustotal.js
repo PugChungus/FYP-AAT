@@ -90,19 +90,27 @@ function displayFileDetails(file, formData, index) {
     fileContainer.classList.add('file-entry-container'); // Add a container class
     fileDetailsContainer.appendChild(fileContainer);
 
+    const fileInfoContainer = document.createElement('div');
+    fileInfoContainer.classList.add('file-info-container');
+    fileContainer.appendChild(fileInfoContainer);
+
     // Display file name
     const fileName = document.createElement('div');
+    fileName.classList.add('fileName')
     fileName.textContent = `File Name: ${file.name}`;
-    fileContainer.appendChild(fileName);
+    fileInfoContainer.appendChild(fileName);
 
     // Display file size
     const fileSize = document.createElement('div');
+    fileSize.classList.add('fileSize')
     fileSize.textContent = `File Size: ${formatFileSize(file.size)}`;
-    fileContainer.appendChild(fileSize);
+    fileInfoContainer.appendChild(fileSize);
 
-    const removeButton = document.createElement('button');
-    removeButton.textContent = 'Remove';
-    removeButton.addEventListener('click', () => {
+
+    const trashIcon = document.createElement('i');
+    trashIcon.classList.add('bx', 'bxs-trash');
+    trashIcon.style.cursor = 'pointer'
+    trashIcon.addEventListener('click', () => {
         // Use the index or unique identifier to remove the file from the array
         const fileNameParts = file.name.split('.');
         const fileExtension = fileNameParts.length > 1 ? fileNameParts.pop() : '';
@@ -120,7 +128,7 @@ function displayFileDetails(file, formData, index) {
         }
         // You can also perform additional logic or updates here
     });
-    fileContainer.appendChild(removeButton);
+    fileContainer.appendChild(trashIcon);
 
     // Perform the scan after displaying file details
 }

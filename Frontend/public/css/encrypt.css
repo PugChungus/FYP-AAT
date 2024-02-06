@@ -3,7 +3,7 @@
     display: flex;
     flex-direction: column;
     margin-top: 20px;
-    width: 70%; /* Increased width for better alignment */
+    width: 60%; /* Increased width for better alignment */
     
     padding: 20px;
     border-radius: 10px;
@@ -15,7 +15,7 @@
 }
 
 .file-drop-area {
-    border: 2px dashed #007bff; /* Bootstrap primary color for the border */
+    border: 2px dashed silver; /* Bootstrap primary color for the border */
     padding: 20px;
     text-align: center;
     width: 100%;
@@ -69,7 +69,7 @@
 }
 
 #file-details-container {
-    width: 30%;
+    width: 40%;
     height: 100%;
     border-radius: 10px;
     padding: 15px;
@@ -83,7 +83,34 @@
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Add box shadow property */
     border-radius: 5px;
     padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
 }
+
+.file-info-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+
+.file-entry-container i.bxs-trash {
+    font-size: 24px; /* Adjust the size of the icon */
+    color: #ff6347; /* Coral color, you can change it */
+    cursor: pointer; /* Make it look clickable */
+    transition: color 0.3s; /* Add transition for color change */
+    display: flex;
+    margin-top: 10px;
+    
+    
+}
+
+/* Hover effect for the trash icon */
+.file-entry-container i.bx-trash:hover {
+    color: #ff4836; /* Darker shade of coral */
+}
+
 
 .file-entry {
     padding: 10px;
@@ -167,7 +194,12 @@
 
 .drive-picker-buttons {
     display: flex;
+    flex-direction: row;
     gap: 10px; /* Adjust the gap between buttons as needed */
+}
+
+.drive-picker-buttons button {
+    flex: 1; /* Make buttons flexible to adjust their width */
 }
 
 .svg-icon {
@@ -185,4 +217,27 @@
     background-color: #d4edda; /* Set the background color when dragging over */
     border-color: #c3e6cb; /* Set the border color when dragging over */
     color: #155724; /* Set the text color when dragging over */
+}
+
+@media screen and (max-width: 768px) {
+    .drive-picker-buttons {
+        flex-direction: column; /* Change to column layout on smaller screens */
+    }
+
+    .drive-picker-buttons button {
+        width: 100%; /* Make buttons full width in column layout */
+    }
+}
+
+@media only screen and (max-width: 600px) {
+    .wrapper {
+        flex-direction: column;
+    }
+    .encasement-container {
+        width: 100%;
+    }
+
+    #file-details-container {
+        width: 100%;
+    }
 }

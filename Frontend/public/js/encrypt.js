@@ -57,9 +57,6 @@ export function handleDragOver(event) {
     event.preventDefault();
 }
 
-document.getElementById('drop-area').addEventListener('dragover', handleDragOver)
-document.getElementById('drop-area').addEventListener('drop', handleDrop)
-
 
 document.getElementById('encryptButton').addEventListener('click', function() {
    uploadFiles();
@@ -71,7 +68,7 @@ export async function uploadFiles() {
         await clearEncryptedFolder();
         await sendFilesToBackend();
     } else {
-        console.log("No files selected to upload.");
+        alert("You have not selected any files")
         return;
     }
 }
@@ -148,7 +145,7 @@ async function encrypt(file, i) {
 
             formData2.append('files', file);
             formData2.append('key_name', keyName);
-            formData2.append('type', 'Encryption')
+            formData2.append('type', 'encryption')
             formData2.append('id', id)
 
             console.log("Checking for this bs:", jwtToken)
@@ -266,15 +263,28 @@ keyDropdown.addEventListener('change', function () {
 });
 
 
-let downloadButton;
 
 async function hideDropZoneAndFileDetails() {
     const dropZone = document.querySelector('.drag-zone-container');
     const fileDetails = document.querySelector('.file-details-container');
     const dropZoneEncasement = document.querySelector('.encasement-container');
     const encryptButton = document.getElementById('encryptButton');
-    const downloadContainer = document.querySelector('.download-container');
+    const downloadButton = document.createElement('button');
+    const shareButton = document.createElement('button');
+    const googleupload = document.createElement('button');
+    const onedriveupload = document.createElement('button');
 
+    shareButton.id = 'shareButton';
+    shareButton.textContent = 'Share File';
+
+    downloadButton.id = 'downloadButton';
+    downloadButton.textContent = 'Download Encrypted Files';
+
+    googleupload.id = 'uploadgoogleButton';
+    googleupload.textContent = 'Upload To GoogleDrive';
+
+    onedriveupload.id = 'onedrivebutton';
+    onedriveupload.textContent = 'Upload To OneDrive';
 
     // Append the download button to the document or display it wherever needed
     // document.body.appendChild(downloadButton);
@@ -285,15 +295,13 @@ async function hideDropZoneAndFileDetails() {
     fileDetails.style.display = 'none';
     encryptButton.style.display = 'none';
     dropZoneEncasement.style.display = 'none';
-    downloadContainer.style.display = 'block'
-    const googlebutton = document.getElementById('uploadgoogleButton')
-    const onedrivebutton = document.getElementById('UploadToOneDrive')
-    const downloadButton = document.getElementById('downloadButton');
-    const shareButton = document.getElementById('shareButton');
 
     if (selectedFiles.files.length >= 2) {
         // Create a card div for file download options
+        const cardDiv = document.createElement('div');
+        cardDiv.id = 'downloadCard';
         // Create Google Button
+        const googlebutton = document.createElement('button');
         googlebutton.textContent ="Download Zip to google";
         googlebutton.addEventListener('click', async () => {
             const googleFolderName = window.prompt('Enter the name for the zip folder (without extension)');
@@ -302,6 +310,7 @@ async function hideDropZoneAndFileDetails() {
             }
         })
         //Create One Drive
+        const onedrivebutton = document.createElement('button');
         onedrivebutton.textContent ="Download Zip to onedrive";
         onedrivebutton.addEventListener('click', async () => {
             const onedriveFolderName = window.prompt('Enter the name for the zip folder (without extension)');
@@ -320,8 +329,8 @@ async function hideDropZoneAndFileDetails() {
                 fileDetails.style.display = 'block';
                 encryptButton.style.display = 'block';
                 dropZoneEncasement.style.display = 'block';
-                googlebutton.style.display = 'none';
-                onedrivebutton.style.display = 'none';
+                googleupload.style.display = 'none';
+                onedriveupload.style.display = 'none';
                 downloadButton.style.display = 'none';
                 selectedFiles.files = []
                 var div = document.getElementById("file-details-container");
@@ -338,8 +347,8 @@ async function hideDropZoneAndFileDetails() {
             fileDetails.style.display = 'block';
             encryptButton.style.display = 'block';
             dropZoneEncasement.style.display = 'block';
-            googlebutton.style.display = 'none';
-            onedrivebutton.style.display = 'none';
+            googleupload.style.display = 'none';
+            onedriveupload.style.display = 'none';
             downloadButton.style.display = 'none';
             selectedFiles.files = []
             var div = document.getElementById("file-details-container");
@@ -358,10 +367,21 @@ async function hideDropZoneAndFileDetails() {
             uploadtoOneDrive('individual');
         });
 
-        shareButton.textContent = 'Share Files';
-        shareButton.addEventListener('click', async() => {
+        const shareFiles = document.createElement('button');
+        shareFiles.textContent = 'Share Files';
+        shareFiles.addEventListener('click', async() => {
             showModalMul();
         })
+
+
+        // Append buttons to the card div
+        cardDiv.appendChild(googlebutton)
+        cardDiv.appendChild(onedrivebutton)
+        cardDiv.appendChild(zipButton);
+        cardDiv.appendChild(individualButton);
+        cardDiv.appendChild(individualGoogle);
+        cardDiv.appendChild(individualOnedrive);
+        cardDiv.appendChild(shareFiles);
 
 
 
@@ -383,35 +403,36 @@ async function hideDropZoneAndFileDetails() {
             fileDetails.style.display = 'block';
             encryptButton.style.display = 'block';
             dropZoneEncasement.style.display = 'block';
-            googlebutton.style.display = 'none';
-            onedrivebutton.style.display = 'none';
+            googleupload.style.display = 'none';
+            onedriveupload.style.display = 'none';
             downloadButton.style.display = 'none';
-            shareButton.style.display = 'none';
             selectedFiles.files = []
             var div = document.getElementById("file-details-container");
             div.innerHTML = "";
             seen.clear();
-            downloadContainer.style.display = 'block'
         });
 
-        googlebutton.style.display = 'block';
-        googlebutton.textContent = 'Upload File To Google';  // Reuse the existing variable
+        googleupload.style.display = 'block';
+        googleupload.textContent = 'Upload File To Google';  // Reuse the existing variable
         
         // Add click event listener to the download button
-        googlebutton.addEventListener('click', async () => {
+        googleupload.addEventListener('click', async () => {
             uploadtoGoogle('individual');
         });
         
         
-        onedrivebutton.style.display = 'block';
-        onedrivebutton.textContent = 'Upload File to OneDrive';  // Reuse the existing variable
+        onedriveupload.style.display = 'block';
+        onedriveupload.textContent = 'Upload File to OneDrive';  // Reuse the existing variable
         
         // Add click event listener to the download button
-        onedrivebutton.addEventListener('click', async () => {
+        onedriveupload.addEventListener('click', async () => {
             uploadtoOneDrive('individual');
         });
         // Append the download button to the document or display it wherever needed
-
+        document.body.appendChild(downloadButton);
+        document.body.appendChild(shareButton);
+        document.body.appendChild(googleupload);
+        document.body.appendChild(onedriveupload);
     }
 }
 
@@ -559,7 +580,7 @@ async function uploadtoOneDrive (type,name){
             const uploadUrl = await createUploadSession(accesstoken, fileNameWithEnc);
             console.log(uploadUrl)
             // Step 2: Upload File to Session
-            const uploadResult = await uploadFileInChunks(uploadUrl, blobe);
+            const uploadResult = await uploadFileToSession(uploadUrl, blobe);
 
             console.log('Upload result:', uploadResult);
 
@@ -658,41 +679,20 @@ async function createUploadSession(accesstoken, fileNameWithEnc) {
 
 
 
+async function uploadFileToSession(uploadUrl, fileBlob) {
+    const headers = {
+        'Content-Length': `${fileBlob.size}`, // Set the size of the file
+        'Content-Range': `bytes 0-${fileBlob.size - 1}/${fileBlob.size}` // The range of bytes you're uploading
+    };
 
-async function uploadFileInChunks(uploadUrl, fileBlob) {
-    const CHUNK_SIZE = 25 * 1024 * 1024; // 320 KiB in bytes
-    const fileSize = fileBlob.size;
-    let start = 0;
-
-    while (start < fileSize) {
-        const end = Math.min(start + CHUNK_SIZE, fileSize);
-        const chunk = fileBlob.slice(start, end); // Create a slice of the file for this chunk
-        const contentRange = `bytes ${start}-${end - 1}/${fileSize}`;
-
-        const headers = {
-            'Content-Length': `${chunk.size}`,
-            'Content-Range': contentRange
-        };
-
-        // Attempt to upload the chunk
-        const response = await fetch(uploadUrl, {
-            method: 'PUT',
-            headers: headers,
-            body: chunk
-        });
-
-        if (!response.ok) {
-            // Handle errors or retry as necessary
-            throw new Error('Failed to upload chunk');
-        }
-
-        // Prepare for the next chunk
-        start = end;
-    }
-
-    // Optionally, handle the final response or confirmation as needed
-    return { success: true, message: 'File uploaded in chunks successfully' };
+    const response = await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: headers,
+        body: fileBlob // The actual file blob
+    });
+    return response.json(); // Response from the upload session
 }
+
 
 
 // OneDrive MSAL Documentation -->https://learn.microsoft.com/en-us/javascript/api/@azure/msal-browser/browsercachemanager?view=msal-js-latest
