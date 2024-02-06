@@ -6,6 +6,7 @@ import fs from 'fs/promises';
 
 const accountRouter = express.Router();
 
+
 function generateSalt(length) {
     return crypto.randomBytes(length).toString('hex');
 }
@@ -28,6 +29,7 @@ accountRouter.post('/create_account', async (req, res) => {
         const email = req.body.email;
         const password = req.body.password;
         const confirmPassword = req.body.confirmPassword;
+
         //load insecure passwords from file.
         const content = await fs.readFile('10k-worst-passwords.txt', 'utf-8');
         const passworders = content.trim().split('\n').map(password => password.trim().toLowerCase()); 
