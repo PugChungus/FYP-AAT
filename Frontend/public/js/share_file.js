@@ -57,8 +57,8 @@ async function executeSQLQuery(userInput) {
                 imgElement.src = objectURL;
                 imgElement.classList.add('user-avatar');
 
-                imgElement.style.maxHeight = '200px'; // Change the value as needed
-                imgElement.style.maxWidth = '200px'; // Change the value as needed
+                imgElement.style.maxHeight = '50px'; // Change the value as needed
+                imgElement.style.maxWidth = '50px'; // Change the value as needed
 
 
                 // Create username element

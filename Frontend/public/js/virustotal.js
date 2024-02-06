@@ -27,6 +27,7 @@ export async function sendFileToBackend(file) {
     const fileExtension = fileNameParts.length > 1 ? fileNameParts.pop() : '';
     const fileNameWithoutExtension = fileNameParts.join('');
     console.log(fileNameWithoutExtension);
+    console.log("Selected files:", selectedFiles)
 
     const scanLoader = document.getElementById('scan-loader');
     scanLoader.style.display = 'block';
@@ -116,15 +117,17 @@ function displayFileDetails(file, formData, index) {
         const fileExtension = fileNameParts.length > 1 ? fileNameParts.pop() : '';
         const fileNameWithoutExtension = fileNameParts.join('');
         console.log(fileNameWithoutExtension)
+        console.log("Selecasdj ad:", selectedFiles)
 
         // Find the index of the file to be removed
-        const indexToRemove = selectedFiles.files.findIndex(file => file.name);
+        const indexToRemove = selectedFiles.files.findIndex(f => f === file);
         if (indexToRemove !== -1) {
             // Splice the file from the array
             selectedFiles.files.splice(indexToRemove, 1);
 
             // Remove the file container from the details container
             fileDetailsContainer.removeChild(fileContainer);
+            console.log("Updated FIles:", selectedFiles)
         }
         // You can also perform additional logic or updates here
     });
