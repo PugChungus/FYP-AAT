@@ -32,6 +32,7 @@ import time
 import schedule
 import sib_api_v3_sdk
 import requests
+from PIL import image, ImageDraw, ImageFont
 
 app = Flask(__name__)
 CORS(app)
@@ -2138,6 +2139,27 @@ def delete_account():
         return jsonify({'activation_status': 'error'})
 
 
+def generate_profile_picture(username, output_path = f"profile_picture_{username}".png):
+    width, height = 200, 200
+    image = Image.new("RGB", (width, height), 'white')
+    draw = ImageDraw.Draw(image)
+    font = ImageFont.load_default()
+    words = username.split()
+
+    initials = ''.join(word[0].upper() for word in words)
+
+    if len(initials) == 1:
+        initials += ' '
+
+    text_width, text_height = draw.textsize(initials, font)
+    x = (width - text_width) // 2
+    y = (height - text_height) // 2
+
+    # Draw text on the image
+    draw.text((x, y), initials, font=font, fill="black")
+
+    # Save the image
+    image.save(output_path)
 
 if __name__ == '__main__':
     # Run the scheduler in a separate thread

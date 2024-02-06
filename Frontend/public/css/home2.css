@@ -25,6 +25,8 @@
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease-in-out;
     font-size: 20px;
+    height: 250px; /* Set a fixed height for each div */
+    min-height: 250px; /* Set a minimum height to prevent collapsing */
 }
 
 .keydiv:hover,
@@ -53,5 +55,7 @@
     .historydiv,
     .fileinboxdiv {
         flex: 1 100%;
+        height: auto;
+        min-height: 250px;
     }
 }
