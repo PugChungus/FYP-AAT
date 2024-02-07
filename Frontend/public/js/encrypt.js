@@ -14,10 +14,10 @@ createKeyDropdown()
 
 document.getElementById('file-input-encrypt').addEventListener('change', handleFileUpload);
 
-
+let existingFileEntries;
 
 export function handleFileUpload(event) {
-    const existingFileEntries = new Set();
+    existingFileEntries = new Set();
     const newFiles = event.target.files;
     console.log("NewFiles:", newFiles)
     console.log('ExistingFilesEntries:', existingFileEntries)
