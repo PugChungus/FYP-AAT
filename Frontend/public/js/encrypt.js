@@ -84,12 +84,10 @@ export async function uploadFiles() {
 async function clearEncryptedFolder() {
     try {
         const email = await get_email_via_id()
-        const formData = new FormData();
         
-        formData.append('emailuser', email);
-        const clearResponse = await fetch('http://localhost:5000/clear_encrypted_folder', {
+        const clearResponse = await fetch(`http://localhost:5000/clear_encrypted_folder/${email}`, {
             method: 'GET',
-            body: formData
+            
         });
         
 
@@ -599,7 +597,7 @@ async function uploadtoOneDrive (type,name){
     } else {
         const filenamefordrive = `${name}.zip`
         const filename = 'encrypted.zip'
-        const email = awaitget_email_via_id()
+        const email = await get_email_via_id()
 
         const backendURL = `http://localhost:5000/download_zip/${filename}`;
         backendURL.searchParams.append('email',email)

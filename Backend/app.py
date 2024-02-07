@@ -1207,10 +1207,10 @@ def download_decrypted_zip(filename):
 
     return response
 
-@app.route('/clear_encrypted_folder', methods=['GET'])
-def clear_encrypted_folder():
+@app.route('/clear_encrypted_folder/<email>', methods=['GET'])
+def clear_encrypted_folder(email):
     
-    email = request.form.get('emailusers')
+    
     user_dicts[email].clear()
     return 'Encrypted folder cleared', 200
 
