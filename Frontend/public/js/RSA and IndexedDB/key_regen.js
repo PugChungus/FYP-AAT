@@ -45,6 +45,9 @@ async function rotateKeys() {
 
   const response = await fetch('http://localhost:3000/update_pubkey', {
     method: 'POST',
+    headers: {
+      'Authorization': `Bearer: ${jwtToken}`
+    },
     body: formData,
   });
 

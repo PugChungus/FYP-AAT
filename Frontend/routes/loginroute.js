@@ -43,8 +43,10 @@ loginRouter.post('/login', async (req, res) => {
             console.log("Tables:", tables);
 
             const pass_db = tables[0][0].password;
-            console.log(password);
-            console.log(pass_db);
+            const is2faenabled = tables[0][0].is_2fa_enabled
+            const tfasecret = tables[0][0].tfa_secret
+            console.log("Password:", password);
+            console.log("Pass_db", pass_db);
 
             verificationResult = await verifyPassword(password, pass_db);
             // Generation of JWT token
@@ -88,7 +90,7 @@ loginRouter.post('/login', async (req, res) => {
                             console.log();
                             if (tables[0][0].is_2fa_enabled === 1) {
                                 console.log("2FA_enabled: True");
-                                return res.status(200).json({ message: '2FA Required', result, encryptedUserData });
+                                return res.status(200).json({ message: '2FA Required', result, encryptedUserData, tfasecret });
                             } else {
                                 const jwtToken = jwt.sign({ encryptedUserData }, keys.secretJwtKey, { algorithm: 'HS512', expiresIn: '1h' });
 

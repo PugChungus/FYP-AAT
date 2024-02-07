@@ -13,7 +13,6 @@ accountDataRouter.post('/get_account', async (req, res) => {
     if (isValid === true) {
         console.log('Valid token');
         const id_from_cookie = await getAccountIdFromCookie(cookie_from_frontend);
-        console.log('whyyyyyyyyyyyy', id_from_cookie)
         
         if (id == id_from_cookie) {
             console.log("Authorised")
