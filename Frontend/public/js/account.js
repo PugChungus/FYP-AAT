@@ -70,19 +70,7 @@ export async function login(event) {
       if (loginData['message'] === 'Account is Not Activated') {
         window.location.href='http://localhost:3000/activation_failure'
       } else if (loginData['message'] === '2FA Required' ) {
-        const get2FAResponse = await fetch('http://localhost:3000/get2faStatus', {
-            method: 'POST',
-            body: formData,
-          });
-
-          const get2FAData = await get2FAResponse.json();
-          console.log("2fa Data:", get2FAData);
-          const is2FAEnabled = get2FAData.is_2fa_enabled === 1;
-          const secret = get2FAData.secret;
-          const emailz = get2FAData.email;
-
-          console.log('Is 2FA Enabled: ', is2FAEnabled);
-          console.log('Secret Key: ', secret);
+          const secret = loginData['tfasecret']
           const sendSecretResponse = await fetch('http://localhost:5000/send_secret', {
               method: 'POST',
               headers: {
