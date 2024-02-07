@@ -41,16 +41,32 @@ accountDataRouter.post('/get_account', async (req, res) => {
 
 accountDataRouter.post('/get_account2', async (req, res) => {
     const email = req.body.email;
-    
-    try {
-        const [tables] = await pool.execute('CALL GetUserAccountByEmail(?)', [email]);
+    const cookie_from_frontend = req.headers.authorization;
+    const isValid = await checkTokenValidity(cookie_from_frontend);
+
+    if (isValid === true) {
+
+        const id_from_cookie = await getAccountIdFromCookie(cookie_from_frontend);
+        const email_address = await getEmailAddressById(id_from_cookie);
+
+        if (email == email_address) {
+            console.log("Authorised")
+        } else {
+            return res.status(401).json({ error: 'Access forbidden' });
+        }
+
+        try {
+            const [tables] = await pool.execute('CALL GetUserAccountByEmail(?)', [email]);
+            
+            return res.status(200).json({ message: 'Account Data', tables });
         
-        return res.status(200).json({ message: 'Account Data', tables });
-       
-    } catch (error) {
-        console.log("error here")
-        console.error(error);
-        return res.status(500).json({ error: 'Internal Server Error' });
+        } catch (error) {
+            console.log("error here")
+            console.error(error);
+            return res.status(500).json({ error: 'Internal Server Error' });
+        }
+    } else {
+        return res.status(401).json({ error: 'Invalid Token' });
     }
 });
 

@@ -36,7 +36,6 @@ if (submitButton) {
   submitButton.addEventListener('click', login);
 } 
 
-
 export async function login(event) {
   event.preventDefault(); // Prevent the form from submitting normally
 
@@ -52,25 +51,9 @@ export async function login(event) {
 
   const formData = new FormData();
   formData.append('email', email);
-  console.log("FORMDATAAPPENDING:", formData)
+  formData.append('password', password);
 
   try {
-
-    const response = await fetch('http://localhost:3000/check_account', {
-      method: 'POST',
-      body: formData,
-    });
-
-    const responseData = await response.text()
-    console.log("Response Data: ", responseData)
-    const data = JSON.parse(responseData)
-    let count = data.result[0][0].count
-    console.log("Count:", count)
-
-    if (count === 1) {
-      formData.append('password', password);
-      console.log("ok")
-
       // Check if 2FA is required
       const loginResponse = await fetch('http://localhost:3000/login', {
         method: 'POST',
@@ -137,66 +120,58 @@ export async function login(event) {
 
 
       } else {
-      const jwtToken = await get_cookie();
+        const jwtToken = await get_cookie();
+        
+        if (loginData.result) {
+          const count = loginData.result[0]['count(*)']
+          console.log(count)
+          if (count === 1) {
+            const response = await fetch('http://localhost:3000/get_account2', { 
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer: ${jwtToken}`
+              },
+              body: formData,
+            });
 
-      console.log(data)
-      
-      if (loginData.result) {
-        console.log(data.result)
-        document.cookie = `jwtToken=${data.JWTtoken}; SameSite=Strict; Secure`;
-        const count = loginData.result[0]['count(*)']
-        console.log(count)
-        if (count === 1) {
+            const response2 = await fetch('http://localhost:5000/create_user_dict', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer: ${jwtToken}`
+              },
+              body: formData,
+            });
 
-
-          const response = await fetch('http://localhost:3000/get_account2', { 
-            method: 'POST',
-            body: formData,
-          });
-
-          const response2 = await fetch('http://localhost:5000/create_user_dict', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer: ${jwtToken}`
-            },
-            body: formData,
-          });
-
-          const data = await response.json();
-          var username = data["tables"][0]["username"]
-          var email_addr = data["tables"][0]["email_address"]
-          var pfp = data["tables"][0]["profile_picture"]
-
-          sessionStorage.setItem('profile_picture', pfp);
-            await continueRegularLogin(formData);
-          
+            const data = await response.json();
+            var pfp = data["tables"][0]["profile_picture"]
+            sessionStorage.setItem('profile_picture', pfp);
+            window.location.href = 'http://localhost:3000/home';
+            
+          } else {
+            alert("Login Failed");
+          }
         } else {
           alert("Login Failed");
         }
-      } else {
-        alert("Login Failed");
-      }
-    }
-} else {
-      alert('Login Failed');
     }
   } catch (error) {
     console.error('Error during fetch:', error);
   }
 }	
 
-
-
 async function continueRegularLogin(formData) {
+  const jwtToken = await get_cookie();
+
   // Perform additional steps for regular login if needed
   const response = await fetch('http://localhost:3000/get_account2', {
     method: 'POST',
+    headers: {
+      'Authorization': `Bearer: ${jwtToken}`
+    },
     body: formData,
   });
 
   const data = await response.json();
-  var username = data["tables"][0]["username"];
-  var email_addr = data["tables"][0]["email_address"];
   var pfp = data["tables"][0]["profile_picture"];
 
   sessionStorage.setItem('profile_picture', pfp);

@@ -59,7 +59,7 @@ accountRouter.post('/create_account', async (req, res) => {
  
         if (insecurePasswords.has(lowercasedpassword)) {
             return res.status(400).json({ error: 'Your password is execptionally weak, please choose a new one' });
-        }else {
+        } else {
             console.log("Provided password is not in the list of insecure passwords.");
         }
 
@@ -73,64 +73,30 @@ accountRouter.post('/create_account', async (req, res) => {
             return res.status(400).json({ error: 'Password must contain at least one uppercase letter' });
         }
         
-
-       
         const random_salt = generateSalt(16)
         const encodedHash = await hashPassword(password, random_salt)
         console.log("Salt:", random_salt)
         console.log("Encode Hash:", encodedHash)
 
-        const [result] = await pool.execute('CALL create_account(?, ?, ?)', [username, encodedHash, email]);
-        
-        res.cookie('jwtToken', '', {
-            expires: new Date(0),  // Set expiration to a past date
-            httpOnly: true,
-            sameSite: 'Strict',
-            secure: true,
-        });    
-
-        return res.status(200).json({ message: 'Account created successfully' });
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({ error: err });
-    }
-});
-
-accountRouter.post('/check_account', async (req, res) => {
-    const email = req.body.email;
-    console.log("EMAIL REQUEST:", email)
-    const emailRegex = /^[\w-]+(\.[\w-]+)*@[A-Za-z0-9]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$/;
-
-    if (!emailRegex.test(email)) {
-        return res.status(400).json({ error: 'Invalid email format' });
-    }
-
-    try {
         const [result] = await pool.execute('CALL Check_account(?)', [email]);
         
         if (result[0][0]['count'] == 1) {
-            return res.status(200).json({ message: 'Email Exists', result });
+            return res.status(400).json({ message: 'Registeration Failed.'});
         } else {
-            return res.status(200).json({ message: 'Email Does Not Exist', result });
-        }
-    }
-    catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
+            const [result] = await pool.execute('CALL create_account(?, ?, ?)', [username, encodedHash, email]);
+            
+            res.cookie('jwtToken', '', {
+                expires: new Date(0),  // Set expiration to a past date
+                httpOnly: true,
+                sameSite: 'Strict',
+                secure: true,
+            });    
 
-accountRouter.post('/delete_account', async (req, res) => {
-    const id = req.body.id;
-    
-    try {
-      // Delete user account from the database
-      const [result] = await pool.execute('DELETE FROM user_account WHERE account_id = ?', [id]);
-  
-      return res.status(200).json({ message: 'Account Deleted', result});
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ error: 'Internal Server Error' });
+            return res.status(200).json({ message: 'Account created successfully' });
+        }
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: err });
     }
 });
 
@@ -152,7 +118,7 @@ accountRouter.post('/check_username', async (req, res) => {
       console.error(error);
       return res.status(500).json({ error: 'Internal Server Error' });
     }
-  });
+});
   
 
 export default accountRouter;

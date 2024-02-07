@@ -35,83 +35,89 @@ loginRouter.post('/login', async (req, res) => {
     }
 
     try {
-        const [tables] = await pool.execute('CALL check2FA(?)', [email]);
+        const [result] = await pool.execute('CALL Check_account(?)', [email]);
+        
+        if (result[0][0].count == 1) {
+            const [tables] = await pool.execute('CALL check2FA(?)', [email]);
 
-        console.log("Tables:", tables);
+            console.log("Tables:", tables);
 
-        const pass_db = tables[0][0].password;
-        console.log(password);
-        console.log(pass_db);
+            const pass_db = tables[0][0].password;
+            console.log(password);
+            console.log(pass_db);
 
-        verificationResult = await verifyPassword(password, pass_db);
-        // Generation of JWT token
+            verificationResult = await verifyPassword(password, pass_db);
+            // Generation of JWT token
 
-        if (verificationResult == true) {
+            if (verificationResult == true) {
 
-            const [result] = await pool.execute('CALL ValidateUserCredentials(?, ?)', [email, pass_db]);
+                const [result] = await pool.execute('CALL ValidateUserCredentials(?, ?)', [email, pass_db]);
 
-            if (result[0][0].user_count == 1) {
+                if (result[0][0].user_count == 1) {
 
-                const [result] = await pool.execute(
-                    'SELECT count(*) FROM user_account WHERE email_address = ? AND password = ?;',
-                    [email, pass_db]
-                );
-
-                if (result[0]['count(*)'] == 1) {
-
-                    const [tables_accountData] = await pool.execute(
-                        'SELECT * FROM user_account WHERE email_address = ?;',
-                        [email]
+                    const [result] = await pool.execute(
+                        'SELECT count(*) FROM user_account WHERE email_address = ? AND password = ?;',
+                        [email, pass_db]
                     );
 
-                    const account_id = tables_accountData[0]['account_id'];
-                    const username = tables_accountData[0]['username'];
+                    if (result[0]['count(*)'] == 1) {
 
-                    const userData = {
-                        id: account_id,
-                        username: username,
-                        role: 'user',
-                    };
+                        const [tables_accountData] = await pool.execute(
+                            'SELECT * FROM user_account WHERE email_address = ?;',
+                            [email]
+                        );
 
-                    const userDataString = JSON.stringify(userData);
+                        const account_id = tables_accountData[0]['account_id'];
+                        const username = tables_accountData[0]['username'];
 
-                    const encryptedUserData = await encryptData(userDataString);
+                        const userData = {
+                            id: account_id,
+                            username: username,
+                            role: 'user',
+                        };
 
-                    console.log("Activation Status: ", tables[0][0].activated)
+                        const userDataString = JSON.stringify(userData);
 
-                    if (tables[0][0].activated === 0) {
-                        return res.status(200).json({ message: 'Account is Not Activated', result });
-                    } else {
-                        console.log();
-                        if (tables[0][0].is_2fa_enabled === 1) {
-                            console.log("2FA_enabled: True");
-                            return res.status(200).json({ message: '2FA Required', result, encryptedUserData });
+                        const encryptedUserData = await encryptData(userDataString);
+
+                        console.log("Activation Status: ", tables[0][0].activated)
+
+                        if (tables[0][0].activated === 0) {
+                            return res.status(200).json({ message: 'Account is Not Activated', result });
                         } else {
-                            const jwtToken = jwt.sign({ encryptedUserData }, keys.secretJwtKey, { algorithm: 'HS512', expiresIn: '1h' });
+                            console.log();
+                            if (tables[0][0].is_2fa_enabled === 1) {
+                                console.log("2FA_enabled: True");
+                                return res.status(200).json({ message: '2FA Required', result, encryptedUserData });
+                            } else {
+                                const jwtToken = jwt.sign({ encryptedUserData }, keys.secretJwtKey, { algorithm: 'HS512', expiresIn: '1h' });
 
-                            // Set the JWE in a cookie
-                            res.cookie('jwtToken', jwtToken, {
-                                httpOnly: true,
-                                sameSite: 'Strict',
-                                secure: true,
-                                maxAge: 3600000,
-                            });
+                                // Set the JWE in a cookie
+                                res.cookie('jwtToken', jwtToken, {
+                                    httpOnly: true,
+                                    sameSite: 'Strict',
+                                    secure: true,
+                                    maxAge: 3600000,
+                                });
 
-                            await addTokenToWhitelist(jwtToken);
+                                await addTokenToWhitelist(jwtToken);
+                            }
+
+                            return res.status(200).json({ message: 'Account Login Success', result });
                         }
-
-                        return res.status(200).json({ message: 'Account Login Success', result });
+                    } else {
+                        return res.status(200).json({ message: 'Account Login Failed', result });
                     }
-                } else {
-                    return res.status(200).json({ message: 'Account Login Failed', result });
                 }
+            } else {
+                return res.status(200).json({ message: 'Account Login Failed' });
             }
         } else {
-            return res.status(200).json({ message: 'Account Login Failed' });
+            return res.status(401).json({ message: 'Account Login Failed' });
         }
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ error: 'Internal Server Error' });
+        return res.status(401).json({ error: 'Internal Server Error' });
     }
 });
 
