@@ -92,33 +92,25 @@ function displayFileDetails(file, formData, index) {
     fileContainer.classList.add('file-entry-container'); // Add a container class
     fileDetailsContainer.appendChild(fileContainer);
 
-    const fileInfoContainer = document.createElement('div');
-    fileInfoContainer.classList.add('file-info-container');
-    fileContainer.appendChild(fileInfoContainer);
-
     // Display file name
     const fileName = document.createElement('div');
-    fileName.classList.add('fileName')
     fileName.textContent = `File Name: ${file.name}`;
-    fileInfoContainer.appendChild(fileName);
+    fileContainer.appendChild(fileName);
 
     // Display file size
     const fileSize = document.createElement('div');
-    fileSize.classList.add('fileSize')
     fileSize.textContent = `File Size: ${formatFileSize(file.size)}`;
-    fileInfoContainer.appendChild(fileSize);
+    fileContainer.appendChild(fileSize);
 
-
-    const trashIcon = document.createElement('i');
-    trashIcon.classList.add('bx', 'bxs-trash');
-    trashIcon.style.cursor = 'pointer'
-    trashIcon.addEventListener('click', () => {
+    const removeButton = document.createElement('button');
+    removeButton.textContent = 'Remove';
+    removeButton.addEventListener('click', () => {
         // Use the index or unique identifier to remove the file from the array
         const fileNameParts = file.name.split('.');
         const fileExtension = fileNameParts.length > 1 ? fileNameParts.pop() : '';
         const fileNameWithoutExtension = fileNameParts.join('');
+
         console.log(fileNameWithoutExtension)
-        console.log("Selecasdj ad:", selectedFiles.files)
 
         // Find the index of the file to be removed
         const indexToRemove = selectedFiles.files.findIndex(f => f === file);
@@ -131,11 +123,10 @@ function displayFileDetails(file, formData, index) {
             console.log("Seen?:", seen)
             // Remove the file container from the details container
             fileDetailsContainer.removeChild(fileContainer);
-            console.log("Updated FIles:", selectedFiles.files)
         }
         // You can also perform additional logic or updates here
     });
-    fileContainer.appendChild(trashIcon);
+    fileContainer.appendChild(removeButton);
 
     // Perform the scan after displaying file details
 }

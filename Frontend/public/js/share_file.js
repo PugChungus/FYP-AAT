@@ -257,8 +257,9 @@ export async function shareFile(type) {
                     const filename = 'encrypted.zip';
                     // const zipFolderName = window.prompt('Enter the name for the zip folder (without extension)');
                     if (zipFolderName) {
+                        const email = get_email_via_id()
                         formData.append('zip_name', `${zipFolderName}.zip`);
-
+                        formData.append('emailuser',email)
                         const response2 = await fetch(`http://localhost:5000/send_zip/${filename}`, {
                             method: 'POST',
                             headers : {
