@@ -56,6 +56,10 @@ pool = PooledDB(
 
 user_dicts = {}  # Dictionary to store user-specific dictionaries
 user_secrets = {}
+fp_dicts = {}
+da_dicts = {}
+dtfa_dicts = {}
+ev_dicts = {}
 # salt = secrets.token_hex(16)
 SECRET_KEY = get_random_bytes(32)
 SECRET_KEY2 = get_random_bytes(32)
@@ -85,7 +89,7 @@ def update_keys():
     if new_keys:
         # Update your keys with the new ones
         secretJwtKey = new_keys['secretKey']
-        print(secretJwtKey)
+        print("What THe:", secretJwtKey)
         return "Keys Fetched"
 
 def run_scheduler():
@@ -1439,6 +1443,23 @@ def email_verification():
     data = request.get_json()
     print(f"Received JSON data: {data}")
     emailaddress = data.get('email','')
+    print("EMIASNMDA:", emailaddress)
+
+    global ev_dicts
+    global token_evpayload
+
+    if emailaddress not in ev_dicts:
+        ev_dicts[emailaddress] = {
+            'token_evpayload': {
+                'token': '',
+                'hashed_token': '',
+                'expiration' : '',
+
+            }
+        }
+
+    token_evpayload = ev_dicts[emailaddress]['token_evpayload']
+    print("New Dict:", token_evpayload)
 
     expiration_time = datetime.utcnow() + timedelta(minutes=15)
     expiration_timestamp = int(expiration_time.timestamp())
