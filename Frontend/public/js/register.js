@@ -100,7 +100,7 @@ async function register() {
     //   return;
     // }
     if (passwordRegex.test(password)){
-      alert("Forbidden Characters Detected")
+      alert("Forbidden Characters Detected in password field")
       return;
     }
 
@@ -111,86 +111,66 @@ async function register() {
 
     // Check if password contains at least one uppercase letter
     if (!/[A-Z]/.test(password)) {
-      alert("Passowrd must contain at least one Uppercase letter")
+      alert("Password must contain at least one Uppercase letter")
       return;
-  }
+    }
     
     try {
       const formData = new FormData();
       formData.append('email', email);
-      
-      const response = await fetch('http://localhost:3000/check_account', {
+      formData.append('username', username);
+      formData.append('password', password);
+      formData.append('confirmPassword', confirmPassword);
+      console.log("FormData", formData)
+
+      const response = await fetch('http://localhost:3000/create_account', {
         method: 'POST',
         body: formData,
       });
-  
-      const data = await response.json();
-      const count = data.result[0][0]['count']
-  
-      if (count == 1) {
-        alert('This email is already registered. Please use a different email.')
-        return
-      }
-      else {
-        const formData = new FormData();
-        formData.append('username', username);
-        formData.append('email', email);
-        formData.append('password', password);
-        formData.append('confirmPassword', confirmPassword);
-        console.log("FormData", formData)
-  
-        try {
-          const response = await fetch('http://localhost:3000/create_account', {
+
+      if (response.ok) {
+        const keypair = await keygen();
+        const public_key = keypair.publicKey
+        const private_key = keypair.privateKey
+
+        const pem_public = await exportPublicKey(public_key)
+        console.log(pem_public)
+        const jwk_private = await exportPrivateKey(private_key)
+        console.log(jwk_private)
+
+        formData.append('public_key', pem_public);
+        
+        const newResponse = await fetch('http://localhost:3000/create_pubkey', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        if (newResponse.ok) {
+          const verificationFormData = new FormData();
+          verificationFormData.append('email', email)
+          console.log('Am I getting it lmao?:', verificationFormData)
+
+          const verificationResponse = await fetch('http://localhost:5000/email_verification', {
             method: 'POST',
-            body: formData,
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(Object.fromEntries(verificationFormData.entries())),
           });
-  
-          if (response.ok) {
-            const keypair = await keygen();
-            const public_key = keypair.publicKey
-            const private_key = keypair.privateKey
-  
-            const pem_public = await exportPublicKey(public_key)
-            console.log(pem_public)
-            const jwk_private = await exportPrivateKey(private_key)
-            console.log(jwk_private)
-  
-            formData.append('public_key', pem_public);
-            
-            const newResponse = await fetch('http://localhost:3000/create_pubkey', {
-              method: 'POST',
-              body: formData,
-            });
-            
-            if (newResponse.ok) {
-              const verificationFormData = new FormData();
-              verificationFormData.append('email', email)
-              console.log('Am I getting it lmao?:', verificationFormData)
-  
-              const verificationResponse = await fetch('http://localhost:5000/email_verification', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify(Object.fromEntries(verificationFormData.entries())),
-            });
-  
-            if (verificationResponse.ok) {
-              openIndexDB(jwk_private, email);
-              alert("Registration Successful. Please Check your Email to activate your account. Mail Might take up to 5 Minutes. Might wanna check Junk or Spam folder ;)");
-              window.location.href = 'http://localhost:3000';
-            } else {
-              alert("Email verification failed. Please try again.");
-            }
-  
+
+          if (verificationResponse.ok) {
+            openIndexDB(jwk_private, email);
+            alert("Registration Successful. Please Check your Email to activate your account. Mail Might take up to 5 Minutes. Might wanna check Junk or Spam folder ;)");
+            window.location.href = 'http://localhost:3000';
           } else {
-              alert("Registeration Failed.")
-            }
+            alert("Email verification failed. Please try again.");
           }
-  
-        } catch (error) {
-          console.error('Error during fetch:', error);
+
+        } else {
+          alert("Registeration Failed.")
         }
+      } else {
+        alert("Registeration Failed.")
       }
     } catch (error) {
       console.error('Error during fetch:', error);
