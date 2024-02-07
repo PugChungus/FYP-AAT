@@ -1653,6 +1653,22 @@ def email_forgetPassword():
     print(f"Received JSON data: {data}")
     emailaddress = data.get('email','')
 
+    try:
+        connection = pool.connection()
+
+        with connection.cursor() as cursor:
+            sql = "SELECT COUNT(*) as count FROM user_account WHERE email_address = %s"
+            cursor.execute(sql, (emailaddress))
+            rows = cursor.fetchall()
+            count = rows[0][0]
+            
+            if count != 1:
+                return jsonify({'message': 'Email verification sent successfully'})
+        connection.commit()
+    except Exception as e:
+        connection.rollback()
+        print("Error inserting secret into the database: ", str(e)), 500
+
     expiration_time = datetime.utcnow() + timedelta(minutes=15)
     expiration_timestamp = int(expiration_time.timestamp())
 
