@@ -1461,21 +1461,21 @@ def email_verification():
     emailaddress = data.get('email','')
     print("EMIASNMDA:", emailaddress)
 
-    global ev_dicts
-    global token_evpayload
+    # global ev_dicts
+    # global token_evpayload
 
-    if emailaddress not in ev_dicts:
-        ev_dicts[emailaddress] = {
-            'token_evpayload': {
-                'token': '',
-                'hashed_token': '',
-                'expiration' : '',
+    # if emailaddress not in ev_dicts:
+    #     ev_dicts[emailaddress] = {
+    #         'token_evpayload': {
+    #             'token': '',
+    #             'hashed_token': '',
+    #             'expiration' : '',
 
-            }
-        }
+    #         }
+    #     }
 
-    token_evpayload = ev_dicts[emailaddress]['token_evpayload']
-    print("New Dict:", token_evpayload)
+    # token_evpayload = ev_dicts[emailaddress]['token_evpayload']
+    # print("New Dict:", token_evpayload)
 
     expiration_time = datetime.utcnow() + timedelta(minutes=15)
     expiration_timestamp = int(expiration_time.timestamp())

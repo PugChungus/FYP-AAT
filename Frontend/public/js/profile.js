@@ -119,9 +119,13 @@ document.addEventListener('DOMContentLoaded', async function () {
       const email = await get_email_via_id()
       console.log("SENDING EMAIL", email)
       formData.append('email', email)
+      const jwtToken = await get_cookie();
 
       const response = await fetch('http://localhost:3000/get2faStatus', {
         method: 'POST',
+        headers : {
+          'Authorization' : `Bearer: ${jwtToken}`
+        },
         body: formData,
       });
   
@@ -164,9 +168,9 @@ document.addEventListener('DOMContentLoaded', async function () {
           formData.append('email', email);
           const cookie = await get_cookie();
 
-          const jwtToken = await get_cookie();
-          console.log("cookie:", cookie)
-          console.log("jwttoken:", jwtToken)
+
+            console.log("cookie:",cookie)
+            console.log("jwttoken:", jwtToken)
 
           const qrResponse = await fetch('http://localhost:5000/generate_2fa_qr_code', {
             method: 'POST',
