@@ -1,6 +1,7 @@
 import express from 'express';
 import { pool } from '../db-connection.js';
 import { checkTokenValidity } from './authorizeRolesRoute.js';
+import { getAccountIdFromCookie, getEmailAddressById } from './check.js';
 
 
 const tfaRouter = express.Router();
@@ -51,6 +52,14 @@ tfaRouter.post('/disable2fa', async (req, res) => {
 
         if (isValid === true) {
             console.log('Valid token');
+            const id_from_cookie = await getAccountIdFromCookie(cookie_from_frontend);
+        
+            if (id == id_from_cookie) {
+                console.log("Authorised")
+            } else {
+                return res.status(401).json({ error: 'Access forbidden' });
+            }
+    
             const sql = 'UPDATE user_account SET is_2fa_enabled = 0 WHERE account_id = ?'
             const values = [id];
             await pool.query(sql, values);
@@ -74,7 +83,14 @@ tfaRouter.post('/enable2fa', async (req, res) => {
             console.log("Error Validating Key")
         } else {
             const { id } = req.body;
+            const id_from_cookie = await getAccountIdFromCookie(cookie_from_frontend);
         
+            if (id == id_from_cookie) {
+                console.log("Authorised")
+            } else {
+                return res.status(401).json({ error: 'Access forbidden' });
+            }
+    
             const sql = 'UPDATE user_account SET is_2fa_enabled = 1 WHERE account_id = ?';
             const values = [id];
         

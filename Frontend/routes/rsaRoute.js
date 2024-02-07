@@ -2,6 +2,7 @@ import express, { Router } from 'express';
 import { pool } from '../db-connection.js';
 import e from 'express';
 import { checkTokenValidity } from './authorizeRolesRoute.js';
+import { getAccountIdFromCookie, getEmailAddressById } from './check.js';
 
 const rsaRouter = express.Router();
 
@@ -9,9 +10,18 @@ rsaRouter.post('/get_shared_files', async (req, res) => {
     try {
         const id = req.body.id;
         const cookie_from_frontend = req.headers.authorization
+
         const isValid = await checkTokenValidity(cookie_from_frontend)
         if (isValid === true) {
             console.log('Valid token');
+            const id_from_cookie = await getAccountIdFromCookie(cookie_from_frontend);
+        
+            if (id == id_from_cookie) {
+                console.log("Authorised")
+            } else {
+                return res.status(401).json({ error: 'Access forbidden' });
+            }
+
             const file_rows = await pool.execute(`
             SELECT file_shared.*, user_account.email_address AS shared_by_email
             FROM file_shared
@@ -38,6 +48,23 @@ rsaRouter.post('/delete_shared_files', async (req, res) => {
         const cookie_from_frontend = req.headers.authorization
         const isValid = await checkTokenValidity(cookie_from_frontend)
         if (isValid === true) {
+
+            const id_from_cookie = await getAccountIdFromCookie(cookie_from_frontend);
+
+            // Query to retrieve the shared_to_id from the database based on share_id
+            const [rows] = await pool.execute(`SELECT shared_to_id FROM file_shared WHERE share_id = ?`, [id]);
+            if (rows.length > 0) {
+                const shared_to_id = rows[0].shared_to_id;
+
+                if (id_from_cookie === shared_to_id) {
+                    console.log("Authorized")
+                } else {
+                    return res.status(401).json({ error: 'Access forbidden' });
+                }
+            } else {
+                return res.status(404).json({ error: 'Share ID not found' });
+            }
+
             console.log('Valid token');
             const delete_row = await pool.execute(`DELETE FROM file_shared WHERE share_id = ?`, [id]);
 
@@ -61,6 +88,15 @@ rsaRouter.post('/get_pubkey', async (req, res) => {
         console.log('Valid token');
         try {
             const email = req.body.email;
+
+            const id_from_cookie = await getAccountIdFromCookie(cookie_from_frontend);
+            const email_address = await getEmailAddressById(id_from_cookie);
+
+            if (email == email_address) {
+                console.log("Authorised")
+            } else {
+                return res.status(401).json({ error: 'Access forbidden' });
+            }
     
             // Now, you have the account_id, and you can use it in the next INSERT statement
             const publicKeyResult = await pool.execute(`SELECT public_key
@@ -112,14 +148,27 @@ rsaRouter.post('/create_pubkey', async (req, res) => {
 rsaRouter.post('/update_pubkey', async (req, res) => {
     try {
         const public_key = req.body.public_key;
-        const email = req.body.email;
         console.log(public_key)
+        const email = req.body.email;
+        const cookie_from_frontend = req.headers.authorization;
+        const isValid = await checkTokenValidity(cookie_from_frontend);
 
-        // Now, you have the account_id, and you can use it in the next INSERT statement
-        const publicKeyResult = await pool.execute('CALL UpdatePublicKey(?, ?)', [public_key, email]);
+        if (isValid === true) {
+            const id_from_cookie = await getAccountIdFromCookie(cookie_from_frontend);
+            const email_address = await getEmailAddressById(id_from_cookie);
 
+            if (email == email_address) {
+                console.log("Authorised")
+            } else {
+                return res.status(401).json({ error: 'Access forbidden' });
+            }
 
-        return res.status(200).json({ message: 'Public Key updated successfully' });
+            const publicKeyResult = await pool.execute('CALL UpdatePublicKey(?, ?)', [public_key, email]);
+
+            return res.status(200).json({ message: 'Public Key updated successfully' });
+        } else {
+            return res.status(401).json({ error: 'Invalid Token' });
+        }
     } catch (err) {
         console.error(err);
         return res.status(500).json({ error: 'Internal Server Error' });
