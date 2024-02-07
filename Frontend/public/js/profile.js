@@ -92,6 +92,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   }
 
   const userInfoElement = document.getElementById('user-info');
+  if (userInfoElement){
   userInfoElement.innerHTML = `
     <h2>Welcome, ${username}</h2>
     <p>Username: ${username}</p>
@@ -105,7 +106,7 @@ document.addEventListener('DOMContentLoaded', async function () {
       <span>Enable Two-Factor Authentication</span>
     </div>
     
-  `;
+  `;}
 
   const imgElement = document.getElementById('profile-picture');
   imgElement.src = objectURL;
@@ -137,7 +138,8 @@ document.addEventListener('DOMContentLoaded', async function () {
       console.error('Error making request: ', error);
     }
   }
-
+  if (enable2FASwitch) {
+   
   enable2FASwitch.addEventListener('click', async function () {
 
     const currentState = enable2FASwitch.checked;
@@ -300,7 +302,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 });
-
+}
   check2FAStatus();
 });
 

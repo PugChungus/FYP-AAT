@@ -36,14 +36,14 @@ import numpy as np
 from io import BytesIO
 
 app = Flask(__name__)
-cors_config = {
-    "origins": ["http://localhost:3000","http://localhost:5000" ],
-    "methods": ["GET", "POST", "PUT", "DELETE"],
+# cors_config = {
+#     "origins": ["http://localhost:3000","http://localhost:5000" ],
+#     "methods": ["GET", "POST", "PUT", "DELETE"],
     
-}
-CORS(app,resources={r"*": cors_config})
-
-# Connect to the MySQL database
+# }
+#CORS(app,resources={r"*": cors_config})
+CORS(app)
+# Cornect to the MySQL database
 pool = PooledDB(
     creator=pymysql,  # Database library/module
     maxconnections=None,  # Maximum number of connections in the pool
@@ -191,10 +191,11 @@ def create_user_dict():
                 'encrypted_data_dict': {},
                 'decrypted_data_dict': {}
             }
-        
+        print(user_dicts)
         encrypted_data_dict = user_dicts[email]["encrypted_data_dict"]
         decrypted_data_dict = user_dicts[email]["decrypted_data_dict"]
-        
+        print('big info here')
+        print(encrypted_data_dict)
         return jsonify("User dictionary created.")
     except Exception as e:
         print("Error:", e)
@@ -497,9 +498,10 @@ def upload_file():
 
 @app.route('/encrypt', methods=['POST'])
 def encrypt_files():
+    
     try:
         authorization_header = request.headers.get('Authorization')
-
+        
         if authorization_header is None:
             return "Token is Invalid"
         
@@ -521,11 +523,15 @@ def encrypt_files():
         if total_size_bytes > max_size_bytes:
             return jsonify({'error': 'Total file size exceeds 1 GB limit'}), 400
         print(uploaded_files)
+        email = request.form['email']
 
         clear_dict = request.form['clear']
         print(clear_dict)
         if clear_dict == '0':
-            encrypted_data_dict.clear()
+            print("SHIT MAN")
+            user_dicts[email].clear()
+            
+            print(user_dicts)
 
         hex_value = request.form['hex']
         print(hex_value)
@@ -561,7 +567,8 @@ def encrypt_files():
 
             new_file_name = f'{file_name}.enc'
 
-            encrypted_data_dict[new_file_name] = concat
+            user_dicts[email][new_file_name] = concat
+            #encrypted_data_dict[new_file_name] = concat
 
         return "End of Encryption", 200
 
@@ -965,8 +972,8 @@ def decrypt_history():
         connection.rollback()
         return jsonify({'error': str(e)}), 500
 
-@app.route('/send_file/<filename>', methods=['POST'])
-def send_file_to_user(filename):
+@app.route('/send_file/<filename>/<email>', methods=['POST'])
+def send_file_to_user(filename,email):
     authorization_header = request.headers.get('Authorization')
     print("Send User Authorizataion: ", authorization_header)
 
@@ -982,9 +989,9 @@ def send_file_to_user(filename):
 
 
     print(filename, 'file')
-
+    print(email)
     # Assuming encrypted_data_dict is a global dictionary
-    for key, value in encrypted_data_dict.items():
+    for key, value in user_dicts[email].items():
         print(key, 'key')
 
     key_base64 = request.form.get('key')
@@ -996,7 +1003,7 @@ def send_file_to_user(filename):
     if not key_base64 or not shared_to_email or not shared_by_email:
         abort(400, 'Invalid request data')
 
-    encrypted_data = encrypted_data_dict.get(filename, None)
+    encrypted_data = user_dicts[email].get(filename, None)
 
     if encrypted_data is None:
         return 'File not found', 404
@@ -1025,7 +1032,7 @@ def send_file_to_user(filename):
 
     return 'File shared successfully.', 200
 
-@app.route('/send_zip/<filename>', methods=['POST'])
+@app.route('/send_zip/<filename>/', methods=['POST'])
 def send_zip_file_to_user(filename):
     authorization_header = request.headers.get('Authorization')
     print("Send User Authorizataion: ", authorization_header)
@@ -1041,9 +1048,12 @@ def send_zip_file_to_user(filename):
         print('Valid Token')
 
     print(filename, 'file')
-
+    email = request.form.get('useremail')
     # Assuming encrypted_data_dict is a global dictionary
-    for key, value in encrypted_data_dict.items():
+
+    # for key, value in encrypted_data_dict.items():
+    #     print(key, 'key')
+    for key, value in user_dicts[email].items():
         print(key, 'key')
 
     key_base64 = request.form.get('key')
@@ -1058,7 +1068,7 @@ def send_zip_file_to_user(filename):
     encrypted_zip_data = BytesIO()
 
     with zipfile.ZipFile(encrypted_zip_data, 'w', zipfile.ZIP_STORED, allowZip64=True) as zipf:
-        for encrypted_filename, encrypted_data in encrypted_data_dict.items():
+        for encrypted_filename, encrypted_data in user_dicts[email].items():
             # Add the encrypted data to the ZIP archive with the encrypted filename
             print(encrypted_filename, file=sys.stderr)
             zipf.writestr(encrypted_filename, encrypted_data)
@@ -1066,13 +1076,13 @@ def send_zip_file_to_user(filename):
     zip_filename = f'encrypted.zip'
 
     encrypted_zip_data.seek(0)
-    encrypted_data_dict[zip_filename] = encrypted_zip_data.getvalue()
+    user_dicts[email][zip_filename] = encrypted_zip_data.getvalue()
     encrypted_zip_data.seek(0)
     encrypted_zip_data.truncate(0)
 
-    for keys, value in encrypted_data_dict.items():
+    for keys, value in user_dicts[email].items():
         print(keys, file=sys.stderr)
-    encrypted_data = encrypted_data_dict.get(filename, None)
+    encrypted_data = user_dicts[email].get(filename, None)
 
     if encrypted_data is None:
         return 'File not found', 404
@@ -1100,12 +1110,16 @@ def send_zip_file_to_user(filename):
 
     return 'File shared successfully.', 200
 
-@app.route('/download_single_encrypted_file/<filename>', methods=['GET'])
-def download_single_encrypted_file(filename):
+@app.route('/download_single_encrypted_file/<filename>/<email>', methods=['GET'])
+def download_single_encrypted_file(filename,email):
     print(filename, file=sys.stderr)
-    for keys, value in encrypted_data_dict.items():
+  
+    print(email)
+    for keys, value in user_dicts[email].items():
+        print("GODDAMN SON")
+        print(user_dicts)
         print(keys, file=sys.stderr)
-    encrypted_data = encrypted_data_dict.get(filename, None)
+    encrypted_data = user_dicts[email].get(filename, None)
     # print(encrypted_data, file=sys.stderr)
     if encrypted_data is None:
         return 'File not found', 404
@@ -1119,9 +1133,9 @@ def download_single_encrypted_file(filename):
 def download_zip(filename):
     print(filename, file=sys.stderr)
     encrypted_zip_data = BytesIO()
-
+    email = request.args.get("email")
     with zipfile.ZipFile(encrypted_zip_data, 'w', zipfile.ZIP_STORED, allowZip64=True) as zipf:
-        for encrypted_filename, encrypted_data in encrypted_data_dict.items():
+        for encrypted_filename, encrypted_data in user_dicts[email][encrypted_data_dict].items():
             # Add the encrypted data to the ZIP archive with the encrypted filename
             print(encrypted_filename, file=sys.stderr)
             zipf.writestr(encrypted_filename, encrypted_data)
@@ -1129,13 +1143,13 @@ def download_zip(filename):
     zip_filename = f'encrypted.zip'
 
     encrypted_zip_data.seek(0)
-    encrypted_data_dict[zip_filename] = encrypted_zip_data.getvalue()
+    user_dicts[email][encrypted_data_dict][zip_filename] = encrypted_zip_data.getvalue()
     encrypted_zip_data.seek(0)
     encrypted_zip_data.truncate(0)
 
-    for keys, value in encrypted_data_dict.items():
+    for keys, value in user_dicts[email].items():
         print(keys, file=sys.stderr)
-    encrypted_data = encrypted_data_dict.get(filename, None)
+    encrypted_data = user_dicts[email].get(filename, None)
 
     if encrypted_data is None:
         return 'File not found', 404
@@ -1197,9 +1211,11 @@ def download_decrypted_zip(filename):
 
     return response
 
-@app.route('/clear_encrypted_folder', methods=['GET'])
-def clear_encrypted_folder():
-    encrypted_data_dict.clear()
+@app.route('/clear_encrypted_folder/<email>', methods=['GET'])
+def clear_encrypted_folder(email):
+    
+    
+    user_dicts[email].clear()
     return 'Encrypted folder cleared', 200
 
 @app.route('/clear_decrypted_folder', methods=['GET'])
