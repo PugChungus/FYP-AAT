@@ -968,11 +968,12 @@ def decrypt_history():
         connection.rollback()
         return jsonify({'error': str(e)}), 500
 
-@app.route('/send_file/<filename>/<email>', methods=['POST'])
-def send_file_to_user(filename,email):
+@app.route('/send_file/<filename>', methods=['POST'])
+def send_file_to_user(filename):
     authorization_header = request.headers.get('Authorization')
     print("Send User Authorizataion: ", authorization_header)
-
+    
+    email = request.form.get('email')
     if authorization_header is None:
         return "Token is Invalid"
         
@@ -985,7 +986,7 @@ def send_file_to_user(filename,email):
 
 
     print(filename, 'file')
-    print(email)
+    
     # Assuming encrypted_data_dict is a global dictionary
     for key, value in user_dicts[email].items():
         print(key, 'key')
