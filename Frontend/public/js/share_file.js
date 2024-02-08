@@ -242,7 +242,7 @@ export async function shareFile(type) {
                         const fileNameWithEnc = `${fileNameWithoutExtension}.enc`;
                         const email = get_email_via_id()
                         formData.append('email',email)
-                        const response2 = await fetch(`http://localhost:5000/send_file/${fileNameWithEnc}`, {
+                        const response2 = await fetch(`http://localhost:5000/send_file/${fileNameWithEnc}/${email}`, {
                             method: 'POST',
                             headers : {
                                 'Authorization' : `Bearer: ${jwtToken}`
@@ -260,7 +260,7 @@ export async function shareFile(type) {
                     if (zipFolderName) {
                         const email = get_email_via_id()
                         formData.append('zip_name', `${zipFolderName}.zip`);
-                        formData.append('emailuser',email)
+                        formData.append('useremail',email)
                         const response2 = await fetch(`http://localhost:5000/send_zip/${filename}`, {
                             method: 'POST',
                             headers : {

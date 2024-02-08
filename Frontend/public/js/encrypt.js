@@ -128,6 +128,7 @@ async function encrypt(file, i) {
     const jwtToken = await get_cookie()
     const email = await get_email_via_id()
     formData.append('email',email)
+    console.log(email)
     try {
         const response = await fetch('http://localhost:5000/encrypt', {
             method: 'POST',

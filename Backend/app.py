@@ -219,10 +219,10 @@ def create_user_dict():
                 'decrypted_data_dict': {}
             }
         print(user_dicts)
-        encrypted_data_dict = user_dicts[email]["encrypted_data_dict"]
-        decrypted_data_dict = user_dicts[email]["decrypted_data_dict"]
+        # encrypted_data_dict = user_dicts[email]["encrypted_data_dict"]
+        # decrypted_data_dict = user_dicts[email]["decrypted_data_dict"]
         print('big info here')
-        print(encrypted_data_dict)
+        print(user_dicts)
         return jsonify("User dictionary created.")
     except Exception as e:
         print("Error:", e)
@@ -539,6 +539,8 @@ def encrypt_files():
             return "Invalid Token."
         else:
             print('Valid Token')
+
+
         
         uploaded_files = request.files.getlist('files')
         total_size_bytes = sum(get_file_size(file_storage) for file_storage in uploaded_files)
@@ -551,15 +553,16 @@ def encrypt_files():
             return jsonify({'error': 'Total file size exceeds 1 GB limit'}), 400
         print(uploaded_files)
         email = request.form['email']
-
+        
         clear_dict = request.form['clear']
         print(clear_dict)
         if clear_dict == '0':
             print("SHIT MAN")
-            user_dicts[email].clear()
             
-            print(user_dicts)
-
+            
+            user_dicts[email]['encrypted_data_dict'].clear()
+            
+          
         hex_value = request.form['hex']
         print(hex_value)
         key = bytes.fromhex(hex_value)
@@ -594,12 +597,15 @@ def encrypt_files():
 
             new_file_name = f'{file_name}.enc'
 
-            user_dicts[email][new_file_name] = concat
+            user_dicts[email]['encrypted_data_dict'][new_file_name] = concat
+            print("GODDAMNIT")
+            print(user_dicts)
             #encrypted_data_dict[new_file_name] = concat
 
         return "End of Encryption", 200
 
     except Exception as e:
+        
         print("Error processing Files:", str(e))
         return {"isValid": False, "error": str(e)}, 500
 
@@ -607,6 +613,7 @@ def encrypt_files():
 def decrypt_files():
     try:
         authorization_header = request.headers.get('Authorization')
+        email = request.form['email']
 
         if authorization_header is None:
             return "Token is Invalid"
@@ -635,7 +642,8 @@ def decrypt_files():
         key = bytes.fromhex(hex_key)
 
         if clear_dict == '0':
-            decrypted_data_dict.clear()
+            user_dicts[email]["decrypted_data_dict"].clear()
+            
 
         for uploaded_file in uploaded_files:
             # filename = secure_filename(uploaded_file.filename)
@@ -678,9 +686,9 @@ def decrypt_files():
 
                     decrypted_zip_data.seek(0)
                     join_file_name = f'{file_name}{file_extension}'
-                    decrypted_data_dict[join_file_name] = decrypted_zip_data.getvalue()
+                    user_dicts[email]['decrypted_data_dict'][join_file_name] = decrypted_zip_data.getvalue()
 
-                    for keys, value in decrypted_data_dict.items():
+                    for keys, value in user_dicts[email]['decrypted_data_dict'].items():
                         print(keys, 'key')
 
                     # Print the number of files within decrypted_zip_data
@@ -706,7 +714,7 @@ def decrypt_files():
                 original_extension = extension.decode('utf-8')
                 file_with_original_extension = f'{file_name}{original_extension}'
 
-                decrypted_data_dict[file_with_original_extension] = file_data
+                user_dicts[email]['decrypted_data_dict'][file_with_original_extension] = file_data
 
                 file_extension = original_extension.replace('.', '')
 
@@ -719,11 +727,12 @@ def decrypt_files():
 @app.route('/decrypt2', methods=['POST'])
 def decrypt_files2():
     try:
+        
         authorization_header = request.headers.get('Authorization')
 
         if authorization_header is None:
             return "Token is Invalid"
-        
+        email = request.form['email']
         isValid = check_token_validity(authorization_header)
         
         if not isValid:
@@ -787,9 +796,9 @@ def decrypt_files2():
 
                     decrypted_zip_data.seek(0)
                     join_file_name = f'{file_name}{file_extension}'
-                    decrypted_data_dict[join_file_name] = decrypted_zip_data.getvalue()
+                    user_dicts[email]['decrypted_data_dict'][join_file_name] = decrypted_zip_data.getvalue()
 
-                    for keys, value in decrypted_data_dict.items():
+                    for keys, value in user_dicts[email]['decrypted_data_dict'].items():
                         print(keys, 'key')
 
                     # Print the number of files within decrypted_zip_data
@@ -822,7 +831,7 @@ def decrypt_files2():
                 original_extension = extension.decode('utf-8')
                 file_with_original_extension = f'{file_name}{original_extension}'
 
-                decrypted_data_dict[file_with_original_extension] = file_data
+                user_dicts[email]['decrypted_data_dict'][file_with_original_extension] = file_data
 
                 file_extension = original_extension.replace('.', '')
                 
@@ -1080,7 +1089,7 @@ def send_zip_file_to_user(filename):
 
     # for key, value in encrypted_data_dict.items():
     #     print(key, 'key')
-    for key, value in user_dicts[email].items():
+    for key, value in user_dicts[email]['encrypted_data_dict'].items():
         print(key, 'key')
 
     key_base64 = request.form.get('key')
@@ -1095,7 +1104,7 @@ def send_zip_file_to_user(filename):
     encrypted_zip_data = BytesIO()
 
     with zipfile.ZipFile(encrypted_zip_data, 'w', zipfile.ZIP_STORED, allowZip64=True) as zipf:
-        for encrypted_filename, encrypted_data in user_dicts[email].items():
+        for encrypted_filename, encrypted_data in user_dicts[email]['encrypted_data_dict'].items():
             # Add the encrypted data to the ZIP archive with the encrypted filename
             print(encrypted_filename, file=sys.stderr)
             zipf.writestr(encrypted_filename, encrypted_data)
@@ -1103,13 +1112,13 @@ def send_zip_file_to_user(filename):
     zip_filename = f'encrypted.zip'
 
     encrypted_zip_data.seek(0)
-    user_dicts[email][zip_filename] = encrypted_zip_data.getvalue()
+    user_dicts[email]['encrypted_data_dict'][zip_filename] = encrypted_zip_data.getvalue()
     encrypted_zip_data.seek(0)
     encrypted_zip_data.truncate(0)
 
-    for keys, value in user_dicts[email].items():
+    for keys, value in user_dicts[email]['encrypted_data_dict'].items():
         print(keys, file=sys.stderr)
-    encrypted_data = user_dicts[email].get(filename, None)
+    encrypted_data = user_dicts[email]['encrypted_data_dict'].get(filename, None)
 
     if encrypted_data is None:
         return 'File not found', 404
@@ -1142,11 +1151,11 @@ def download_single_encrypted_file(filename,email):
     print(filename, file=sys.stderr)
   
     print(email)
-    for keys, value in user_dicts[email].items():
+    for keys, value in user_dicts[email]['encrypted_data_dict'].items():
         print("GODDAMN SON")
         print(user_dicts)
         print(keys, file=sys.stderr)
-    encrypted_data = user_dicts[email].get(filename, None)
+    encrypted_data = user_dicts[email]['encrypted_data_dict'].get(filename, None)
     # print(encrypted_data, file=sys.stderr)
     if encrypted_data is None:
         return 'File not found', 404
@@ -1242,12 +1251,12 @@ def download_decrypted_zip(filename,email):
 def clear_encrypted_folder(email):
     
     
-    user_dicts[email].clear()
+    user_dicts[email]["encrypted_data_dict"].clear()
     return 'Encrypted folder cleared', 200
 
 @app.route('/clear_decrypted_folder/<email>', methods=['GET'])
 def clear_decrypted_folder(email):
-    user_dicts[email].clear()
+    user_dicts[email]['decrypted_data_dict'].clear()
     #decrypted_data_dict.clear()
     return 'Decrypted folder cleared', 200
 

@@ -3,6 +3,7 @@ import { createKeyDropdown } from "./key.js";
 import { sendFileToBackend, selectedFiles, seen } from "./virustotal.js";
 import { getGoogleToken } from './googlepickerdecrypt.js';
 import { getTokenForRequest } from './onedrivepickerdecrypt.js';
+import { get_email_via_id } from './profile.js';
 
 const keyDropdown = document.getElementById('key-dropdown');
 let selectedKey = keyDropdown.value;
@@ -212,7 +213,8 @@ export function isValidFileExtension(file) {
 
 async function clearDecryptedFolder() {
     try {
-        const clearResponse = await fetch('http://localhost:5000/clear_decrypted_folder', {
+        const email = get_email_via_id()
+        const clearResponse = await fetch(`http://localhost:5000/clear_decrypted_folder/${email}`, {
             method: 'GET',
         });
 
@@ -248,10 +250,11 @@ async function decrypt(file, i) {
 
     formData.append('files', file);
     formData.append('clear', i)
-
+    const email = await get_email_via_id()  
+    formData.append('emailuser', email)
     try {
         const jwtToken = await get_cookie()
-
+        
         const response = await fetch('http://localhost:5000/decrypt', {
             method: 'POST',
             headers: {
