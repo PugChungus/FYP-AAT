@@ -2010,6 +2010,21 @@ def email_disabletfa():
     expiration_time = datetime.utcnow() + timedelta(minutes=15)
     expiration_timestamp = int(expiration_time.timestamp())
 
+    global fp_dicts
+    global token_fppayload
+
+    if username not in fp_dicts:
+        fp_dicts[username] = {
+            'token_fppayload': {
+                'token': '',
+                'hashed_token': '',
+                'expiration' : '',
+                'email' : '',
+            }
+        }
+
+    
+
     verification_token = secrets.token_urlsafe(32)
     print("VERFICATION TOKEN:", verification_token)
 
@@ -2161,9 +2176,25 @@ def email_deletea():
     data = request.get_json()
     print(f"Received JSON data: {data}")
     emailaddress = data.get('email','')
+    username = data.get('username', '')
 
     expiration_time = datetime.utcnow() + timedelta(minutes=15)
     expiration_timestamp = int(expiration_time.timestamp())
+
+    global da_dicts
+    global token_dapayload
+
+    if username not in da_dicts:
+        da_dicts[username] = {
+            'token_dapayload': {
+                'token': '',
+                'hashed_token': '',
+                'expiration' : '',
+            }
+        }
+
+    token_dapayload = da_dicts[username]['token_dapayload']
+    print("New Dict:", da_dicts)
 
     verification_token = secrets.token_urlsafe(32)
     print("VERFICATION TOKEN:", verification_token)
@@ -2175,7 +2206,10 @@ def email_deletea():
     token_dapayload['token'] = verification_token
     token_dapayload['hashed_token'] = hashed_token
     token_dapayload['expiration'] = expiration_timestamp
-    token_dapayload['email'] = emailaddress
+    encoded_username = base64.b64encode(username.encode()).decode()
+    url_parameters = f"token={hashed_token}.{encoded_username}"
+    print("Update dadict", da_dicts)
+    # token_dapayload['email'] = emailaddress
     configuration = sib_api_v3_sdk.Configuration()
     configuration.api_key['api-key'] = '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'
 
@@ -2213,7 +2247,7 @@ def email_deletea():
         <body>
             <h1>Delete Your Account</h1>
             <p>Please Click On the Button below to Delete your Account.</p>
-            <a href="http://localhost:3000/deleteaccount?token={hashed_token}">Delete Account</a>
+            <a href="http://localhost:3000/deleteaccount?{url_parameters}">Delete Account</a>
         </body>
     </html>
     """

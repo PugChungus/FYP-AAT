@@ -338,6 +338,9 @@ export async function deleteAccount() {
   
     const data = await newResponse.json(); // await here
     const id = data['id_username']['id'];
+    console.log("WHATTHE: ", data)
+    console.log('nehneh:', id)
+    const username = data['id_username']['username']
     const email = await get_email_via_id()
     const jwtToken = await get_cookie();
 
@@ -363,7 +366,7 @@ export async function deleteAccount() {
       headers : {
         'Content-Type' : 'application/json',
       },
-      body : JSON.stringify({ email: email})
+      body : JSON.stringify({ email: email, username: username })
     })
 
     const isEmailSent = await response2v.json()
