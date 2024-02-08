@@ -1702,21 +1702,53 @@ def email_forgetPassword():
     print(f"Received JSON data: {data}")
     emailaddress = data.get('email','')
 
+    username = None
+
     try:
         connection = pool.connection()
 
         with connection.cursor() as cursor:
             sql = "SELECT COUNT(*) as count FROM user_account WHERE email_address = %s"
-            cursor.execute(sql, (emailaddress))
+            cursor.execute(sql, (emailaddress,))
             rows = cursor.fetchall()
             count = rows[0][0]
             
-            if count != 1:
-                return jsonify({'message': 'Email verification sent successfully'})
-        connection.commit()
+            if count == 1:
+                sql = "SELECT username FROM user_account WHERE email_address = %s"
+                cursor.execute(sql, (emailaddress,))
+                result = cursor.fetchone()  # Fetch one row
+
+                if result:
+                    username = result[0]
+                    print("UserName?:", username)
+                else:
+                    username = None
+                    
+                connection.commit()
+            else:
+                connection.commit()
+
     except Exception as e:
         connection.rollback()
-        print("Error inserting secret into the database: ", str(e)), 500
+        print("Error executing SQL query:", str(e)), 500
+
+
+    global fp_dicts
+    global token_fppayload
+
+    if username not in fp_dicts:
+        fp_dicts[username] = {
+            'token_fppayload': {
+                'token': '',
+                'hashed_token': '',
+                'expiration' : '',
+                'email' : '',
+            }
+        }
+
+    token_fppayload = fp_dicts[username]['token_fppayload']
+    print("New Dict:", fp_dicts)
+
 
     expiration_time = datetime.utcnow() + timedelta(minutes=15)
     expiration_timestamp = int(expiration_time.timestamp())
@@ -1732,6 +1764,9 @@ def email_forgetPassword():
     token_fppayload['hashed_token'] = hashed_token
     token_fppayload['expiration'] = expiration_timestamp
     token_fppayload['email'] = emailaddress
+    encoded_username = base64.b64encode(username.encode()).decode()
+    url_parameters = f"token={hashed_token}.{encoded_username}"
+    print('Update DICTS', fp_dicts)
     configuration = sib_api_v3_sdk.Configuration()
     configuration.api_key['api-key'] = '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'
 
@@ -1769,7 +1804,7 @@ def email_forgetPassword():
         <body>
             <h1>Reset Your Password</h1>
             <p>Please Click On the Button below to Validate your Email Address and change your password.</p>
-            <a href="http://localhost:3000/resetpassword?token={hashed_token}">Verify Email</a>
+            <a href="http://localhost:3000/resetpassword?{url_parameters}">Verify Email</a>
         </body>
     </html>
     """
@@ -1791,8 +1826,11 @@ def email_forgetPassword():
         print("Exception when calling SMTPApi->send_transac_email: %s\n" % e)
         return jsonify({'error': 'Failed to send email verification'})
     
-def is_valid_tokenfp(hashed_token, token_fppayload):
-    token = token_fppayload['token']
+def is_valid_tokenfp(hashed_token, username):
+    print("V1:", fp_dicts)
+    print('V2:', fp_dicts[username])
+    print('V3:', fp_dicts[username]['token_fppayload'])
+    token = fp_dicts[username]['token_fppayload']['token']
     print("It's not about the journey:", token)
     expiration_timestamp = token_fppayload['expiration']
 
@@ -1850,25 +1888,31 @@ def reset_password():
         # Get the token from the request body
         data = request.json
         token = data.get('token', '')
+        username = data.get('username', '')
+        username = base64.b64decode(username.encode()).decode()
+        print("Username", username)
         print("POWER OF FRIENDSHIP:", token)
 
         # Assuming you have a function is_valid_token for token validation
-        if is_valid_tokenfp(token, token_fppayload):  # Provide token_evpayload as the second argument
+        if is_valid_tokenfp(token, username):  # Provide token_evpayload as the second argument
             print("CHECKED")
             print('OMG:', token_fppayload)
             
-            if token_fppayload['email'] in token_fppayload['email']:
-                email = token_fppayload['email']
-                print("account ID:", email)
+            if username in fp_dicts:
+                username = username
+                print("ASNI Username:", username)
+                email = fp_dicts[username]['token_fppayload']['email']
+                print("Email:",email)
                 encrypted_email = encrypt_emailfp(email)
                 print("What data type:", type(encrypted_email))
                 print("What data :", encrypted_email)
+                username = base64.b64encode(username.encode()).decode()
 
 
                 # Assuming you have a function pool.connection() for database connection
                 
 
-                return jsonify({'Validation': 'success', 'encrypted_email': encrypted_email})
+                return jsonify({'Validation': 'success', 'encrypted_email': encrypted_email, 'encoded': username})
 
         else:
             # Return error response
@@ -1888,17 +1932,20 @@ def a_reset_password():
         data = request.get_json()
         print("resetdata:", data)
 
-        # Check if 'newPassword' and 'tempemail' are in the JSON data
         if 'newPassword' not in data :
             return jsonify({'error': 'Missing parameters'}), 400
 
         new_password = data['newPassword']
 
-        email = token_fppayload['email']
+        username = data['encodedu']
+        
+        email = base64.b64decode(username.encode()).decode()
+        print('decode:', username)
+
 
         try:
             # Proceed with the database update for username only
-            sql = "UPDATE user_account SET password = %s  WHERE email_address = %s"
+            sql = "UPDATE user_account SET password = %s  WHERE username = %s"
             connection = pool.connection()
 
             with connection.cursor() as cursor:
