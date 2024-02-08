@@ -68,6 +68,33 @@ IV = get_random_bytes(16)
 IV2 =get_random_bytes(16)
 IVFP = get_random_bytes(16)
 
+def getAccountIdFromCookie(authorization_header):
+    response = requests.get('http://localhost:3000/get-account-id', headers={'Authorization': authorization_header})
+    if response.status_code == 200:
+        account_id = response.json()['accountId']
+        print(account_id)
+        return account_id
+    else:
+        print('Error:', response.json()['error'])
+
+def getEmailAddressById(id, authorization_header):
+    # Make a POST request to the endpoint
+    response = requests.post(
+        'http://localhost:3000/get-email-by-id',
+        json={'id': id},
+        headers={'Authorization': authorization_header}
+    )
+
+    # Check the response status code and handle accordingly
+    if response.status_code == 200:
+        email = response.json()['email']
+        print(email)
+        return email
+    elif response.status_code == 401:
+        print('Unauthorized')
+    else:
+        print('Error:', response.json()['error'])
+
 def fetch_latest_keys():
     try:
         # Make a POST request with the password

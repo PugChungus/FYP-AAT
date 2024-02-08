@@ -1,19 +1,27 @@
 import express from 'express';
 import { pool } from '../db-connection.js';
 import { checkTokenValidity } from './authorizeRolesRoute.js';
-import { getAccountIdFromCookie, getEmailAddressById } from './check.js';
+import { getAccountIdFromCookie, getEmailAddressById } from './checkRoute.js';
 
 
 const tfaRouter = express.Router();
 
 tfaRouter.post('/get2faStatus', async (req, res) => {
     const cookie_from_frontend = req.headers.authorization;
-
     const isValid = await checkTokenValidity(cookie_from_frontend)
 
     if (isValid) {
         try {
+            const id_from_cookie = await getAccountIdFromCookie(cookie_from_frontend);
+            const email_address = await getEmailAddressById(id_from_cookie);
+    
             const { email } = req.body;
+
+            if (email == email_address) {
+                console.log("Authorised")
+            } else {
+                return res.status(401).json({ error: 'Access forbidden' });
+            }    
     
             console.log("email:", email)
     
