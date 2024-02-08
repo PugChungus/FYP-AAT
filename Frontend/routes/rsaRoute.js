@@ -52,11 +52,11 @@ rsaRouter.post('/delete_shared_files', async (req, res) => {
             const id_from_cookie = await getAccountIdFromCookie(cookie_from_frontend);
 
             // Query to retrieve the shared_to_id from the database based on share_id
-            const [rows] = await pool.execute(`SELECT shared_to_id FROM file_shared WHERE share_id = ?`, [id]);
+            const [rows] = await pool.execute(`SELECT shared_to FROM file_shared WHERE share_id = ?`, [id]);
             if (rows.length > 0) {
-                const shared_to_id = rows[0].shared_to_id;
+                const shared_to = rows[0].shared_to;
 
-                if (id_from_cookie === shared_to_id) {
+                if (id_from_cookie === shared_to) {
                     console.log("Authorized")
                 } else {
                     return res.status(401).json({ error: 'Access forbidden' });
@@ -89,15 +89,6 @@ rsaRouter.post('/get_pubkey', async (req, res) => {
         try {
             const email = req.body.email;
 
-            const id_from_cookie = await getAccountIdFromCookie(cookie_from_frontend);
-            const email_address = await getEmailAddressById(id_from_cookie);
-
-            if (email == email_address) {
-                console.log("Authorised")
-            } else {
-                return res.status(401).json({ error: 'Access forbidden' });
-            }
-    
             // Now, you have the account_id, and you can use it in the next INSERT statement
             const publicKeyResult = await pool.execute(`SELECT public_key
             FROM public_key
@@ -110,7 +101,6 @@ rsaRouter.post('/get_pubkey', async (req, res) => {
                 return res.status(404).json({ error: 'Public Key not found for the provided email' });
             }
 
-    
             return res.status(200).json({ message: 'Public Key retrieved', result: publicKeyResult });
         } catch (err) {
             console.error(err);

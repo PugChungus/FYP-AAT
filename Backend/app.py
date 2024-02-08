@@ -976,10 +976,15 @@ def decrypt_history():
 def send_file_to_user(filename):
     authorization_header = request.headers.get('Authorization')
     print("Send User Authorizataion: ", authorization_header)
-    
-    email = request.form.get('email')
+
     if authorization_header is None:
         return "Token is Invalid"
+    
+    key_base64 = request.form.get('key')
+    shared_to_email = request.form.get('email')
+    shared_by_email = request.form.get('email2')
+
+    print(key_base64)
         
     isValid = check_token_validity(authorization_header)
     if not isValid:
@@ -992,19 +997,13 @@ def send_file_to_user(filename):
     print(filename, 'file')
     
     # Assuming encrypted_data_dict is a global dictionary
-    for key, value in user_dicts[email].items():
+    for key, value in user_dicts[shared_by_email].items():
         print(key, 'key')
-
-    key_base64 = request.form.get('key')
-    shared_to_email = request.form.get('email')
-    shared_by_email = request.form.get('email2')
-
-    print(key_base64)
 
     if not key_base64 or not shared_to_email or not shared_by_email:
         abort(400, 'Invalid request data')
 
-    encrypted_data = user_dicts[email].get(filename, None)
+    encrypted_data = user_dicts[shared_by_email].get(filename, None)
 
     if encrypted_data is None:
         return 'File not found', 404
