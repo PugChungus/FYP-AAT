@@ -1050,7 +1050,7 @@ def send_file_to_user(filename):
     shared_by_email = request.form.get('email2')
 
     connection = pool.connection()
-
+    
     try:
         with connection.cursor() as cursor:
             sql = "SELECT * FROM user_account WHERE email_address = %s"
@@ -1072,13 +1072,13 @@ def send_file_to_user(filename):
     print(filename, 'file')
     
     # Assuming encrypted_data_dict is a global dictionary
-    for key, value in user_dicts[shared_by_email].items():
+    for key, value in user_dicts[shared_by_email]["encrypted_data_dict"].items():
         print(key, 'key')
 
     if not key_base64 or not shared_to_email or not shared_by_email:
         abort(400, 'Invalid request data')
 
-    encrypted_data = user_dicts[shared_by_email].get(filename, None)
+    encrypted_data = user_dicts[shared_by_email]["encrypted_data_dict"].get(filename, None)
 
     if encrypted_data is None:
         return 'File not found', 404

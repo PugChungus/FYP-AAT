@@ -247,9 +247,8 @@ export async function shareFile(type) {
                         }
             
                         const fileNameWithEnc = `${fileNameWithoutExtension}.enc`;
-                        const email = get_email_via_id()
-                        formData.append('email',email)
-                        const response2 = await fetch(`http://localhost:5000/send_file/${fileNameWithEnc}/${email}`, {
+                            
+                        const response2 = await fetch(`http://localhost:5000/send_file/${fileNameWithEnc}`, {
                             method: 'POST',
                             headers : {
                                 'Authorization' : `Bearer: ${jwtToken}`
