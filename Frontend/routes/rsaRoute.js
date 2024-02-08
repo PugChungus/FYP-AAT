@@ -2,7 +2,7 @@ import express, { Router } from 'express';
 import { pool } from '../db-connection.js';
 import e from 'express';
 import { checkTokenValidity } from './authorizeRolesRoute.js';
-import { getAccountIdFromCookie, getEmailAddressById } from './check.js';
+import { getAccountIdFromCookie, getEmailAddressById } from './checkRoute.js';
 
 const rsaRouter = express.Router();
 

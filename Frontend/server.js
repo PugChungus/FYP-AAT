@@ -22,6 +22,7 @@ import tfaRouter from './routes/tfaRoute.js';
 import accountDataRouter from './routes/accountDataRoute.js';
 import rsaRouter from './routes/rsaRoute.js';
 import hashPasswordRouter from './routes/hashpasswordRoute.js';
+import checkRouter from './routes/checkRoute.js';
 
 const app = express();
 const port = 3000;
@@ -133,6 +134,7 @@ app.use('/', rsaRouter);
 app.use('/', cookieRouter);
 app.use('/', tfaRouter);
 app.use('/', hashPasswordRouter)
+app.use('/', checkRouter);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

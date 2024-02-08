@@ -444,12 +444,15 @@ async function uploadtoGoogle (type,name){
             }
 
             const fileNameWithEnc = `${fileNameWithoutExtension}.enc`;
-            const backendurl = `http://localhost:5000/download_single_encrypted_file/${fileNameWithEnc}`
+            const email = await get_email_via_id()
+            console.log("FAK LA " + email)
+           
+            const backendurl = `http://localhost:5000/download_single_encrypted_file/${fileNameWithEnc}/${email}`
 
             const blob = await fetch(backendurl).then(response => response.blob());
         
             const headers = new Headers();
-            headers.append('Authorization', 'Bearer: ' + accesstoken);
+            headers.append('Authorization', 'Bearer ' + accesstoken);
 
             // Construct the request body
             console.log(files)
@@ -483,7 +486,7 @@ async function uploadtoGoogle (type,name){
         const accessToken = await getGoogleToken();
         console.log(accessToken)
         const headers = new Headers();
-        headers.append('Authorization', `Bearer: ${accessToken}`);
+        headers.append('Authorization', `Bearer ${accessToken}`);
         console.log(headers)
         const formData = new FormData();
         const fileNameOnDrive = `${name}.zip`;
@@ -510,7 +513,7 @@ async function uploadtoGoogle (type,name){
         const updateResponse = await fetch(updateFilenameAPI, {
             method: 'PATCH',
             headers: {
-                'Authorization': `Bearer: ${accessToken}`,
+                'Authorization': `Bearer ${accessToken}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(updateFilenameData),
@@ -554,9 +557,11 @@ async function uploadtoOneDrive (type,name){
             const fileNameWithEnc = `${fileNameWithoutExtension}.enc`;
             
             const OneDriveAPI = `https://api.onedrive.com/v1.0/drive/root:/${fileNameWithEnc}:/content`;
+            const email = await get_email_via_id()
+            console.log("FAK LA " + email)
+           
+            const backendurl = `http://localhost:5000/download_single_encrypted_file/${fileNameWithEnc}/${email}`
             
-            const backendurl = `http://localhost:5000/download_single_encrypted_file/${fileNameWithEnc}`
-
             const blobe = await fetch(backendurl).then(response => response.blob());
             const headers = new Headers();
 
