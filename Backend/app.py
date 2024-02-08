@@ -2192,9 +2192,28 @@ token_dapayload = {
 
 @app.route('/email_deletea', methods=['POST'])
 def email_deletea():
+    authorization_header = request.headers.get('Authorization')
+
+    if authorization_header is None:
+        return "Token is Invalid"
+    
+    isValid = check_token_validity(authorization_header)
+    
+    if not isValid:
+        print('Invalid Token.')
+        return "Invalid Token."
+    else:
+        print('Valid Token')
+
     data = request.get_json()
     print(f"Received JSON data: {data}")
     emailaddress = data.get('email','')
+    id = getAccountIdFromCookie(authorization_header)
+    email_from_cookie = getEmailAddressById(id, authorization_header)
+
+    if emailaddress != email_from_cookie:
+        return jsonify({'error': 'Access forbidden'}), 401
+    
     username = data.get('username', '')
 
     expiration_time = datetime.utcnow() + timedelta(minutes=15)
