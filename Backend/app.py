@@ -1,4 +1,5 @@
 from __future__ import print_function
+from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify, Response, abort
 from werkzeug.utils import secure_filename
 from flask_cors import cross_origin
@@ -43,15 +44,22 @@ app = Flask(__name__)
 # }
 #CORS(app,resources={r"*": cors_config})
 CORS(app)
-# Cornect to the MySQL database
+load_dotenv()
+
+MYSQL_HOST = os.getenv('MYSQL_HOST')
+MYSQL_PORT = int(os.getenv('MYSQL_PORT'))
+MYSQL_USER = os.getenv('MYSQL_USER')
+MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD')
+MYSQL_DATABASE = os.getenv('MYSQL_DATABASE')
+
 pool = PooledDB(
     creator=pymysql,  # Database library/module
     maxconnections=None,  # Maximum number of connections in the pool
-    host='localhost',
-    port=3306,
-    user='root',
-    password='password',
-    database='major_project_db'
+    host=MYSQL_HOST,
+    port=MYSQL_PORT,
+    user=MYSQL_USER,
+    password=MYSQL_PASSWORD,
+    database=MYSQL_DATABASE
 )
 
 user_dicts = {}  # Dictionary to store user-specific dictionaries

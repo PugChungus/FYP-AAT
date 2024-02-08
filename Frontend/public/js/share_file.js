@@ -247,8 +247,6 @@ export async function shareFile(type) {
                         }
             
                         const fileNameWithEnc = `${fileNameWithoutExtension}.enc`;
-                        const email = get_email_via_id()
-                        formData.append('email',email)
                         const response2 = await fetch(`http://localhost:5000/send_file/${fileNameWithEnc}`, {
                             method: 'POST',
                             headers : {
@@ -265,9 +263,9 @@ export async function shareFile(type) {
                     const filename = 'encrypted.zip';
                     // const zipFolderName = window.prompt('Enter the name for the zip folder (without extension)');
                     if (zipFolderName) {
-                        const email = get_email_via_id()
+                        const email = await get_email_via_id()
                         formData.append('zip_name', `${zipFolderName}.zip`);
-                        formData.append('emailuser', email)
+                        formData.append('useremail', email)
                         const response2 = await fetch(`http://localhost:5000/send_zip/${filename}`, {
                             method: 'POST',
                             headers : {
@@ -329,7 +327,7 @@ export async function showModal() {
 
     document.getElementById('confirmShare').addEventListener('click', async function() {
         await shareFile('individual');
-        // window.location.href = "http://localhost:3000/encrypt"
+        window.location.href = "http://localhost:3000/encrypt"
     });
     
     // Append the selectedUsersContainer to the body
@@ -378,12 +376,12 @@ export async function showModalMul() {
         if (standaloneRadio.checked) {
             console.log('Standalone option selected');
             await shareFile('individual');
-            // window.location.href = "http://localhost:3000/encrypt"
+            window.location.href = "http://localhost:3000/encrypt"
             // Add your logic for standalone option
         } else if (zipRadio.checked) {
             console.log('Zip option selected');
             await shareFile('zip');
-            // window.location.href = "http://localhost:3000/encrypt"
+            window.location.href = "http://localhost:3000/encrypt"
             // Add your logic for zip option
         } else {
             alert('No option selected.')
