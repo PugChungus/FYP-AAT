@@ -613,7 +613,7 @@ def encrypt_files():
 def decrypt_files():
     try:
         authorization_header = request.headers.get('Authorization')
-        email = request.form['email']
+        email = request.form['emailuser']
 
         if authorization_header is None:
             return "Token is Invalid"
@@ -1220,13 +1220,13 @@ def download_single_encrypted_file(filename, email):
     response.headers['Content-Disposition'] = f'attachment; filename="{WideFileName}"'
     return response
 
-@app.route('/download_zip/<filename>', methods=['GET'])
-def download_zip(filename):
+@app.route('/download_zip/<filename>/<email>', methods=['GET'])
+def download_zip(filename,email):
     print(filename, file=sys.stderr)
     encrypted_zip_data = BytesIO()
-    email = request.args.get("email")
+    
     with zipfile.ZipFile(encrypted_zip_data, 'w', zipfile.ZIP_STORED, allowZip64=True) as zipf:
-        for encrypted_filename, encrypted_data in user_dicts[email][encrypted_data_dict].items():
+        for encrypted_filename, encrypted_data in user_dicts[email]['encrypted_data_dict'].items():
             # Add the encrypted data to the ZIP archive with the encrypted filename
             print(encrypted_filename, file=sys.stderr)
             zipf.writestr(encrypted_filename, encrypted_data)
@@ -1234,13 +1234,13 @@ def download_zip(filename):
     zip_filename = f'encrypted.zip'
 
     encrypted_zip_data.seek(0)
-    user_dicts[email][encrypted_data_dict][zip_filename] = encrypted_zip_data.getvalue()
+    user_dicts[email]['encrypted_data_dict'][zip_filename] = encrypted_zip_data.getvalue()
     encrypted_zip_data.seek(0)
     encrypted_zip_data.truncate(0)
 
     for keys, value in user_dicts[email].items():
         print(keys, file=sys.stderr)
-    encrypted_data = user_dicts[email].get(filename, None)
+    encrypted_data = user_dicts[email]['encrypted_data_dict'].get(filename, None)
 
     if encrypted_data is None:
         return 'File not found', 404
@@ -1257,7 +1257,7 @@ def download_single_decrypted_file(filename,email):
     print(filename, 'file')
     for keys, value in user_dicts[email].items():
         print(keys, 'key')
-    decrypted_data = user_dicts[email].get(filename, None)
+    decrypted_data = user_dicts[email]["decrypted_data_dict"].get(filename, None)
     # print(encrypted_data, file=sys.stderr)
     if decrypted_data is None:
         return 'File not found', 404
@@ -1275,7 +1275,7 @@ def download_decrypted_zip(filename,email):
     decrypted_zip_data = BytesIO()
 
     with zipfile.ZipFile(decrypted_zip_data, 'w', zipfile.ZIP_STORED, allowZip64=True) as zipf:
-        for decrypted_filename, decrypted_data in user_dicts[email].items():
+        for decrypted_filename, decrypted_data in user_dicts[email]["decrypted_data_dict"].items():
             # Add the encrypted data to the ZIP archive with the encrypted filename
             print(decrypted_filename, file=sys.stderr)
             zipf.writestr(decrypted_filename, decrypted_data)
@@ -1286,7 +1286,7 @@ def download_decrypted_zip(filename,email):
     if zip_filename in user_dicts[email].keys():
         pass
     else:
-        user_dicts[email][zip_filename] = decrypted_zip_data.getvalue()
+        user_dicts[email]["decrypted_data_dict"][zip_filename] = decrypted_zip_data.getvalue()
     decrypted_zip_data.seek(0)
     decrypted_zip_data.truncate(0)
 
@@ -1311,7 +1311,9 @@ def clear_encrypted_folder(email):
 
 @app.route('/clear_decrypted_folder/<email>', methods=['GET'])
 def clear_decrypted_folder(email):
-    user_dicts[email]['decrypted_data_dict'].clear()
+    print("fuck object promise dawg")
+    print(email)
+    user_dicts[email]["decrypted_data_dict"].clear()
     #decrypted_data_dict.clear()
     return 'Decrypted folder cleared', 200
 

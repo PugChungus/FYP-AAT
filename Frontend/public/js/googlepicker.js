@@ -1,4 +1,5 @@
 
+import { handleFileUpload, handleFilefromPickers } from "./encrypt.js";
 import { sendFileToBackend } from "./virustotal.js";
 document.getElementById('googlepocker').addEventListener('click', function(event) {
   event.preventDefault();
@@ -182,10 +183,14 @@ document.getElementById('googlepocker').addEventListener('click', function(event
             const blobe = await response.blob();
             console.log("heyy")
             console.log(response)
+            const filename = document[google.picker.Document.NAME]
             //const base64 = `data:${mimeType};base64,${await this.blobToBase64(blob)}`;
             // Now you have the file content as a base64-encoded string - proceed as desired
-            const file = new File([blobe], document[google.picker.Document.NAME]);
-            sendFileToBackend(file)
+            const file = new File([blobe], filename,{ type: mimeType });
+            
+            handleFilefromPickers(file)
+            
+            //sendFileToBackend(file)
             
           } else {
             console.error('Failed to fetch file:', response.status, response.statusText);

@@ -31,6 +31,15 @@ async function handleFileUpload(event) {
     }
 }
 
+export function handleFilefromDecryptPickers(file){
+    // Ensure `files` is always an array to simplify processing
+    
+    selectedKey = keyDropdown.value; // Assuming this is desired at this point
+
+            // If not, send it to the backend and add to the set
+            sendFileToBackend(file);
+}         
+    
 keyDropdown.addEventListener('change', function () {
     // Update the selected key value
     selectedKey = keyDropdown.value;
@@ -58,8 +67,7 @@ async function hideDropZoneAndFileDetails() {
     const googleButton = document.createElement('button');
     const onedriveButton = document.createElement('button');
 
-    downloadButton.id = 'downloadButton';
-    downloadButton.textContent = 'Download Encrypted Files';
+    
 
     // Append the download button to the document or display it wherever needed
     document.body.appendChild(downloadButton);
@@ -213,7 +221,7 @@ export function isValidFileExtension(file) {
 
 async function clearDecryptedFolder() {
     try {
-        const email = get_email_via_id()
+        const email =  await get_email_via_id()
         const clearResponse = await fetch(`http://localhost:5000/clear_decrypted_folder/${email}`, {
             method: 'GET',
         });
@@ -365,8 +373,8 @@ async function downloadDecryptedFiles(type, name) {
             const decryptedExtension = decryptedExtensionList[i % decryptedExtensionList.length];
 
             let fileNameWithEnc = `${fileNameWithoutExtension}.${decryptedExtension}`;
-
-            const response = await fetch(`http://localhost:5000/download_single_decrypted_file/${fileNameWithEnc}`);
+            const email = await get_email_via_id()
+            const response = await fetch(`http://localhost:5000/download_single_decrypted_file/${fileNameWithEnc}/${email}`);
             const blob = await response.blob();
 
             const downloadLink = document.createElement('a');
@@ -386,8 +394,8 @@ async function downloadDecryptedFiles(type, name) {
     } else {
         const filename = 'unencrypted.zip';
         const outfilename = `${name}.zip`;
-
-        const response = await fetch(`http://localhost:5000/download_decrypted_zip/${filename}`);
+        const email = await get_email_via_id()
+        const response = await fetch(`http://localhost:5000/download_decrypted_zip/${filename}/${email}`);
         const blob = await response.blob();
 
         const downloadLink = document.createElement('a');
@@ -423,7 +431,8 @@ async function uploadtoGoogle (type,name){
             const decryptedExtension = decryptedExtensionList[i % decryptedExtensionList.length];
 
             let fileNameWithEnc = `${fileNameWithoutExtension}.${decryptedExtension}`;
-            const backendurl = `http://localhost:5000/download_single_decrypted_file/${fileNameWithEnc}`
+            const email = await get_email_via_id()
+            const backendurl = `http://localhost:5000/download_single_decrypted_file/${fileNameWithEnc}/${email}`
 
             const blob = await fetch(backendurl).then(response => response.blob());
         
@@ -454,7 +463,7 @@ async function uploadtoGoogle (type,name){
         const filename = 'unencrypted.zip'
         const filenamee = name
         console.log(filenamee)
-        const backendURL = `http://localhost:5000/download_decrypted_zip/${filename}`;
+        const backendURL = `http://localhost:5000/download_decrypted_zip/${filename}/${email}`;
         const googleDriveAPI = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
 
         // Step 1: Download ZIP file from the backend
@@ -547,11 +556,10 @@ async function uploadtoOneDrive (type,name){
 
             let fileNameWithEnc = `${fileNameWithoutExtension}.${decryptedExtension}`;
 
-             console.log(decryptedExtension)
-             console.log(fileNameWithoutExtension)
-             console.log(fileNameWithEnc)
+             
+            const email = await get_email_via_id()
             const OneDriveAPI = `https://api.onedrive.com/v1.0/drive/root:/${fileNameWithEnc}:/content`;
-            const backendurl = `http://localhost:5000/download_single_decrypted_file/${fileNameWithEnc}`
+            const backendurl = `http://localhost:5000/download_single_decrypted_file/${fileNameWithEnc}/${email}`
 
             const blob = await fetch(backendurl).then(response => response.blob());
         
@@ -570,7 +578,8 @@ async function uploadtoOneDrive (type,name){
         
         const filenamefordrive = `${name}.zip`
         const filename = 'unencrypted.zip'
-        const backendURL = `http://localhost:5000/download_decrypted_zip/${filename}`;
+        const email = await get_email_via_id()
+        const backendURL = `http://localhost:5000/download_decrypted_zip/${filename}/${email}`;
         const OneDriveAPI= `https://api.onedrive.com/v1.0/drive/root:/${filenamefordrive}:/content`;
 
         // Step 1: Download ZIP file from the backend

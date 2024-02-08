@@ -1,6 +1,6 @@
 
-import { sendFileToBackend } from "./virustotal.js";
-import { isValidFileExtension } from "./decrypt.js";
+import { sendFileToBackend,  } from "./virustotal.js";
+import { isValidFileExtension, handleFilefromDecryptPickers } from "./decrypt.js";
 
 
 document.getElementById('googlepocker').addEventListener('click', function(event) {
@@ -193,7 +193,7 @@ document.getElementById('googlepocker').addEventListener('click', function(event
             if (!isValidFileExtensionResult) {
                 return "End of function.";
             }
-            sendFileToBackend(file)
+            handleFilefromDecryptPickers(file)
             
           } else {
             console.error('Failed to fetch file:', response.status, response.statusText);

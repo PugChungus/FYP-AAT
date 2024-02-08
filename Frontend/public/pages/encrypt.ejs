@@ -117,7 +117,7 @@
     <button id="encryptButton" class="eButton" >Encrypt </button>
 
     <div class="download-container">
-        <button id="downloadButton">Download File</button>
+        <button id="downloadButton">Download Zip</button>
         <button id="shareButton">Share</button>
         <button id="uploadgoogleButton">Upload To GoogleDrive</button>
         <button id="UploadToOneDrive">Upload to OneDrive</button>
@@ -136,6 +136,7 @@
     <script src="/js/toprofilePage.js" nonce="<%= nonce %>"></script>
     <script src="/js/toprofilePage.js"  nonce="<%= nonce %>" ></script>
     <script src="/js/encryptProgress.js" nonce="<%= nonce %>"></script>
+    <script src= "/js/encrypt.js"> nonce= "<%= nonce %>"</script>
     <script type="module" nonce="<%= nonce %>">
         import { uploadFiles } from '../js/encrypt.js';
         import { shareFile } from '../js/share_file.js';
@@ -147,6 +148,7 @@
     <script type="module" src ="/js/googlepicker.js"  nonce="<%= nonce %>">
         
     </script>
+    
     <script type ="module" src ="/js/onedrivepicker.js"  nonce="<%= nonce %>"></script>
     <script src="https://apis.google.com/js/api.js"  nonce="<%= nonce %>"></script>
     <script async defer src="https://apis.google.com/js/api.js"    nonce="<%= nonce %>"></script>

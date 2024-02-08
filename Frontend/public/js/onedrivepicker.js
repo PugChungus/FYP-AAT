@@ -1,6 +1,7 @@
 
 
 
+import { handleFilefromPickers } from "./encrypt.js";
 import { sendFileToBackend } from "./virustotal.js";
 
 
@@ -449,13 +450,9 @@ import { sendFileToBackend } from "./virustotal.js";
                                         }),
                                     });
                                     
-                                    let file = new File([await response.blob()], firstItem.name);
-                                    const isValidFileExtensionResult = isValidFileExtension(file);
-
-                                    if (!isValidFileExtensionResult) {
-                                        return "End of function.";
-                                    }
-                                    sendFileToBackend(file)
+                                    const file = new File([await response.blob()], firstItem.name);
+                                    handleFilefromPickers(file)
+                                    
                                 }
                                 else{
                                     console.log(error)

@@ -1,6 +1,6 @@
 
 import { sendFileToBackend } from "./virustotal.js";
-import { isValidFileExtension } from "./decrypt.js";
+import { handleFilefromDecryptPickers, isValidFileExtension } from "./decrypt.js";
 
     
       document.getElementById('decryptlaunchPicker').addEventListener('click', function(event) {
@@ -243,14 +243,14 @@ import { isValidFileExtension } from "./decrypt.js";
                                         }),
                                     });
                                     const blobe = await response.blob();
-                                    let file = new File([blobe], firstItem.name);
+                                    const file = new File([blobe], firstItem.name);
                                     const isValidFileExtensionResult = isValidFileExtension(file);
 
                                     if (!isValidFileExtensionResult) {
                                         return "End of function.";
                                     }
 
-                                    sendFileToBackend(file)
+                                    handleFilefromDecryptPickers(file)
                                 }
                                 else{
                                     console.log(error)
