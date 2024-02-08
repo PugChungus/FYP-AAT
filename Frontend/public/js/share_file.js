@@ -260,7 +260,7 @@ export async function shareFile(type) {
                     if (zipFolderName) {
                         const email = get_email_via_id()
                         formData.append('zip_name', `${zipFolderName}.zip`);
-                        formData.append('emailuser',email)
+                        formData.append('emailuser', email)
                         const response2 = await fetch(`http://localhost:5000/send_zip/${filename}`, {
                             method: 'POST',
                             headers : {

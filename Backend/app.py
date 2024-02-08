@@ -192,7 +192,13 @@ def create_user_dict():
             print('Valid Token')
  
         if 'id' in request.form:
-            account_id = request.form['id']
+            account_id = int(request.form['id'])
+            id_from_cookie = getAccountIdFromCookie(authorization_header)
+
+            if account_id == id_from_cookie:
+                print('Match')
+            else:
+                return jsonify({'error': 'Access forbidden'}), 401
 
             connection = pool.connection()
 
@@ -206,6 +212,11 @@ def create_user_dict():
 
         elif 'email' in request.form:
             email = request.form['email']
+            id = getAccountIdFromCookie(authorization_header)
+            email_from_cookie = getEmailAddressById(id, authorization_header)
+
+            if email != email_from_cookie:
+                return jsonify({'error': 'Access forbidden'}), 401
 
         global user_dicts
         global encrypted_data_dict
@@ -247,7 +258,13 @@ def upload():
 
     username = request.form.get('name')
     uploaded_file = request.files.get('profile-picture')
-    account_id = request.form.get('id')
+    account_id = int(request.form.get('id'))
+    id_from_cookie = getAccountIdFromCookie(authorization_header)
+
+    if account_id == id_from_cookie:
+        print('Match')
+    else:
+        return jsonify({'error': 'Access forbidden'}), 401
 
     print(uploaded_file, username)
 
@@ -393,39 +410,6 @@ def get_file_size(file_storage):
     file_storage.stream.seek(0)  # Reset the stream position to the beginning
     return file_size
 
-@app.route("/AESencryptFile", methods=["POST"])
-@cross_origin()
-def aes_encrypt ():
-
-    key_file_content = request.form['keyFileContent']
-    files = request.files.getlist('file')
-    print(f"files : {files}")
-    key = key_file_content.encode('utf-8')
-    encrypted_files = []
-    print(key)
-    for file in files:
-        filename = secure_filename(file.filename)
-        file_content = file.read()
-
-        # Encrypt file content using AES-GCM
-        cipher = AES.new(key, AES.MODE_GCM)
-        #cipher.update(b"additional_data")  # Additional authenticated data if needed
-
-        ciphertext, tag = cipher.encrypt_and_digest(file_content)
-        print("ciphertext")
-        print (ciphertext)
-        print("tag")
-        print(tag)
-        # Prepare encrypted file data
-        encrypted_data = b64encode(cipher.nonce + tag + ciphertext).decode('utf-8')
-
-
-        encrypted_files.append({'filename': filename, 'encrypted_data': encrypted_data})
-        print ( encrypted_files)
-    #print (jsonify({'encrypted_files': encrypted_files}))
-
-    return jsonify({'encrypted_files': encrypted_files})
-
 def virustotal_scan(hash_value):
     API_KEY = '495d37149054ebae8de04fbf1e19b8f41987188a818d9df9ef7fa775c61ad4e8'
     url = f'https://www.virustotal.com/api/v3/files/{hash_value}'
@@ -525,7 +509,6 @@ def upload_file():
 
 @app.route('/encrypt', methods=['POST'])
 def encrypt_files():
-    
     try:
         authorization_header = request.headers.get('Authorization')
         
@@ -550,7 +533,14 @@ def encrypt_files():
         if total_size_bytes > max_size_bytes:
             return jsonify({'error': 'Total file size exceeds 1 GB limit'}), 400
         print(uploaded_files)
+
         email = request.form['email']
+        id = getAccountIdFromCookie(authorization_header)
+        email_from_cookie = getEmailAddressById(id, authorization_header)
+
+
+        if email != email_from_cookie:
+            return jsonify({'error': 'Access forbidden'}), 401
 
         clear_dict = request.form['clear']
         print(clear_dict)
@@ -839,7 +829,6 @@ def decrypt_files2():
         print("Error processing Files:", str(e))
         return {"isValid": False, "error": str(e)}, 500
 
-
 @app.route('/clear_history', methods=['POST'])
 def clear_history():
     try:
@@ -856,7 +845,13 @@ def clear_history():
         else:
             print('Valid Token')
 
-        id = request.form['id']
+        id = int(request.form['id'])
+        id_from_cookie = getAccountIdFromCookie(authorization_header)
+
+        if id == id_from_cookie:
+            print('Match')
+        else:
+            return jsonify({'error': 'Access forbidden'}), 401
 
         sql = "DELETE FROM history " \
               "WHERE account_id IN (SELECT account_id FROM user_account WHERE account_id = %s);"
@@ -891,7 +886,13 @@ def display_history():
         else:
             print('Valid Token')
 
-        account_id = request.form['id']
+        account_id = int(request.form['id'])
+        id_from_cookie = getAccountIdFromCookie(authorization_header)
+
+        if account_id == id_from_cookie:
+            print('Match')
+        else:
+            return jsonify({'error': 'Access forbidden'}), 401
 
         sql = "SELECT history.time, history.file_name, history.file_size, history.type, history.key_name " \
             "FROM history " \
@@ -935,7 +936,12 @@ def encrypt_history():
         file_name = uploaded_file.filename
         file_data = uploaded_file.read()
         file_size = format_size(len(file_data))
-        account_id = request.form['id']  # Use request.form for form data
+        account_id = int(request.form['id'])  # Use request.form for form data
+        id_from_cookie = getAccountIdFromCookie(authorization_header)
+        if account_id == id_from_cookie:
+            print('Match')
+        else:
+            return jsonify({'error': 'Access forbidden'}), 401
         # Assuming you have a function to retrieve account_id based on email
         key_name = request.form['key_name']
         print("KEY NAMEZ:", key_name)
@@ -978,7 +984,12 @@ def decrypt_history():
         file_name = uploaded_file.filename
         file_data = uploaded_file.read()
         file_size = format_size(len(file_data))
-        account_id = request.form['id']  # Use request.form for form data
+        account_id = int(request.form['id'])  # Use request.form for form data
+        id_from_cookie = getAccountIdFromCookie(authorization_header)
+        if account_id == id_from_cookie:
+            print('Match')
+        else:
+            return jsonify({'error': 'Access forbidden'}), 401
         # Assuming you have a function to retrieve account_id based on email
         type_of_encryption = request.form['type']  # Use request.form for form data
         key_name = request.form['key_name']
@@ -1059,7 +1070,7 @@ def send_file_to_user(filename):
 
     return 'File shared successfully.', 200
 
-@app.route('/send_zip/<filename>/', methods=['POST'])
+@app.route('/send_zip/<filename>', methods=['POST'])
 def send_zip_file_to_user(filename):
     authorization_header = request.headers.get('Authorization')
     print("Send User Authorizataion: ", authorization_header)
@@ -1138,7 +1149,7 @@ def send_zip_file_to_user(filename):
     return 'File shared successfully.', 200
 
 @app.route('/download_single_encrypted_file/<filename>/<email>', methods=['GET'])
-def download_single_encrypted_file(filename,email):
+def download_single_encrypted_file(filename, email):
     print(filename, file=sys.stderr)
   
     print(email)
@@ -1146,6 +1157,7 @@ def download_single_encrypted_file(filename,email):
         print("GODDAMN SON")
         print(user_dicts)
         print(keys, file=sys.stderr)
+
     encrypted_data = user_dicts[email].get(filename, None)
     # print(encrypted_data, file=sys.stderr)
     if encrypted_data is None:
@@ -1240,8 +1252,6 @@ def download_decrypted_zip(filename,email):
 
 @app.route('/clear_encrypted_folder/<email>', methods=['GET'])
 def clear_encrypted_folder(email):
-    
-    
     user_dicts[email].clear()
     return 'Encrypted folder cleared', 200
 
@@ -1270,6 +1280,12 @@ def generate_2fa_qr_code():
             print('Valid Token')
 
         email = request.form.get('email')
+        id = getAccountIdFromCookie(authorization_header)
+        email_from_cookie = getEmailAddressById(id, authorization_header)
+
+        if email != email_from_cookie:
+            return jsonify({'error': 'Access forbidden'}), 401
+        
         print("WHAT IS THE EMAIL:", email)
 
         # Generate a new secret for the user
@@ -1305,6 +1321,12 @@ def verify_otp():
             print('Valid Token')
 
         email = request.form.get('email')
+        id = getAccountIdFromCookie(authorization_header)
+        email_from_cookie = getEmailAddressById(id, authorization_header)
+
+        if email != email_from_cookie:
+            return jsonify({'error': 'Access forbidden'}), 401
+        
         otp_value = request.form.get('otp')
 
         # Retrieve the secret associated with the user
@@ -1332,8 +1354,6 @@ def verify_otp():
 @app.route('/verify_2fa', methods=['POST'])
 def verify_2fa():
     try:
-        
-
         data = request.get_json()
         print('data:', data)
         user_input_otp = data.get('otp')
@@ -1382,8 +1402,6 @@ def verify_2fa():
 @app.route('/send_secret', methods=['POST'])
 def send_secret():
     try:
-        
-
         data = request.json
         user_key = data.get('email')
         secret = data.get('secret')
@@ -2006,6 +2024,7 @@ def email_disabletfa():
     data = request.get_json()
     print(f"Received JSON data: {data}")
     emailaddress = data.get('email','')
+    username = data.get('username', '')
 
     expiration_time = datetime.utcnow() + timedelta(minutes=15)
     expiration_timestamp = int(expiration_time.timestamp())
