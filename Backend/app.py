@@ -1308,14 +1308,32 @@ def verify_2fa():
         
 
         data = request.get_json()
+        print('data:', data)
         user_input_otp = data.get('otp')
         email = data.get('email')
 
         print("OTPPPP???:", user_input_otp)
         print("emaillll:", email)
         # Retrieve the secret associated with the user
-        secret = user_secrets.get(email)
-        print("Secret", secret)
+
+        try:
+            connection = pool.connection()
+            with connection.cursor() as cursor:
+                sql = "SELECT tfa_secret FROM user_account WHERE email_address = %s"
+                cursor.execute(sql, (email,))
+                result = cursor.fetchone()  # Fetch one row
+
+                if result:
+                    secret = result[0]
+                else:
+                    secret = None
+
+            connection.commit()
+
+        except Exception as e:
+            connection.rollback()
+            print("Error executing SQL query:", str(e))
+            return "Error executing SQL query", 500
 
         if secret is None:
             raise ValueError('Secret key not found for the specified user.')
@@ -1365,7 +1383,7 @@ def insert_secret_into_db(email, secret):
     try:
         connection = pool.connection()
         with connection.cursor() as cursor:
-            sql = "UPDATE user_account SET tfa_secret = %s, is_2fa_enabled = 1 WHERE email_address = %s"
+            sql = "UPDATE user_account SET tfa_secret = %s WHERE email_address = %s"
             cursor.execute(sql, (secret, email))
         connection.commit()
     except Exception as e:
@@ -1461,22 +1479,23 @@ def email_verification():
     print(f"Received JSON data: {data}")
     emailaddress = data.get('email','')
     print("EMIASNMDA:", emailaddress)
+    username = data.get('username', '')
 
-    # global ev_dicts
-    # global token_evpayload
+    global ev_dicts
+    global token_evpayload
 
-    # if emailaddress not in ev_dicts:
-    #     ev_dicts[emailaddress] = {
-    #         'token_evpayload': {
-    #             'token': '',
-    #             'hashed_token': '',
-    #             'expiration' : '',
+    if username not in ev_dicts:
+        ev_dicts[username] = {
+            'token_evpayload': {
+                'token': '',
+                'hashed_token': '',
+                'expiration' : '',
 
-    #         }
-    #     }
+            }
+        }
 
-    # token_evpayload = ev_dicts[emailaddress]['token_evpayload']
-    # print("New Dict:", token_evpayload)
+    token_evpayload = ev_dicts[username]['token_evpayload']
+    print("New Dict:", ev_dicts)
 
     expiration_time = datetime.utcnow() + timedelta(minutes=15)
     expiration_timestamp = int(expiration_time.timestamp())
@@ -1491,7 +1510,9 @@ def email_verification():
     token_evpayload['token'] = verification_token
     token_evpayload['hashed_token'] = hashed_token
     token_evpayload['expiration'] = expiration_timestamp
-    token_evpayload['email'] = emailaddress
+    encoded_username = base64.b64encode(username.encode()).decode()
+    url_parameters = f"token={hashed_token}.{encoded_username}"
+    print('Update DICTS', ev_dicts)
     configuration = sib_api_v3_sdk.Configuration()
     configuration.api_key['api-key'] = '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'
 
@@ -1529,7 +1550,7 @@ def email_verification():
         <body>
             <h1>Verify Your Email Address</h1>
             <p>Thank you for signing up! Click the link below to verify your email address:</p>
-            <a href="http://localhost:3000/activation?token={hashed_token}">Verify Email</a>
+            <a href="http://localhost:3000/activation?{url_parameters}">Verify Email</a>
         </body>
     </html>
     """
@@ -1551,8 +1572,11 @@ def email_verification():
         print("Exception when calling SMTPApi->send_transac_email: %s\n" % e)
         return jsonify({'error': 'Failed to send email verification'})
     
-def is_valid_token(hashed_token, token_evpayload):
-    token = token_evpayload['token']
+def is_valid_token(hashed_token, username):
+    print("V1:", ev_dicts)
+    print('V2:', ev_dicts[username])
+    print('V3:', ev_dicts[username]['token_evpayload'])
+    token = ev_dicts[username]['token_evpayload']['token']
     print("It's not about the journey:", token)
     expiration_timestamp = token_evpayload['expiration']
 
@@ -1578,15 +1602,17 @@ def verify_account():
         # Get the token from the request body
         data = request.json
         token = data.get('token', '')  
+        username = data.get('username', '')
+        username = base64.b64decode(username.encode()).decode()
         print("POWER OF FRIENDSHIP:", token)
 
         # Assuming you have a function is_valid_token for token validation
-        if is_valid_token(token, token_evpayload):  # Provide token_evpayload as the second argument
+        if is_valid_token(token, username):  # Provide token_evpayload as the second argument
             print("CHECKED")
             
-            if token_evpayload['email'] in token_evpayload['email']:
-                email = token_evpayload['email']
-                print("account ID:", email)
+            if username in ev_dicts:
+                print("Success")
+                print("UserName:", username)
 
                 # Assuming you have a function pool.connection() for database connection
                 connection = pool.connection()
@@ -1594,14 +1620,16 @@ def verify_account():
                 try:
                     with connection.cursor() as cursor:
                         # Update the 'activated' column in the 'user_account' table
-                        sql = "UPDATE user_account SET activated = 1 WHERE email_address = %s;"
-                        cursor.execute(sql, (email,))
+                        sql = "UPDATE user_account SET activated = 1 WHERE username = %s;"
+                        cursor.execute(sql, (username,))
                         connection.commit()  # Commit the changes to the database
 
-                        token_evpayload['token'] = ''
-                        token_evpayload['hashed_token'] = ''
-                        token_evpayload['expiration'] = 0
-                        token_evpayload['email'] = ''
+                        ev_dicts[username]['token_evpayload']['token'] = ''
+                        ev_dicts[username]['token_evpayload']['hashed_token'] = ''
+                        ev_dicts[username]['token_evpayload']['expiration'] = 0
+                        ev_dicts[username]['token_evpayload']['email'] = ''
+
+                        print("After Verification:", ev_dicts)
 
                     return jsonify({'activation_status': 'success'})
 
