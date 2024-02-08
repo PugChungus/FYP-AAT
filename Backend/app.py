@@ -1027,20 +1027,38 @@ def send_file_to_user(filename):
 
     if authorization_header is None:
         return "Token is Invalid"
+
+    isValid = check_token_validity(authorization_header)
+
+    if not isValid:
+        print('Invalid Token.')
+        return "Invalid Token."
+    else:
+        print('Valid Token')
     
     key_base64 = request.form.get('key')
     shared_to_email = request.form.get('email')
     shared_by_email = request.form.get('email2')
 
-    print(key_base64)
-        
-    isValid = check_token_validity(authorization_header)
-    if not isValid:
-            print('Invalid Token.')
-            return "Invalid Token."
-    else:
-        print('Valid Token')
+    connection = pool.connection()
 
+    try:
+        with connection.cursor() as cursor:
+            sql = "SELECT * FROM user_account WHERE email_address = %s"
+            cursor.execute(sql, (shared_to_email,))
+            result = cursor.fetchall()
+            if len(result) == 0:
+                return jsonify({'error': 'Access forbidden'}), 401
+            # Process the query result here
+        connection.commit()
+    except Exception as e:
+        return jsonify({'error': 'Access forbidden'}), 401
+    
+    id = getAccountIdFromCookie(authorization_header)
+    email_from_cookie = getEmailAddressById(id, authorization_header)
+
+    if shared_by_email != email_from_cookie:
+        return jsonify({'error': 'Access forbidden'}), 401
 
     print(filename, 'file')
     
@@ -1063,7 +1081,6 @@ def send_file_to_user(filename):
 
     WideFileName = filename.encode("utf-8").decode("latin-1")
 
-    connection = pool.connection()
     try:
         with connection.cursor() as cursor:
             sql = """INSERT INTO file_shared (file, file_name, date_shared, shared_by, shared_to)
@@ -1096,19 +1113,30 @@ def send_zip_file_to_user(filename):
         print('Valid Token')
 
     print(filename, 'file')
-    email = request.form.get('useremail')
-    # Assuming encrypted_data_dict is a global dictionary
-
-    # for key, value in encrypted_data_dict.items():
-    #     print(key, 'key')
-    for key, value in user_dicts[email].items():
-        print(key, 'key')
-
+    
     key_base64 = request.form.get('key')
     shared_to_email = request.form.get('email')
     shared_by_email = request.form.get('email2')
 
-    print(key_base64)
+    connection = pool.connection()
+    
+    try:
+        with connection.cursor() as cursor:
+            sql = "SELECT * FROM user_account WHERE email_address = %s"
+            cursor.execute(sql, (shared_to_email,))
+            result = cursor.fetchall()
+            if len(result) == 0:
+                return jsonify({'error': 'Access forbidden'}), 401
+            # Process the query result here
+        connection.commit()
+    except Exception as e:
+        return jsonify({'error': 'Access forbidden'}), 401
+
+    id = getAccountIdFromCookie(authorization_header)
+    email_from_cookie = getEmailAddressById(id, authorization_header)
+
+    if shared_by_email != email_from_cookie:
+        return jsonify({'error': 'Access forbidden'}), 401
 
     if not key_base64 or not shared_to_email or not shared_by_email:
         abort(400, 'Invalid request data')
@@ -1116,7 +1144,7 @@ def send_zip_file_to_user(filename):
     encrypted_zip_data = BytesIO()
 
     with zipfile.ZipFile(encrypted_zip_data, 'w', zipfile.ZIP_STORED, allowZip64=True) as zipf:
-        for encrypted_filename, encrypted_data in user_dicts[email].items():
+        for encrypted_filename, encrypted_data in user_dicts[shared_by_email].items():
             # Add the encrypted data to the ZIP archive with the encrypted filename
             print(encrypted_filename, file=sys.stderr)
             zipf.writestr(encrypted_filename, encrypted_data)
@@ -1124,13 +1152,13 @@ def send_zip_file_to_user(filename):
     zip_filename = f'encrypted.zip'
 
     encrypted_zip_data.seek(0)
-    user_dicts[email][zip_filename] = encrypted_zip_data.getvalue()
+    user_dicts[shared_by_email ][zip_filename] = encrypted_zip_data.getvalue()
     encrypted_zip_data.seek(0)
     encrypted_zip_data.truncate(0)
 
-    for keys, value in user_dicts[email].items():
+    for keys, value in user_dicts[shared_by_email].items():
         print(keys, file=sys.stderr)
-    encrypted_data = user_dicts[email].get(filename, None)
+    encrypted_data = user_dicts[shared_by_email].get(filename, None)
 
     if encrypted_data is None:
         return 'File not found', 404
@@ -1141,7 +1169,6 @@ def send_zip_file_to_user(filename):
     concat = key_base64 + delimiter + encrypted_data_base64
     file_name =  request.form.get('zip_name')
 
-    connection = pool.connection()
     try:
         with connection.cursor() as cursor:
             sql = """INSERT INTO file_shared (file, file_name, date_shared, shared_by, shared_to)
