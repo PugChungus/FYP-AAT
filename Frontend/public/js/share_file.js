@@ -57,11 +57,11 @@ async function executeSQLQuery(userInput) {
                 imgElement.src = objectURL;
                 imgElement.classList.add('user-avatar');
 
-                imgElement.style.maxHeight = '50px'; // Change the value as needed
-                imgElement.style.maxWidth = '50px'; // Change the value as needed
+                imgElement.style.maxHeight = '30px'; // Change the value as needed
+                imgElement.style.maxWidth = '30px'; // Change the value as needed
 
 
-                // Create username element
+                
                 const usernameElement = document.createElement('span');
                 usernameElement.textContent = username;
 
@@ -93,17 +93,23 @@ async function executeSQLQuery(userInput) {
                             selectedUsersDiv.appendChild(header);
                         }
 
+                        
+
                         selectedUsers.push(email);
                         selectedUsersDiv.classList.add('selected-user');
+                        const userwrapper = document.createElement('div')
+                        userwrapper.classList.add("userWrapper");
 
                         const selectedUsername = document.createElement('span');
-                        selectedUsername.textContent = `, ${username}`;
+                        selectedUsername.textContent = `${username}`;
+                        selectedUsername.classList.add('selectedUsername');
 
-                        const deleteButton = document.createElement('button');
-                        deleteButton.textContent = 'Delete';
-                        deleteButton.addEventListener('click', () => {
+                        const deleteIcon = document.createElement('i');
+                        deleteIcon.classList.add('bx', 'bxs-x-circle');
+                        deleteIcon.addEventListener('click', () => {
                             selectedUsername.remove();
-                            deleteButton.remove();
+                            deleteIcon.remove();
+                            userwrapper.remove()
 
                             const index = selectedUsers.indexOf(email);
                             if (index !== -1) {
@@ -115,9 +121,10 @@ async function executeSQLQuery(userInput) {
                                 selectedUsersDiv.innerHTML = '';
                             }
                         });
-
-                        selectedUsersDiv.appendChild(selectedUsername);
-                        selectedUsersDiv.appendChild(deleteButton);
+                        userwrapper.appendChild(selectedUsername)
+                        userwrapper.appendChild(deleteIcon)
+                        selectedUsersDiv.appendChild(userwrapper);
+                        
 
                         console.log(`Selected user's email: ${email}`);
                         console.log(selectedUsers);
@@ -258,7 +265,7 @@ export async function shareFile(type) {
                     const filename = 'encrypted.zip';
                     // const zipFolderName = window.prompt('Enter the name for the zip folder (without extension)');
                     if (zipFolderName) {
-                        const email = get_email_via_id()
+                        const email = await get_email_via_id()
                         formData.append('zip_name', `${zipFolderName}.zip`);
                         formData.append('useremail',email)
                         const response2 = await fetch(`http://localhost:5000/send_zip/${filename}`, {
@@ -322,7 +329,7 @@ export async function showModal() {
 
     document.getElementById('confirmShare').addEventListener('click', async function() {
         await shareFile('individual');
-        // window.location.href = "http://localhost:3000/encrypt"
+        window.location.href = "http://localhost:3000/encrypt"
     });
     
     // Append the selectedUsersContainer to the body
@@ -371,12 +378,12 @@ export async function showModalMul() {
         if (standaloneRadio.checked) {
             console.log('Standalone option selected');
             await shareFile('individual');
-            // window.location.href = "http://localhost:3000/encrypt"
+            window.location.href = "http://localhost:3000/encrypt"
             // Add your logic for standalone option
         } else if (zipRadio.checked) {
             console.log('Zip option selected');
             await shareFile('zip');
-            // window.location.href = "http://localhost:3000/encrypt"
+            window.location.href = "http://localhost:3000/encrypt"
             // Add your logic for zip option
         } else {
             alert('No option selected.')

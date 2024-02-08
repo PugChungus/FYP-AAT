@@ -3,7 +3,11 @@ import { deleteIndexDB } from "./RSA and IndexedDB/IndexedDB.js";
 async function validateThisTFA() {
     try {
         const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('token');
+        const tokenwithUserName = urlParams.get('token');
+
+        const [ token, encodedUsername ] = tokenwithUserName.split('.')
+
+        // Modify the URL without the token using history.replaceState
         const newURL = window.location.origin + window.location.pathname;
         history.replaceState({}, document.title, newURL);
 
@@ -12,7 +16,7 @@ async function validateThisTFA() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ token: token }),
+            body: JSON.stringify({ token: token, username: encodedUsername }),
         });
         const data = await response.json();
 
@@ -28,7 +32,7 @@ async function validateThisTFA() {
             const messageElement = document.createElement('div');
             if (data.message === 'Account Deleted successfully') {
                 messageElement.innerHTML =
-                    '<p style="color: green;">Two-Factor Authentication has been disabled. Redirecting to the login page...</p>';
+                    '<p style="color: green;">Account has been deleted Redirecting to the login page...</p>';
                 deleteIndexDB(data.email)
             } else {
                 messageElement.innerHTML =

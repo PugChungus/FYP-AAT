@@ -23,7 +23,8 @@ function updateKeyDisplay() {
     if (keyData.length > 0) {
         // Create a button to toggle the display of keys
         const expandButton = document.createElement('button');
-        expandButton.textContent = 'Expand to view all keys';
+        expandButton.classList.add('expansionButton')
+        expandButton.textContent = 'View all keys';
         let expanded = false;
 
         expandButton.addEventListener('click', () => {
@@ -95,16 +96,26 @@ async function updateHistory() {
         const historyheader = document.querySelector('.historyheader');
         const recentHistoryContainer = document.getElementById('recentHistory');
         const historyCounter = document.getElementById('historyCounter');
-        historyCounter.textContent = historyData.length
-       
-        for (let i = 0; i < historyData.length; i++) {
-          const row = historyData[i];
-          console.log(`Row ${i + 1}:`, row);
-          console.log("Deez nuts", row['type'])
+        
+        // Count occurrences of each type
+        const typeCounts = {};
+        for (const entry of historyData) {
+          if (entry.type in typeCounts) {
+            typeCounts[entry.type]++;
+          } else {
+            typeCounts[entry.type] = 1;
+          }
+        }
+        
+        // Clear previous content
+        recentHistoryContainer.innerHTML = '';
+        
+        // Display type counts
+        for (const [type, count] of Object.entries(typeCounts)) {
           const historyElement = document.createElement('div');
-            historyElement.classList.add('recent-history');
-            historyElement.textContent = row['type'];
-            recentHistoryContainer.appendChild(historyElement);
+          historyElement.classList.add('recent-history');
+          historyElement.textContent = `${type}: ${count}`;
+          recentHistoryContainer.appendChild(historyElement);
         }
 
         if (recentHistoryContainer.children.length >= 5) {
@@ -112,6 +123,8 @@ async function updateHistory() {
             recentHistoryContainer.style.overflowY = 'auto';
             recentHistoryContainer.style.maxHeight = '190px'; // Adjust the max height as needed
         }
+
+        historyCounter.textContent = historyData.length;
     }
 } catch (error) {
     console.error(error)

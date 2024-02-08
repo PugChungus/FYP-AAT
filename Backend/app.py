@@ -1,4 +1,5 @@
 from __future__ import print_function
+from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify, Response, abort
 from werkzeug.utils import secure_filename
 from flask_cors import cross_origin
@@ -43,15 +44,22 @@ app = Flask(__name__)
 # }
 #CORS(app,resources={r"*": cors_config})
 CORS(app)
-# Cornect to the MySQL database
+load_dotenv()
+
+MYSQL_HOST = os.getenv('MYSQL_HOST')
+MYSQL_PORT = int(os.getenv('MYSQL_PORT'))
+MYSQL_USER = os.getenv('MYSQL_USER')
+MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD')
+MYSQL_DATABASE = os.getenv('MYSQL_DATABASE')
+
 pool = PooledDB(
     creator=pymysql,  # Database library/module
     maxconnections=None,  # Maximum number of connections in the pool
-    host='localhost',
-    port=3306,
-    user='root',
-    password='password',
-    database='major_project_db'
+    host=MYSQL_HOST,
+    port=MYSQL_PORT,
+    user=MYSQL_USER,
+    password=MYSQL_PASSWORD,
+    database=MYSQL_DATABASE
 )
 
 user_dicts = {}  # Dictionary to store user-specific dictionaries
@@ -137,6 +145,7 @@ def check_token_validity(authorization_header):
         if authorization_header.startswith('Bearer: '):
             # Extract the token part after 'Bearer '
             jwt_token = authorization_header.split('Bearer: ')[1]
+            print("Split:", jwt_token)
 
             blacklist_query = "SELECT * FROM token_blacklist WHERE token = %s"
 
@@ -163,6 +172,7 @@ def check_token_validity(authorization_header):
                 print("Token is valid and not blacklisted.")
                 return True
             else:
+                print("Decoded Token:", decoded_token)
                 print("Token is invalid and blacklisted.")
                 return False
         else:
@@ -192,7 +202,13 @@ def create_user_dict():
             print('Valid Token')
  
         if 'id' in request.form:
-            account_id = request.form['id']
+            account_id = int(request.form['id'])
+            id_from_cookie = getAccountIdFromCookie(authorization_header)
+
+            if account_id == id_from_cookie:
+                print('Match')
+            else:
+                return jsonify({'error': 'Access forbidden'}), 401
 
             connection = pool.connection()
 
@@ -206,6 +222,11 @@ def create_user_dict():
 
         elif 'email' in request.form:
             email = request.form['email']
+            id = getAccountIdFromCookie(authorization_header)
+            email_from_cookie = getEmailAddressById(id, authorization_header)
+
+            if email != email_from_cookie:
+                return jsonify({'error': 'Access forbidden'}), 401
 
         global user_dicts
         global encrypted_data_dict
@@ -247,7 +268,13 @@ def upload():
 
     username = request.form.get('name')
     uploaded_file = request.files.get('profile-picture')
-    account_id = request.form.get('id')
+    account_id = int(request.form.get('id'))
+    id_from_cookie = getAccountIdFromCookie(authorization_header)
+
+    if account_id == id_from_cookie:
+        print('Match')
+    else:
+        return jsonify({'error': 'Access forbidden'}), 401
 
     print(uploaded_file, username)
 
@@ -393,39 +420,6 @@ def get_file_size(file_storage):
     file_storage.stream.seek(0)  # Reset the stream position to the beginning
     return file_size
 
-@app.route("/AESencryptFile", methods=["POST"])
-@cross_origin()
-def aes_encrypt ():
-
-    key_file_content = request.form['keyFileContent']
-    files = request.files.getlist('file')
-    print(f"files : {files}")
-    key = key_file_content.encode('utf-8')
-    encrypted_files = []
-    print(key)
-    for file in files:
-        filename = secure_filename(file.filename)
-        file_content = file.read()
-
-        # Encrypt file content using AES-GCM
-        cipher = AES.new(key, AES.MODE_GCM)
-        #cipher.update(b"additional_data")  # Additional authenticated data if needed
-
-        ciphertext, tag = cipher.encrypt_and_digest(file_content)
-        print("ciphertext")
-        print (ciphertext)
-        print("tag")
-        print(tag)
-        # Prepare encrypted file data
-        encrypted_data = b64encode(cipher.nonce + tag + ciphertext).decode('utf-8')
-
-
-        encrypted_files.append({'filename': filename, 'encrypted_data': encrypted_data})
-        print ( encrypted_files)
-    #print (jsonify({'encrypted_files': encrypted_files}))
-
-    return jsonify({'encrypted_files': encrypted_files})
-
 def virustotal_scan(hash_value):
     API_KEY = '495d37149054ebae8de04fbf1e19b8f41987188a818d9df9ef7fa775c61ad4e8'
     url = f'https://www.virustotal.com/api/v3/files/{hash_value}'
@@ -525,7 +519,6 @@ def upload_file():
 
 @app.route('/encrypt', methods=['POST'])
 def encrypt_files():
-    
     try:
         authorization_header = request.headers.get('Authorization')
         
@@ -552,8 +545,15 @@ def encrypt_files():
         if total_size_bytes > max_size_bytes:
             return jsonify({'error': 'Total file size exceeds 1 GB limit'}), 400
         print(uploaded_files)
+
         email = request.form['email']
-        
+        id = getAccountIdFromCookie(authorization_header)
+        email_from_cookie = getEmailAddressById(id, authorization_header)
+
+
+        if email != email_from_cookie:
+            return jsonify({'error': 'Access forbidden'}), 401
+
         clear_dict = request.form['clear']
         print(clear_dict)
         if clear_dict == '0':
@@ -848,7 +848,6 @@ def decrypt_files2():
         print("Error processing Files:", str(e))
         return {"isValid": False, "error": str(e)}, 500
 
-
 @app.route('/clear_history', methods=['POST'])
 def clear_history():
     try:
@@ -865,7 +864,13 @@ def clear_history():
         else:
             print('Valid Token')
 
-        id = request.form['id']
+        id = int(request.form['id'])
+        id_from_cookie = getAccountIdFromCookie(authorization_header)
+
+        if id == id_from_cookie:
+            print('Match')
+        else:
+            return jsonify({'error': 'Access forbidden'}), 401
 
         sql = "DELETE FROM history " \
               "WHERE account_id IN (SELECT account_id FROM user_account WHERE account_id = %s);"
@@ -900,7 +905,13 @@ def display_history():
         else:
             print('Valid Token')
 
-        account_id = request.form['id']
+        account_id = int(request.form['id'])
+        id_from_cookie = getAccountIdFromCookie(authorization_header)
+
+        if account_id == id_from_cookie:
+            print('Match')
+        else:
+            return jsonify({'error': 'Access forbidden'}), 401
 
         sql = "SELECT history.time, history.file_name, history.file_size, history.type, history.key_name " \
             "FROM history " \
@@ -944,7 +955,12 @@ def encrypt_history():
         file_name = uploaded_file.filename
         file_data = uploaded_file.read()
         file_size = format_size(len(file_data))
-        account_id = request.form['id']  # Use request.form for form data
+        account_id = int(request.form['id'])  # Use request.form for form data
+        id_from_cookie = getAccountIdFromCookie(authorization_header)
+        if account_id == id_from_cookie:
+            print('Match')
+        else:
+            return jsonify({'error': 'Access forbidden'}), 401
         # Assuming you have a function to retrieve account_id based on email
         key_name = request.form['key_name']
         print("KEY NAMEZ:", key_name)
@@ -987,7 +1003,12 @@ def decrypt_history():
         file_name = uploaded_file.filename
         file_data = uploaded_file.read()
         file_size = format_size(len(file_data))
-        account_id = request.form['id']  # Use request.form for form data
+        account_id = int(request.form['id'])  # Use request.form for form data
+        id_from_cookie = getAccountIdFromCookie(authorization_header)
+        if account_id == id_from_cookie:
+            print('Match')
+        else:
+            return jsonify({'error': 'Access forbidden'}), 401
         # Assuming you have a function to retrieve account_id based on email
         type_of_encryption = request.form['type']  # Use request.form for form data
         key_name = request.form['key_name']
@@ -1015,20 +1036,38 @@ def send_file_to_user(filename):
 
     if authorization_header is None:
         return "Token is Invalid"
+
+    isValid = check_token_validity(authorization_header)
+
+    if not isValid:
+        print('Invalid Token.')
+        return "Invalid Token."
+    else:
+        print('Valid Token')
     
     key_base64 = request.form.get('key')
     shared_to_email = request.form.get('email')
     shared_by_email = request.form.get('email2')
 
-    print(key_base64)
-        
-    isValid = check_token_validity(authorization_header)
-    if not isValid:
-            print('Invalid Token.')
-            return "Invalid Token."
-    else:
-        print('Valid Token')
+    connection = pool.connection()
 
+    try:
+        with connection.cursor() as cursor:
+            sql = "SELECT * FROM user_account WHERE email_address = %s"
+            cursor.execute(sql, (shared_to_email,))
+            result = cursor.fetchall()
+            if len(result) == 0:
+                return jsonify({'error': 'Access forbidden'}), 401
+            # Process the query result here
+        connection.commit()
+    except Exception as e:
+        return jsonify({'error': 'Access forbidden'}), 401
+    
+    id = getAccountIdFromCookie(authorization_header)
+    email_from_cookie = getEmailAddressById(id, authorization_header)
+
+    if shared_by_email != email_from_cookie:
+        return jsonify({'error': 'Access forbidden'}), 401
 
     print(filename, 'file')
     
@@ -1051,7 +1090,6 @@ def send_file_to_user(filename):
 
     WideFileName = filename.encode("utf-8").decode("latin-1")
 
-    connection = pool.connection()
     try:
         with connection.cursor() as cursor:
             sql = """INSERT INTO file_shared (file, file_name, date_shared, shared_by, shared_to)
@@ -1068,7 +1106,7 @@ def send_file_to_user(filename):
 
     return 'File shared successfully.', 200
 
-@app.route('/send_zip/<filename>/', methods=['POST'])
+@app.route('/send_zip/<filename>', methods=['POST'])
 def send_zip_file_to_user(filename):
     authorization_header = request.headers.get('Authorization')
     print("Send User Authorizataion: ", authorization_header)
@@ -1096,7 +1134,25 @@ def send_zip_file_to_user(filename):
     shared_to_email = request.form.get('email')
     shared_by_email = request.form.get('email2')
 
-    print(key_base64)
+    connection = pool.connection()
+    
+    try:
+        with connection.cursor() as cursor:
+            sql = "SELECT * FROM user_account WHERE email_address = %s"
+            cursor.execute(sql, (shared_to_email,))
+            result = cursor.fetchall()
+            if len(result) == 0:
+                return jsonify({'error': 'Access forbidden'}), 401
+            # Process the query result here
+        connection.commit()
+    except Exception as e:
+        return jsonify({'error': 'Access forbidden'}), 401
+
+    id = getAccountIdFromCookie(authorization_header)
+    email_from_cookie = getEmailAddressById(id, authorization_header)
+
+    if shared_by_email != email_from_cookie:
+        return jsonify({'error': 'Access forbidden'}), 401
 
     if not key_base64 or not shared_to_email or not shared_by_email:
         abort(400, 'Invalid request data')
@@ -1104,7 +1160,7 @@ def send_zip_file_to_user(filename):
     encrypted_zip_data = BytesIO()
 
     with zipfile.ZipFile(encrypted_zip_data, 'w', zipfile.ZIP_STORED, allowZip64=True) as zipf:
-        for encrypted_filename, encrypted_data in user_dicts[email]['encrypted_data_dict'].items():
+        for encrypted_filename, encrypted_data in user_dicts[shared_by_email]['encrypted_data_dict'].items():
             # Add the encrypted data to the ZIP archive with the encrypted filename
             print(encrypted_filename, file=sys.stderr)
             zipf.writestr(encrypted_filename, encrypted_data)
@@ -1112,13 +1168,13 @@ def send_zip_file_to_user(filename):
     zip_filename = f'encrypted.zip'
 
     encrypted_zip_data.seek(0)
-    user_dicts[email]['encrypted_data_dict'][zip_filename] = encrypted_zip_data.getvalue()
+    user_dicts[shared_by_email ][zip_filename] = encrypted_zip_data.getvalue()
     encrypted_zip_data.seek(0)
     encrypted_zip_data.truncate(0)
 
-    for keys, value in user_dicts[email]['encrypted_data_dict'].items():
+    for keys, value in user_dicts[shared_by_email].items():
         print(keys, file=sys.stderr)
-    encrypted_data = user_dicts[email]['encrypted_data_dict'].get(filename, None)
+    encrypted_data = user_dicts[shared_by_email].get(filename, None)
 
     if encrypted_data is None:
         return 'File not found', 404
@@ -1129,7 +1185,6 @@ def send_zip_file_to_user(filename):
     concat = key_base64 + delimiter + encrypted_data_base64
     file_name =  request.form.get('zip_name')
 
-    connection = pool.connection()
     try:
         with connection.cursor() as cursor:
             sql = """INSERT INTO file_shared (file, file_name, date_shared, shared_by, shared_to)
@@ -1147,7 +1202,7 @@ def send_zip_file_to_user(filename):
     return 'File shared successfully.', 200
 
 @app.route('/download_single_encrypted_file/<filename>/<email>', methods=['GET'])
-def download_single_encrypted_file(filename,email):
+def download_single_encrypted_file(filename, email):
     print(filename, file=sys.stderr)
   
     print(email)
@@ -1279,6 +1334,12 @@ def generate_2fa_qr_code():
             print('Valid Token')
 
         email = request.form.get('email')
+        id = getAccountIdFromCookie(authorization_header)
+        email_from_cookie = getEmailAddressById(id, authorization_header)
+
+        if email != email_from_cookie:
+            return jsonify({'error': 'Access forbidden'}), 401
+        
         print("WHAT IS THE EMAIL:", email)
 
         # Generate a new secret for the user
@@ -1314,6 +1375,12 @@ def verify_otp():
             print('Valid Token')
 
         email = request.form.get('email')
+        id = getAccountIdFromCookie(authorization_header)
+        email_from_cookie = getEmailAddressById(id, authorization_header)
+
+        if email != email_from_cookie:
+            return jsonify({'error': 'Access forbidden'}), 401
+        
         otp_value = request.form.get('otp')
 
         # Retrieve the secret associated with the user
@@ -1341,8 +1408,6 @@ def verify_otp():
 @app.route('/verify_2fa', methods=['POST'])
 def verify_2fa():
     try:
-        
-
         data = request.get_json()
         print('data:', data)
         user_input_otp = data.get('otp')
@@ -1391,8 +1456,6 @@ def verify_2fa():
 @app.route('/send_secret', methods=['POST'])
 def send_secret():
     try:
-        
-
         data = request.json
         user_key = data.get('email')
         secret = data.get('secret')
@@ -1609,12 +1672,13 @@ def email_verification():
         return jsonify({'error': 'Failed to send email verification'})
     
 def is_valid_token(hashed_token, username):
+    print("Is trying is_valid_token")
     print("V1:", ev_dicts)
     print('V2:', ev_dicts[username])
     print('V3:', ev_dicts[username]['token_evpayload'])
     token = ev_dicts[username]['token_evpayload']['token']
     print("It's not about the journey:", token)
-    expiration_timestamp = token_evpayload['expiration']
+    expiration_timestamp = da_dicts[username]['token_evpayload']['expiration']
 
     # Validate the expiration
     current_timestamp = int(datetime.utcnow().timestamp())
@@ -1739,21 +1803,53 @@ def email_forgetPassword():
     print(f"Received JSON data: {data}")
     emailaddress = data.get('email','')
 
+    username = None
+
     try:
         connection = pool.connection()
 
         with connection.cursor() as cursor:
             sql = "SELECT COUNT(*) as count FROM user_account WHERE email_address = %s"
-            cursor.execute(sql, (emailaddress))
+            cursor.execute(sql, (emailaddress,))
             rows = cursor.fetchall()
             count = rows[0][0]
             
-            if count != 1:
-                return jsonify({'message': 'Email verification sent successfully'})
-        connection.commit()
+            if count == 1:
+                sql = "SELECT username FROM user_account WHERE email_address = %s"
+                cursor.execute(sql, (emailaddress,))
+                result = cursor.fetchone()  # Fetch one row
+
+                if result:
+                    username = result[0]
+                    print("UserName?:", username)
+                else:
+                    username = None
+                    
+                connection.commit()
+            else:
+                connection.commit()
+
     except Exception as e:
         connection.rollback()
-        print("Error inserting secret into the database: ", str(e)), 500
+        print("Error executing SQL query:", str(e)), 500
+
+
+    global fp_dicts
+    global token_fppayload
+
+    if username not in fp_dicts:
+        fp_dicts[username] = {
+            'token_fppayload': {
+                'token': '',
+                'hashed_token': '',
+                'expiration' : '',
+                'email' : '',
+            }
+        }
+
+    token_fppayload = fp_dicts[username]['token_fppayload']
+    print("New Dict:", fp_dicts)
+
 
     expiration_time = datetime.utcnow() + timedelta(minutes=15)
     expiration_timestamp = int(expiration_time.timestamp())
@@ -1769,6 +1865,9 @@ def email_forgetPassword():
     token_fppayload['hashed_token'] = hashed_token
     token_fppayload['expiration'] = expiration_timestamp
     token_fppayload['email'] = emailaddress
+    encoded_username = base64.b64encode(username.encode()).decode()
+    url_parameters = f"token={hashed_token}.{encoded_username}"
+    print('Update DICTS', fp_dicts)
     configuration = sib_api_v3_sdk.Configuration()
     configuration.api_key['api-key'] = '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'
 
@@ -1806,7 +1905,7 @@ def email_forgetPassword():
         <body>
             <h1>Reset Your Password</h1>
             <p>Please Click On the Button below to Validate your Email Address and change your password.</p>
-            <a href="http://localhost:3000/resetpassword?token={hashed_token}">Verify Email</a>
+            <a href="http://localhost:3000/resetpassword?{url_parameters}">Verify Email</a>
         </body>
     </html>
     """
@@ -1828,10 +1927,14 @@ def email_forgetPassword():
         print("Exception when calling SMTPApi->send_transac_email: %s\n" % e)
         return jsonify({'error': 'Failed to send email verification'})
     
-def is_valid_tokenfp(hashed_token, token_fppayload):
-    token = token_fppayload['token']
+def is_valid_tokenfp(hashed_token, username):
+    print("trying is_valid_tokenfp")
+    print("V1:", fp_dicts)
+    print('V2:', fp_dicts[username])
+    print('V3:', fp_dicts[username]['token_fppayload'])
+    token = fp_dicts[username]['token_fppayload']['token']
     print("It's not about the journey:", token)
-    expiration_timestamp = token_fppayload['expiration']
+    expiration_timestamp = da_dicts[username]['token_fppayload']['expiration']
 
     # Validate the expiration
     current_timestamp = int(datetime.utcnow().timestamp())
@@ -1887,25 +1990,31 @@ def reset_password():
         # Get the token from the request body
         data = request.json
         token = data.get('token', '')
+        username = data.get('username', '')
+        username = base64.b64decode(username.encode()).decode()
+        print("Username", username)
         print("POWER OF FRIENDSHIP:", token)
 
         # Assuming you have a function is_valid_token for token validation
-        if is_valid_tokenfp(token, token_fppayload):  # Provide token_evpayload as the second argument
+        if is_valid_tokenfp(token, username):  # Provide token_evpayload as the second argument
             print("CHECKED")
             print('OMG:', token_fppayload)
             
-            if token_fppayload['email'] in token_fppayload['email']:
-                email = token_fppayload['email']
-                print("account ID:", email)
+            if username in fp_dicts:
+                username = username
+                print("ASNI Username:", username)
+                email = fp_dicts[username]['token_fppayload']['email']
+                print("Email:",email)
                 encrypted_email = encrypt_emailfp(email)
                 print("What data type:", type(encrypted_email))
                 print("What data :", encrypted_email)
+                username = base64.b64encode(username.encode()).decode()
 
 
                 # Assuming you have a function pool.connection() for database connection
                 
 
-                return jsonify({'Validation': 'success', 'encrypted_email': encrypted_email})
+                return jsonify({'Validation': 'success', 'encrypted_email': encrypted_email, 'encoded': username})
 
         else:
             # Return error response
@@ -1925,17 +2034,20 @@ def a_reset_password():
         data = request.get_json()
         print("resetdata:", data)
 
-        # Check if 'newPassword' and 'tempemail' are in the JSON data
         if 'newPassword' not in data :
             return jsonify({'error': 'Missing parameters'}), 400
 
         new_password = data['newPassword']
 
-        email = token_fppayload['email']
+        username = data['encodedu']
+        
+        email = base64.b64decode(username.encode()).decode()
+        print('decode:', username)
+
 
         try:
             # Proceed with the database update for username only
-            sql = "UPDATE user_account SET password = %s  WHERE email_address = %s"
+            sql = "UPDATE user_account SET password = %s  WHERE username = %s"
             connection = pool.connection()
 
             with connection.cursor() as cursor:
@@ -1968,9 +2080,44 @@ def email_disabletfa():
     data = request.get_json()
     print(f"Received JSON data: {data}")
     emailaddress = data.get('email','')
+    try:
+        connection = pool.connection()
+        with connection.cursor() as cursor:
+            sql = "SELECT username FROM user_account WHERE email_address = %s"
+            cursor.execute(sql, (emailaddress,))
+            result = cursor.fetchone()  # Fetch one row
+
+            if result:
+                username = result[0]
+            else:
+                username = None
+
+        connection.commit()
+
+    except Exception as e:
+            connection.rollback()
+            print("Error executing SQL query:", str(e))
+            return "Error executing SQL query", 500
 
     expiration_time = datetime.utcnow() + timedelta(minutes=15)
     expiration_timestamp = int(expiration_time.timestamp())
+
+    global dtfa_dicts
+    global token_dtfapayload
+
+    print("Checking username before check:", username)
+    if username not in dtfa_dicts:
+        dtfa_dicts[username] = {
+            'token_dtfapayload': {
+                'token': '',
+                'hashed_token': '',
+                'expiration' : '',
+                'email' : '',
+            }
+        }
+
+    token_dtfapayload = dtfa_dicts[username]['token_dtfapayload']
+    print("New Dict:", dtfa_dicts)
 
     verification_token = secrets.token_urlsafe(32)
     print("VERFICATION TOKEN:", verification_token)
@@ -1983,6 +2130,9 @@ def email_disabletfa():
     token_dtfapayload['hashed_token'] = hashed_token
     token_dtfapayload['expiration'] = expiration_timestamp
     token_dtfapayload['email'] = emailaddress
+    encoded_username = base64.b64encode(username.encode()).decode()
+    url_parameters = f"token={hashed_token}.{encoded_username}"
+    print('Update DICTS', dtfa_dicts)
     configuration = sib_api_v3_sdk.Configuration()
     configuration.api_key['api-key'] = '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'
 
@@ -2020,7 +2170,7 @@ def email_disabletfa():
         <body>
             <h1>Disable Your 2 Factor Authorization</h1>
             <p>Please Click On the Button below to Disable your 2 Factor Authorization.</p>
-            <a href="http://localhost:3000/disabletfa?token={hashed_token}">Verify Email</a>
+            <a href="http://localhost:3000/disabletfa?{url_parameters}">Verify Email</a>
         </body>
     </html>
     """
@@ -2042,14 +2192,18 @@ def email_disabletfa():
         print("Exception when calling SMTPApi->send_transac_email: %s\n" % e)
         return jsonify({'error': 'Failed to send email'})
     
-def is_valid_tokendtfa(hashed_token, token_dtfapayload):
-    token = token_dtfapayload['token']
+def is_valid_tokendtfa(hashed_token, username):
+    print('Trying is_valid_tokendtfa ')
+    print("V1:", dtfa_dicts)
+    print('V2:', dtfa_dicts[username])
+    print('V3:', dtfa_dicts[username]['token_dtfapayload'])
+    token = dtfa_dicts[username]['token_dtfapayload']['token']
     print("It's not about the journey:", token)
     expiration_timestamp = token_dtfapayload['expiration']
 
     # Validate the expiration
     current_timestamp = int(datetime.utcnow().timestamp())
-    if current_timestamp > expiration_timestamp:
+    if current_timestamp > int(expiration_timestamp):
         return False
 
     # Validate the hashed token
@@ -2068,28 +2222,29 @@ def disable_tfa():
         # Get the token from the request body
         data = request.json
         token = data.get('token', '')
-        print('Checking this particular payload:', token_dtfapayload)
+        username = data.get('username', '')
+        username = base64.b64decode(username.encode()).decode()
+        print("Username", username)
+        print('Type iF username:', type(username))
         print("POWER OF FRIENDSHIP:", token)
 
         # Assuming you have a function is_valid_token for token validation
-        if is_valid_tokendtfa(token, token_dtfapayload):  # Provide token_evpayload as the second argument
+        if is_valid_tokendtfa(token, username):  # Provide token_evpayload as the second argument
             print("CHECKED")
             print('OMG:', token_dtfapayload)
             
-            if token_dtfapayload['email'] in token_dtfapayload['email']:
-                email = token_dtfapayload['email']
-                print("account ID:", email)
+            if username in dtfa_dicts:
+                username = username
 
                 try:
             # Proceed with the database update for username only
-                    sql = "UPDATE user_account SET is_2fa_enabled = 0, tfa_secret = NULL  WHERE email_address = %s"
+                    sql = "UPDATE user_account SET is_2fa_enabled = 0, tfa_secret = NULL  WHERE username = %s"
                     connection = pool.connection()
 
                     with connection.cursor() as cursor:
-                        cursor.execute(sql, (email))
+                        cursor.execute(sql, (username))
                     connection.commit()
 
-                    return jsonify({'message': 'Password updated successfully'})
 
                 except Exception as e:
                         connection.rollback()
@@ -2120,12 +2275,50 @@ token_dapayload = {
 
 @app.route('/email_deletea', methods=['POST'])
 def email_deletea():
+    authorization_header = request.headers.get('Authorization')
+    print('Auth TOken', authorization_header)
+
+    if authorization_header is None:
+        print('Not Valid')
+        return "Token is Invalid"
+    
+    isValid = check_token_validity(authorization_header)
+    print('isValid?', isValid)
+    
+    if not isValid:
+        print('Invalid Token.')
+        return "Invalid Token."
+    else:
+        print('Valid Token')
+
     data = request.get_json()
     print(f"Received JSON data: {data}")
     emailaddress = data.get('email','')
+    id = getAccountIdFromCookie(authorization_header)
+    email_from_cookie = getEmailAddressById(id, authorization_header)
+
+    if emailaddress != email_from_cookie:
+        return jsonify({'error': 'Access forbidden'}), 401
+    
+    username = data.get('username', '')
 
     expiration_time = datetime.utcnow() + timedelta(minutes=15)
     expiration_timestamp = int(expiration_time.timestamp())
+
+    global da_dicts
+    global token_dapayloadcheck
+
+    if username not in da_dicts:
+        da_dicts[username] = {
+            'token_dapayload': {
+                'token': '',
+                'hashed_token': '',
+                'expiration' : '',
+            }
+        }
+
+    token_dapayload = da_dicts[username]['token_dapayload']
+    print("New Dict:", da_dicts)
 
     verification_token = secrets.token_urlsafe(32)
     print("VERFICATION TOKEN:", verification_token)
@@ -2137,7 +2330,10 @@ def email_deletea():
     token_dapayload['token'] = verification_token
     token_dapayload['hashed_token'] = hashed_token
     token_dapayload['expiration'] = expiration_timestamp
-    token_dapayload['email'] = emailaddress
+    encoded_username = base64.b64encode(username.encode()).decode()
+    url_parameters = f"token={hashed_token}.{encoded_username}"
+    print("Update dadict", da_dicts)
+    # token_dapayload['email'] = emailaddress
     configuration = sib_api_v3_sdk.Configuration()
     configuration.api_key['api-key'] = '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'
 
@@ -2175,7 +2371,7 @@ def email_deletea():
         <body>
             <h1>Delete Your Account</h1>
             <p>Please Click On the Button below to Delete your Account.</p>
-            <a href="http://localhost:3000/deleteaccount?token={hashed_token}">Delete Account</a>
+            <a href="http://localhost:3000/deleteaccount?{url_parameters}">Delete Account</a>
         </body>
     </html>
     """
@@ -2197,14 +2393,20 @@ def email_deletea():
         print("Exception when calling SMTPApi->send_transac_email: %s\n" % e)
         return jsonify({'error': 'Failed to send email'})
     
-def is_valid_tokenda(hashed_token, token_dapayload):
-    token = token_dapayload['token']
+def is_valid_tokenda(hashed_token, username):
+    print('is tryin is_valid_tokenda ')
+    print("V1:", da_dicts)
+    print('V2:', da_dicts[username])
+    print('V3:', da_dicts[username]['token_dapayload'])
+    token = da_dicts[username]['token_dapayload']['token']
     print("It's not about the journey:", token)
-    expiration_timestamp = token_dapayload['expiration']
+    expiration_timestamp = da_dicts[username]['token_dapayload']['expiration']
+    print('expiration TimeStamp:', expiration_timestamp)
 
     # Validate the expiration
     current_timestamp = int(datetime.utcnow().timestamp())
     if current_timestamp > expiration_timestamp:
+        print('Currrent Time Stamp:', current_timestamp)
         return False
 
     # Validate the hashed token
@@ -2223,35 +2425,37 @@ def delete_account():
         # Get the token from the request body
         data = request.json
         token = data.get('token', '')
-        print('Checking this particular payload:', token_dtfapayload)
+        username = data.get('username','')
+        username = base64.b64decode(username.encode()).decode()
+        print('Username:', username)
         print("POWER OF FRIENDSHIP:", token)
 
         # Assuming you have a function is_valid_token for token validation
-        if is_valid_tokenda(token, token_dapayload):  # Provide token_evpayload as the second argument
+        if is_valid_tokenda(token, username):  # Provide token_evpayload as the second argument
             print("CHECKED")
             print('OMG:', token_dapayload)
             
-            if token_dapayload['email'] in token_dapayload['email']:
-                email = token_dapayload['email']
-                print("account ID:", email)
+            if username in da_dicts:
+                print('Success')
+                print('UserName:', username)
 
                 try:
             # Proceed with the database update for username only
-                    sql = "DELETE FROM user_account WHERE email_address = %s"
+                    sql = "DELETE FROM user_account WHERE username = %s"
                     connection = pool.connection()
 
                     with connection.cursor() as cursor:
-                        cursor.execute(sql, (email))
+                        cursor.execute(sql, (username))
                     connection.commit()
 
-                    return jsonify({'message': 'Account Deleted successfully', 'email':email})
+                    return jsonify({'message': 'Account Deleted successfully'})
 
                 except Exception as e:
                         connection.rollback()
                         return jsonify({'error': str(e)}), 500
     
 
-            return jsonify({'Validation': 'success', 'email': email})
+            return jsonify({'Validation': 'success'})
 
         else:
             # Return error response

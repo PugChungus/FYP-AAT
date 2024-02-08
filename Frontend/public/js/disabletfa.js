@@ -3,7 +3,6 @@ document.getElementById('tfa').addEventListener('click', disableTFA)
 
 export async function disableTFA(event) {
     event.preventDefault()
-    alert("Triggerd")
     const encryptedEmail = sessionStorage.getItem('encrypted_email');
     let emailData;
   
