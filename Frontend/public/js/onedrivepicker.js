@@ -65,6 +65,28 @@ import { sendFileToBackend } from "./virustotal.js";
             app.setActiveAccount(resp.account);
             accessToken = resp.accessToken;
             console.log(accessToken)
+          
+
+        } catch (error) {
+            console.error("Error during login:", error);
+            // Handle error (e.g., user canceled login, etc.)
+        }
+        return accessToken
+
+    }
+    export async function getTokenForRequestPicker() {
+
+        let accessToken = null;
+        let oid = null;
+        const authParams = 
+        { scopes: ["Files.ReadWrite"],
+        prompt: "select_account" };
+        // per examples we fall back to popup
+        try {
+            const resp = await app.loginPopup(authParams);
+            app.setActiveAccount(resp.account);
+            accessToken = resp.accessToken;
+            console.log(accessToken)
             if (resp.idToken) {
                 const idTokenClaims = resp.idTokenClaims;
                 oid = idTokenClaims.oid; // Extract OID from ID token claims
@@ -78,7 +100,6 @@ import { sendFileToBackend } from "./virustotal.js";
         return {accessToken,oid}
 
     }
-
     async function testtoken() {
         const accessToken = await getTokenForRequest();
 
@@ -123,7 +144,7 @@ import { sendFileToBackend } from "./virustotal.js";
             let port = null;
 
             async function launchPicker(e) {
-                const {accessToken,oid} = await getTokenForRequest();
+                const {accessToken,oid} = await getTokenForRequestPicker();
                 console.log(accessToken)
                 console.log(oid)
                 const cid = oid.replace(/-/g, "").slice(16)
