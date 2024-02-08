@@ -102,7 +102,8 @@ async function decryptFile(file_data, file_name, user_email, share_id) {
 
     formData.append('hex', rdata)
     formData.append('files', encryptedFile);
-  
+    const email = await get_email_via_id()
+    formData.append('email',email)
     const jwtToken = await get_cookie()
   
     const response2 = await fetch('http://localhost:5000/decrypt2', {
