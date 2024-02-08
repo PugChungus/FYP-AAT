@@ -137,6 +137,7 @@ def check_token_validity(authorization_header):
         if authorization_header.startswith('Bearer: '):
             # Extract the token part after 'Bearer '
             jwt_token = authorization_header.split('Bearer: ')[1]
+            print("Split:", jwt_token)
 
             blacklist_query = "SELECT * FROM token_blacklist WHERE token = %s"
 
@@ -163,6 +164,7 @@ def check_token_validity(authorization_header):
                 print("Token is valid and not blacklisted.")
                 return True
             else:
+                print("Decoded Token:", decoded_token)
                 print("Token is invalid and blacklisted.")
                 return False
         else:
@@ -1618,12 +1620,13 @@ def email_verification():
         return jsonify({'error': 'Failed to send email verification'})
     
 def is_valid_token(hashed_token, username):
+    print("Is trying is_valid_token")
     print("V1:", ev_dicts)
     print('V2:', ev_dicts[username])
     print('V3:', ev_dicts[username]['token_evpayload'])
     token = ev_dicts[username]['token_evpayload']['token']
     print("It's not about the journey:", token)
-    expiration_timestamp = token_evpayload['expiration']
+    expiration_timestamp = da_dicts[username]['token_evpayload']['expiration']
 
     # Validate the expiration
     current_timestamp = int(datetime.utcnow().timestamp())
@@ -1873,12 +1876,13 @@ def email_forgetPassword():
         return jsonify({'error': 'Failed to send email verification'})
     
 def is_valid_tokenfp(hashed_token, username):
+    print("trying is_valid_tokenfp")
     print("V1:", fp_dicts)
     print('V2:', fp_dicts[username])
     print('V3:', fp_dicts[username]['token_fppayload'])
     token = fp_dicts[username]['token_fppayload']['token']
     print("It's not about the journey:", token)
-    expiration_timestamp = token_fppayload['expiration']
+    expiration_timestamp = da_dicts[username]['token_fppayload']['expiration']
 
     # Validate the expiration
     current_timestamp = int(datetime.utcnow().timestamp())
@@ -2024,17 +2028,35 @@ def email_disabletfa():
     data = request.get_json()
     print(f"Received JSON data: {data}")
     emailaddress = data.get('email','')
-    username = data.get('username', '')
+    try:
+        connection = pool.connection()
+        with connection.cursor() as cursor:
+            sql = "SELECT username FROM user_account WHERE email_address = %s"
+            cursor.execute(sql, (emailaddress,))
+            result = cursor.fetchone()  # Fetch one row
+
+            if result:
+                username = result[0]
+            else:
+                username = None
+
+        connection.commit()
+
+    except Exception as e:
+            connection.rollback()
+            print("Error executing SQL query:", str(e))
+            return "Error executing SQL query", 500
 
     expiration_time = datetime.utcnow() + timedelta(minutes=15)
     expiration_timestamp = int(expiration_time.timestamp())
 
-    global fp_dicts
-    global token_fppayload
+    global dtfa_dicts
+    global token_dtfapayload
 
-    if username not in fp_dicts:
-        fp_dicts[username] = {
-            'token_fppayload': {
+    print("Checking username before check:", username)
+    if username not in dtfa_dicts:
+        dtfa_dicts[username] = {
+            'token_dtfapayload': {
                 'token': '',
                 'hashed_token': '',
                 'expiration' : '',
@@ -2042,7 +2064,8 @@ def email_disabletfa():
             }
         }
 
-    
+    token_dtfapayload = dtfa_dicts[username]['token_dtfapayload']
+    print("New Dict:", dtfa_dicts)
 
     verification_token = secrets.token_urlsafe(32)
     print("VERFICATION TOKEN:", verification_token)
@@ -2055,6 +2078,9 @@ def email_disabletfa():
     token_dtfapayload['hashed_token'] = hashed_token
     token_dtfapayload['expiration'] = expiration_timestamp
     token_dtfapayload['email'] = emailaddress
+    encoded_username = base64.b64encode(username.encode()).decode()
+    url_parameters = f"token={hashed_token}.{encoded_username}"
+    print('Update DICTS', dtfa_dicts)
     configuration = sib_api_v3_sdk.Configuration()
     configuration.api_key['api-key'] = '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'
 
@@ -2092,7 +2118,7 @@ def email_disabletfa():
         <body>
             <h1>Disable Your 2 Factor Authorization</h1>
             <p>Please Click On the Button below to Disable your 2 Factor Authorization.</p>
-            <a href="http://localhost:3000/disabletfa?token={hashed_token}">Verify Email</a>
+            <a href="http://localhost:3000/disabletfa?{url_parameters}">Verify Email</a>
         </body>
     </html>
     """
@@ -2114,14 +2140,18 @@ def email_disabletfa():
         print("Exception when calling SMTPApi->send_transac_email: %s\n" % e)
         return jsonify({'error': 'Failed to send email'})
     
-def is_valid_tokendtfa(hashed_token, token_dtfapayload):
-    token = token_dtfapayload['token']
+def is_valid_tokendtfa(hashed_token, username):
+    print('Trying is_valid_tokendtfa ')
+    print("V1:", dtfa_dicts)
+    print('V2:', dtfa_dicts[username])
+    print('V3:', dtfa_dicts[username]['token_dtfapayload'])
+    token = dtfa_dicts[username]['token_dtfapayload']['token']
     print("It's not about the journey:", token)
     expiration_timestamp = token_dtfapayload['expiration']
 
     # Validate the expiration
     current_timestamp = int(datetime.utcnow().timestamp())
-    if current_timestamp > expiration_timestamp:
+    if current_timestamp > int(expiration_timestamp):
         return False
 
     # Validate the hashed token
@@ -2140,28 +2170,29 @@ def disable_tfa():
         # Get the token from the request body
         data = request.json
         token = data.get('token', '')
-        print('Checking this particular payload:', token_dtfapayload)
+        username = data.get('username', '')
+        username = base64.b64decode(username.encode()).decode()
+        print("Username", username)
+        print('Type iF username:', type(username))
         print("POWER OF FRIENDSHIP:", token)
 
         # Assuming you have a function is_valid_token for token validation
-        if is_valid_tokendtfa(token, token_dtfapayload):  # Provide token_evpayload as the second argument
+        if is_valid_tokendtfa(token, username):  # Provide token_evpayload as the second argument
             print("CHECKED")
             print('OMG:', token_dtfapayload)
             
-            if token_dtfapayload['email'] in token_dtfapayload['email']:
-                email = token_dtfapayload['email']
-                print("account ID:", email)
+            if username in dtfa_dicts:
+                username = username
 
                 try:
             # Proceed with the database update for username only
-                    sql = "UPDATE user_account SET is_2fa_enabled = 0, tfa_secret = NULL  WHERE email_address = %s"
+                    sql = "UPDATE user_account SET is_2fa_enabled = 0, tfa_secret = NULL  WHERE username = %s"
                     connection = pool.connection()
 
                     with connection.cursor() as cursor:
-                        cursor.execute(sql, (email))
+                        cursor.execute(sql, (username))
                     connection.commit()
 
-                    return jsonify({'message': 'Password updated successfully'})
 
                 except Exception as e:
                         connection.rollback()
@@ -2193,11 +2224,14 @@ token_dapayload = {
 @app.route('/email_deletea', methods=['POST'])
 def email_deletea():
     authorization_header = request.headers.get('Authorization')
+    print('Auth TOken', authorization_header)
 
     if authorization_header is None:
+        print('Not Valid')
         return "Token is Invalid"
     
     isValid = check_token_validity(authorization_header)
+    print('isValid?', isValid)
     
     if not isValid:
         print('Invalid Token.')
@@ -2220,7 +2254,7 @@ def email_deletea():
     expiration_timestamp = int(expiration_time.timestamp())
 
     global da_dicts
-    global token_dapayload
+    global token_dapayloadcheck
 
     if username not in da_dicts:
         da_dicts[username] = {
@@ -2307,14 +2341,20 @@ def email_deletea():
         print("Exception when calling SMTPApi->send_transac_email: %s\n" % e)
         return jsonify({'error': 'Failed to send email'})
     
-def is_valid_tokenda(hashed_token, token_dapayload):
-    token = token_dapayload['token']
+def is_valid_tokenda(hashed_token, username):
+    print('is tryin is_valid_tokenda ')
+    print("V1:", da_dicts)
+    print('V2:', da_dicts[username])
+    print('V3:', da_dicts[username]['token_dapayload'])
+    token = da_dicts[username]['token_dapayload']['token']
     print("It's not about the journey:", token)
-    expiration_timestamp = token_dapayload['expiration']
+    expiration_timestamp = da_dicts[username]['token_dapayload']['expiration']
+    print('expiration TimeStamp:', expiration_timestamp)
 
     # Validate the expiration
     current_timestamp = int(datetime.utcnow().timestamp())
     if current_timestamp > expiration_timestamp:
+        print('Currrent Time Stamp:', current_timestamp)
         return False
 
     # Validate the hashed token
@@ -2333,35 +2373,37 @@ def delete_account():
         # Get the token from the request body
         data = request.json
         token = data.get('token', '')
-        print('Checking this particular payload:', token_dtfapayload)
+        username = data.get('username','')
+        username = base64.b64decode(username.encode()).decode()
+        print('Username:', username)
         print("POWER OF FRIENDSHIP:", token)
 
         # Assuming you have a function is_valid_token for token validation
-        if is_valid_tokenda(token, token_dapayload):  # Provide token_evpayload as the second argument
+        if is_valid_tokenda(token, username):  # Provide token_evpayload as the second argument
             print("CHECKED")
             print('OMG:', token_dapayload)
             
-            if token_dapayload['email'] in token_dapayload['email']:
-                email = token_dapayload['email']
-                print("account ID:", email)
+            if username in da_dicts:
+                print('Success')
+                print('UserName:', username)
 
                 try:
             # Proceed with the database update for username only
-                    sql = "DELETE FROM user_account WHERE email_address = %s"
+                    sql = "DELETE FROM user_account WHERE username = %s"
                     connection = pool.connection()
 
                     with connection.cursor() as cursor:
-                        cursor.execute(sql, (email))
+                        cursor.execute(sql, (username))
                     connection.commit()
 
-                    return jsonify({'message': 'Account Deleted successfully', 'email':email})
+                    return jsonify({'message': 'Account Deleted successfully'})
 
                 except Exception as e:
                         connection.rollback()
                         return jsonify({'error': str(e)}), 500
     
 
-            return jsonify({'Validation': 'success', 'email': email})
+            return jsonify({'Validation': 'success'})
 
         else:
             # Return error response

@@ -1,7 +1,11 @@
 async function validateThisTFA() {
     try {
         const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('token');
+        const tokenwithUserName = urlParams.get('token');
+
+        const [ token, encodedUsername ] = tokenwithUserName.split('.')
+
+        // Modify the URL without the token using history.replaceState
         const newURL = window.location.origin + window.location.pathname;
         history.replaceState({}, document.title, newURL);
 
@@ -10,7 +14,7 @@ async function validateThisTFA() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ token: token }),
+            body: JSON.stringify({ token: token, username: encodedUsername }),
         });
         const data = await response.json();
 

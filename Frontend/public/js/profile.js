@@ -348,18 +348,6 @@ export async function deleteAccount() {
     formData.append('id', id)
     console.log('Profile Delete Token:', jwtToken)
 
-    const response1 = await fetch('http://localhost:3000/blacklist_token', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer: ${jwtToken}`
-      },
-      body: formData,
-    });
-
-    if (response1.status === 401){ 
-      window.alert('Account deletion failed.');
-      return
-    }
 
     const response2v = await fetch(`http://localhost:5000/email_deletea`, {
       method: 'POST',
@@ -371,9 +359,22 @@ export async function deleteAccount() {
     })
 
     const isEmailSent = await response2v.json()
+    console.log('WHAT THE CHICKEN:', isEmailSent)
   
     if (isEmailSent.message === 'Email sent successfully') {
       alert('An Email has been sent to delete your account. Account will not be deleted until link in email is opened. ')
+        const response1 = await fetch('http://localhost:3000/blacklist_token', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer: ${jwtToken}`
+          },
+          body: formData,
+        });   
+
+    if (response1.status === 401){ 
+      window.alert('Account deletion failed.');
+      return
+    }
     }else {
       window.alert('Account deletion failed.');
     }
