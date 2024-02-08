@@ -148,6 +148,7 @@ async function register() {
         if (newResponse.ok) {
           const verificationFormData = new FormData();
           verificationFormData.append('email', email)
+          verificationFormData.append('username', username)
           console.log('Am I getting it lmao?:', verificationFormData)
 
           const verificationResponse = await fetch('http://localhost:5000/email_verification', {

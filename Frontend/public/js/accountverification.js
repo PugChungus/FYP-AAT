@@ -2,7 +2,9 @@ async function verifyAccount() {
     try {
         // Get the token from the URL
         const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('token');
+        const tokenwithUserName = urlParams.get('token');
+
+        const [ token, encodedUsername ] = tokenwithUserName.split('.')
 
         // Modify the URL without the token using history.replaceState
         const newURL = window.location.origin + window.location.pathname;
@@ -13,7 +15,7 @@ async function verifyAccount() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ token: token })  // Send the token as a JSON object
+            body: JSON.stringify({ token: token, username: encodedUsername })  // Send the token as a JSON object
         });
 
         const data = await response.json();

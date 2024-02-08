@@ -241,6 +241,7 @@ export async function verifyTOTP(event) {
 
     const data = {
       otp: otpValue,
+      email: emailData.decryptedEmail
     };
 
     // Make an HTTP POST request to verify the OTP

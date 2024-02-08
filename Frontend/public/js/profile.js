@@ -245,14 +245,23 @@ document.addEventListener('DOMContentLoaded', async function () {
                   console.log('OTP is valid. Proceed with enabling 2FA.');
 
                   try {
+                    const newResponse = await fetch('http://localhost:3000/get_data_from_cookie', {
+                     method: 'POST',
+                    });
+
+                    const data1 = await newResponse.json(); // await here
+                    const id = data1['id_username']['id'];
+                    formData.append('id', id)
                     // Move the enable2faRoute request here
                     const enable2faResponse = await fetch('http://localhost:3000/enable2fa', {
                       method: 'POST',
-                      body: formData,
                       headers: {
-                        'authorization': `Bearer: ${cookie}`
+                        'Authorization': `Bearer: ${jwtToken}`
                       },
+                      body: formData,
                     });
+                    const enabletfaresponse = await enable2faResponse.json()
+                    console.log('enabletfaresponse:', enabletfaresponse)
 
                     if (enable2faResponse.ok) {
                       console.log('enable2faRoute Successfully Called');

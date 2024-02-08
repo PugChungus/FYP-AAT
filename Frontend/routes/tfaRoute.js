@@ -1,19 +1,27 @@
 import express from 'express';
 import { pool } from '../db-connection.js';
 import { checkTokenValidity } from './authorizeRolesRoute.js';
-import { getAccountIdFromCookie, getEmailAddressById } from './check.js';
+import { getAccountIdFromCookie, getEmailAddressById } from './checkRoute.js';
 
 
 const tfaRouter = express.Router();
 
 tfaRouter.post('/get2faStatus', async (req, res) => {
     const cookie_from_frontend = req.headers.authorization;
-
     const isValid = await checkTokenValidity(cookie_from_frontend)
 
     if (isValid) {
         try {
+            const id_from_cookie = await getAccountIdFromCookie(cookie_from_frontend);
+            const email_address = await getEmailAddressById(id_from_cookie);
+    
             const { email } = req.body;
+
+            if (email == email_address) {
+                console.log("Authorised")
+            } else {
+                return res.status(401).json({ error: 'Access forbidden' });
+            }    
     
             console.log("email:", email)
     
@@ -46,7 +54,7 @@ tfaRouter.post('/get2faStatus', async (req, res) => {
 
 tfaRouter.post('/disable2fa', async (req, res) => {
     try {
-        const { id } = req.body;
+        const { id } = req.body.id;
         const cookie_from_frontend = req.headers.authorization
         const isValid = await checkTokenValidity(cookie_from_frontend)
 
@@ -77,26 +85,31 @@ tfaRouter.post('/disable2fa', async (req, res) => {
 tfaRouter.post('/enable2fa', async (req, res) => {
     try {
         const cookie_from_frontend =  req.headers.authorization
-        const isValid = checkTokenValidity(`Bearer: ${cookie_from_frontend}`)
+        console.log("Cookie from Frontend:", cookie_from_frontend)
+        const isValid = await checkTokenValidity(cookie_from_frontend)
        
         if (!isValid) {
             console.log("Error Validating Key")
         } else {
-            const { id } = req.body;
+            const id  = parseInt(req.body.id);
+            console.log('Req bidy', id)
+            console.log('Req Body type:', typeof(id))
             const id_from_cookie = await getAccountIdFromCookie(cookie_from_frontend);
+            console.log('id from cookie:', id_from_cookie)
+            console.log('Type of id from cookie:', typeof(id_from_cookie))
         
-            if (id == id_from_cookie) {
+            if (id === id_from_cookie) {
                 console.log("Authorised")
+                const sql = 'UPDATE user_account SET is_2fa_enabled = 1 WHERE account_id = ?';
+                const values = [id];
+        
+                await pool.query(sql, values);
+        
+            res.json({ message: '2FA Enabled' });
             } else {
                 return res.status(401).json({ error: 'Access forbidden' });
             }
     
-            const sql = 'UPDATE user_account SET is_2fa_enabled = 1 WHERE account_id = ?';
-            const values = [id];
-        
-            await pool.query(sql, values);
-        
-            res.json({ message: '2FA Enabled' });
         }
     } catch (error) {
       console.error('Error enabling 2FA:', error);

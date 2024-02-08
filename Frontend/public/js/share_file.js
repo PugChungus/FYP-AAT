@@ -322,7 +322,7 @@ export async function showModal() {
 
     document.getElementById('confirmShare').addEventListener('click', async function() {
         await shareFile('individual');
-        window.location.href = "http://localhost:3000/encrypt"
+        // window.location.href = "http://localhost:3000/encrypt"
     });
     
     // Append the selectedUsersContainer to the body
@@ -371,12 +371,12 @@ export async function showModalMul() {
         if (standaloneRadio.checked) {
             console.log('Standalone option selected');
             await shareFile('individual');
-            window.location.href = "http://localhost:3000/encrypt"
+            // window.location.href = "http://localhost:3000/encrypt"
             // Add your logic for standalone option
         } else if (zipRadio.checked) {
             console.log('Zip option selected');
             await shareFile('zip');
-            window.location.href = "http://localhost:3000/encrypt"
+            // window.location.href = "http://localhost:3000/encrypt"
             // Add your logic for zip option
         } else {
             alert('No option selected.')
