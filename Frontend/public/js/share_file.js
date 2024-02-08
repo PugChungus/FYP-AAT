@@ -57,11 +57,11 @@ async function executeSQLQuery(userInput) {
                 imgElement.src = objectURL;
                 imgElement.classList.add('user-avatar');
 
-                imgElement.style.maxHeight = '50px'; // Change the value as needed
-                imgElement.style.maxWidth = '50px'; // Change the value as needed
+                imgElement.style.maxHeight = '30px'; // Change the value as needed
+                imgElement.style.maxWidth = '30px'; // Change the value as needed
 
 
-                // Create username element
+                
                 const usernameElement = document.createElement('span');
                 usernameElement.textContent = username;
 
@@ -93,17 +93,23 @@ async function executeSQLQuery(userInput) {
                             selectedUsersDiv.appendChild(header);
                         }
 
+                        
+
                         selectedUsers.push(email);
                         selectedUsersDiv.classList.add('selected-user');
+                        const userwrapper = document.createElement('div')
+                        userwrapper.classList.add("userWrapper");
 
                         const selectedUsername = document.createElement('span');
-                        selectedUsername.textContent = `, ${username}`;
+                        selectedUsername.textContent = `${username}`;
+                        selectedUsername.classList.add('selectedUsername');
 
-                        const deleteButton = document.createElement('button');
-                        deleteButton.textContent = 'Delete';
-                        deleteButton.addEventListener('click', () => {
+                        const deleteIcon = document.createElement('i');
+                        deleteIcon.classList.add('bx', 'bxs-x-circle');
+                        deleteIcon.addEventListener('click', () => {
                             selectedUsername.remove();
-                            deleteButton.remove();
+                            deleteIcon.remove();
+                            userwrapper.remove()
 
                             const index = selectedUsers.indexOf(email);
                             if (index !== -1) {
@@ -115,9 +121,10 @@ async function executeSQLQuery(userInput) {
                                 selectedUsersDiv.innerHTML = '';
                             }
                         });
-
-                        selectedUsersDiv.appendChild(selectedUsername);
-                        selectedUsersDiv.appendChild(deleteButton);
+                        userwrapper.appendChild(selectedUsername)
+                        userwrapper.appendChild(deleteIcon)
+                        selectedUsersDiv.appendChild(userwrapper);
+                        
 
                         console.log(`Selected user's email: ${email}`);
                         console.log(selectedUsers);

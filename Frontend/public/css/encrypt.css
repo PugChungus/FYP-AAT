@@ -219,6 +219,22 @@
     color: #155724; /* Set the text color when dragging over */
 }
 
+.userWrapper {
+    display: inline-flex; /* Use flexbox to align items */
+    align-items: center; /* Align items vertically */
+    background-color: lightgrey; /* Example background color */
+    border-radius: 20px;
+    padding: 5px; /* Add padding to create space around the content */
+}
+
+.selectedUsername {
+    margin-right: 10px; /* Add margin between username and icon */
+}
+
+.deleteIcon {
+    cursor: pointer; /* Show pointer cursor on hover */
+}
+
 @media screen and (max-width: 768px) {
     .drive-picker-buttons {
         flex-direction: column; /* Change to column layout on smaller screens */

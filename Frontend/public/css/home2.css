@@ -85,6 +85,8 @@
     margin-left: auto; /* Push the chevron icon to the right */
 }
 
+
+
 @media only screen and (max-width: 768px) {
     .keydiv,
     .historydiv,
