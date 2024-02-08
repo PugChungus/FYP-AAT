@@ -1,5 +1,6 @@
 
 
+
 import { sendFileToBackend } from "./virustotal.js";
 
 
@@ -31,6 +32,7 @@ import { sendFileToBackend } from "./virustotal.js";
             // see if we have already the idtoken saved
             const resp = await app.acquireTokenSilent(authParams);
             accessToken = resp.accessToken;
+            
 
         } catch (e) {
 
@@ -53,9 +55,8 @@ import { sendFileToBackend } from "./virustotal.js";
     export async function getTokenForRequest() {
 
         let accessToken = null;
-        
-        const
-        authParams = 
+        let oid = null;
+        const authParams = 
         { scopes: ["Files.ReadWrite"],
         prompt: "select_account" };
         // per examples we fall back to popup
@@ -63,11 +64,18 @@ import { sendFileToBackend } from "./virustotal.js";
             const resp = await app.loginPopup(authParams);
             app.setActiveAccount(resp.account);
             accessToken = resp.accessToken;
+            console.log(accessToken)
+            if (resp.idToken) {
+                const idTokenClaims = resp.idTokenClaims;
+                oid = idTokenClaims.oid; // Extract OID from ID token claims
+            }
+            console.log(oid)
+
         } catch (error) {
             console.error("Error during login:", error);
             // Handle error (e.g., user canceled login, etc.)
         }
-        return accessToken
+        return {accessToken,oid}
 
     }
 
@@ -115,9 +123,14 @@ import { sendFileToBackend } from "./virustotal.js";
             let port = null;
 
             async function launchPicker(e) {
-                const authToken = await getTokenForRequest();
+                const {accessToken,oid} = await getTokenForRequest();
+                console.log(accessToken)
+                console.log(oid)
+                const cid = oid.replace(/-/g, "").slice(16)
+                console.log(cid)
+                
                 // Ensure the token is available before proceeding
-                if (!authToken) {
+                if (!accessToken) {
                     console.error('Token retrieval failed. Cannot proceed.');
                     return;
                 }
@@ -128,6 +141,7 @@ import { sendFileToBackend } from "./virustotal.js";
                 
                 const queryString = new URLSearchParams({
                     filePicker: JSON.stringify(params),
+                    cid: "9831-562722e62e33"
                 });
 
                 const url = `${baseUrl}?${queryString}`;
@@ -140,7 +154,7 @@ import { sendFileToBackend } from "./virustotal.js";
                 const input = win.document.createElement("input");
                 input.setAttribute("type", "hidden")
                 input.setAttribute("name", "access_token");
-                input.setAttribute("value", authToken);
+                input.setAttribute("value", accessToken);
                 form.appendChild(input);
 
                 form.submit();
