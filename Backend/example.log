@@ -1,0 +1,14 @@
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): localhost:3000
+DEBUG:urllib3.connectionpool:http://localhost:3000 "POST /keys HTTP/1.1" 200 80
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): localhost:3000
+DEBUG:urllib3.connectionpool:http://localhost:3000 "GET /get-account-id HTTP/1.1" 200 17
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): localhost:3000
+DEBUG:urllib3.connectionpool:http://localhost:3000 "POST /get-email-by-id HTTP/1.1" 200 31
+INFO:app:User Dictoionary created by ryanleezx@gmail.com
+INFO:werkzeug:127.0.0.1 - - [09/Feb/2024 11:48:11] "POST /create_user_dict HTTP/1.1" 200 -
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): localhost:3000
+DEBUG:urllib3.connectionpool:http://localhost:3000 "GET /get-account-id HTTP/1.1" 200 17
+INFO:werkzeug:127.0.0.1 - - [09/Feb/2024 11:48:11] "POST /display_history HTTP/1.1" 200 -

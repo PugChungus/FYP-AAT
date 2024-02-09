@@ -35,6 +35,7 @@ import sib_api_v3_sdk
 import requests
 import numpy as np 
 from io import BytesIO
+import logging
 
 app = Flask(__name__)
 # cors_config = {
@@ -45,6 +46,8 @@ app = Flask(__name__)
 #CORS(app,resources={r"*": cors_config})
 CORS(app)
 load_dotenv()
+
+logging.basicConfig(filename='example.log', level=logging.DEBUG)
 
 MYSQL_HOST = os.getenv('MYSQL_HOST')
 MYSQL_PORT = int(os.getenv('MYSQL_PORT'))
@@ -244,6 +247,7 @@ def create_user_dict():
         # decrypted_data_dict = user_dicts[email]["decrypted_data_dict"]
         print('big info here')
         print(user_dicts)
+        app.logger.info(f'User Dictoionary created by {email} ')
         return jsonify("User dictionary created.")
     except Exception as e:
         print("Error:", e)

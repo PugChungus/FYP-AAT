@@ -1,5 +1,6 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
+import morgan from 'morgan';
 import cors from 'cors';
 import multer from 'multer';
 import argon2 from 'argon2-browser';
@@ -12,6 +13,7 @@ import { dirname } from 'path';
 import { OAuth2Client } from "google-auth-library";
 import jwt from 'jsonwebtoken';
 import helmet from 'helmet';
+import rotatingFileStream from 'rotating-file-stream'
 
 import { authorizeRoles, checkTokenValidity } from './routes/authorizeRolesRoute.js';
 import loginRouter from './routes/loginroute.js'
@@ -24,8 +26,20 @@ import rsaRouter from './routes/rsaRoute.js';
 import hashPasswordRouter from './routes/hashpasswordRoute.js';
 import checkRouter from './routes/checkRoute.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+
 const app = express();
 const port = 3000;
+
+const accessLogStream = rotatingFileStream.createStream('access.log', {
+    interval: '1d', // rotate daily
+    path: path.join(__dirname, 'log')
+  });
+  
+  // Log HTTP requests using Morgan with the rotating file stream
+  app.use(morgan('combined', { stream: accessLogStream }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -136,8 +150,7 @@ app.use('/', tfaRouter);
 app.use('/', hashPasswordRouter)
 app.use('/', checkRouter);
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'public', 'pages'));
