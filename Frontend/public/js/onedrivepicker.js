@@ -14,7 +14,7 @@ import { sendFileToBackend } from "./virustotal.js";
         auth: {
             authority:  "https://login.microsoftonline.com/consumers",
             clientId: "e405b733-af32-4840-bdba-b70c2b8600cd",
-            redirectUri: "https://jtr.lol" //change this to JTR.lol
+            redirectUri: "http://localhost:3000" //change this to JTR.lol
 
         },
     }
