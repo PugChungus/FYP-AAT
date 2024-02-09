@@ -8,9 +8,9 @@
     <link rel="stylesheet" type="text/css" href="/css/home.css">
     <link rel="stylesheet" type="text/css" href="/css/loading.css">
     <link rel="stylesheet" type="text/css" href="/css/navbar.css">
-    <link rel="stylesheet" type="text/css" href="/css/test.css">
     <link rel="stylesheet" type="text/css" href="/css/modal.css">
     <link rel="stylesheet" type="text/css" href="/css/encrypt.css">
+    <link rel="stylesheet" type="text/css" href="/css/decryptdownload.css">
 
     
 
@@ -73,11 +73,11 @@
                         <div class="drive-picker-buttons">
                             <button id="decryptlaunchPicker" class="btn btn-info">
                                 <img src="../images/onedrive-1.svg" alt="OneDrive Icon" class="svg-icon">
-                                 OneDrive Picker
+                                 OneDrive
                             </button>
                             <button id="googlepocker" class="btn btn-danger" >
                                 <img src="../images/google-drive.svg" alt="Google Drive Icon" class="svg-icon"> 
-                                 Google Picker
+                                 Google Drive
                             </button>
                         </div>
                        
@@ -99,6 +99,36 @@
     
     </div>
     <button id="decryptButton" class="eButton" >Decrypt</button>
+
+    <div class="download-container">
+        <h2>Choose An Option</h2>
+        <div class="downloadDecrypted">
+            <div id="placeholderIcon"></div>
+            <div class="downloadType"></div>
+            <div>
+            <button id="downloadButton"><i class='bx bxs-download' ></i></button>
+            </div>
+        </div>
+        <div class="downloadGoogleDrive">
+            <div>
+                <img src="../images/google-drive.svg" alt="OneDrive Icon" class="svg-icon2">
+            </div>
+            <div>Upload to Google Drive</div>
+            <button id="uploadgoogleButton"><i class='bx bx-cloud-upload' ></i></button>
+        </div>
+        <div class="downloadOneDrive">
+            <div>
+                <img src="../images/onedrive-1.svg" alt="OneDrive Icon" class="svg-icon2">
+            </div>
+            <div>Upload To OneDrive</div>
+            <button id="UploadToOneDrive"><i class='bx bx-cloud-upload' ></i></button>
+        </div>
+        <div class="sharing">
+            <div><i class='bx bxs-share-alt' ></i></div>
+            <div>Share Your File</div>
+            <button id="shareButton"><i class='bx bxs-share'></i></button>
+        </div>
+    </div>
 
 
     <script type="text/javascript" nonce="<%= nonce %>">

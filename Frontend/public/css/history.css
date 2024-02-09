@@ -7,26 +7,21 @@
 }
 
 .responsive-table .table-row {
-  background-color: #494949;
-  box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.1);
-  height: 70px; /* Increase the height for more space */
-  display: flex;
-  align-items: center;
-  border-radius: 10px;
+  background-color: #f8f9fa; /* Adjust background color */
+  border-radius: 5px; /* Add border-radius for rounded corners */
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 15px; /* Adjust margin for better separation between rows */
+  display: flex; /* Ensure flex layout */
+  align-items: center; /* Vertically center items */
 }
 
 .responsive-table .table-row:hover {
-  background-color: #ccc6c6;
-  box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.1);
-  height: 70px; /* Increase the height for more space */
-  display: flex;
-  align-items: center;
-  border-radius: 10px;
+  background-color: #e2e6ea;
 }
 
 
 .responsive-table .col {
-  flex-basis: 16%; /* Adjust the flex-basis for each column to control width */
+  padding: 10px;
 }
 
 
@@ -61,35 +56,7 @@ a.generateKey {
   padding: 10px; /* Adjust padding for better spacing */
 }
 
-.table-row .col-2{
-  max-width: 200px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  position: relative;
-}
 
-.table-row .col-2:hover{
-  position: relative;
-}
-
-.table-row .col-2:hover::after {
-  content: attr(title);
-  position: absolute;
-  top: 100%; /* Adjust the positioning of the tooltip to appear below the text */
-  left: 0;
-  white-space: normal; /* Display full text on hover */
-  overflow: visible; /* Allow overflow on hover */
-  text-overflow: initial; /* Display full text on hover */
-  background-color: #020202;
-  color: #fff;
-  padding: 8px 12px;
-  border-radius: 6px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  z-index: 1;
-  width: max-content; /* Set width to max-content to allow the tooltip to expand */
-  text-align: center; /* Center the tooltip text */
-}
 
 .responsive-table .table-row {
   background-color: #f8f9fa; /* Adjust background color */
@@ -119,8 +86,10 @@ a.generateKey {
 .col.col-1 {
   flex-basis: 40%; /* Adjust the percentage based on your design */
 }
-/* Optional: Style the header for better visibility */
-/* Add this CSS to your existing stylesheets or create a new one */
+
+.col.col-3 {
+  flex-basis: 40%;
+}
 
 .historyButton i {
   font-size: 24px;
@@ -170,6 +139,35 @@ a.generateKey {
 .keyHead h2 {
   margin: 0; /* Remove default margin to avoid extra space */
 }
+
+@media screen and (max-width: 768px) {
+  .table-row .col-2 {
+    max-width: none; /* Reset max-width for smaller screens */
+    white-space: normal; /* Allow text to wrap */
+    overflow: visible; /* Allow overflow */
+    text-overflow: initial; /* Reset text-overflow */
+    position: relative; /* Reset position */
+  }
+
+  .table-row .col-2:hover::after {
+    content: ''; /* Remove content */
+    position: static; /* Reset position */
+    top: auto; /* Reset top */
+    left: auto; /* Reset left */
+    white-space: normal; /* Reset white-space */
+    overflow: visible; /* Reset overflow */
+    text-overflow: initial; /* Reset text-overflow */
+    background-color: transparent; /* Make background transparent */
+    color: inherit; /* Inherit text color */
+    padding: 0; /* Remove padding */
+    border-radius: 0; /* Remove border radius */
+    box-shadow: none; /* Remove box shadow */
+    z-index: auto; /* Reset z-index */
+    width: auto; /* Reset width */
+    text-align: left; /* Reset text-align */
+  }
+}
+
 
 
 

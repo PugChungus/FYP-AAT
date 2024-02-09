@@ -316,14 +316,17 @@ async function hideDropZoneAndFileDetails() {
     encryptButton.style.display = 'none';
     dropZoneEncasement.style.display = 'none';
     downloadContainer.style.display = 'block'
+    downloadContainer.style.display = 'flex'
     const googlebutton = document.getElementById('uploadgoogleButton')
     const onedrivebutton = document.getElementById('UploadToOneDrive')
     const downloadButton = document.getElementById('downloadButton');
     const shareButton = document.getElementById('shareButton');
+    const downloadType = document.querySelector('.downloadType')
+    const placeholderIcon = document.getElementById('placeholderIcon')
 
     if (selectedFiles.files.length >= 2) {
-
-        downloadButton.textContent = "Download Zip"
+        placeholderIcon.classList.add('bx', 'bxs-file-archive')
+        downloadType.textContent = "Download Zip"
         downloadButton.addEventListener('click', async() => {
             const zipFolderName = window.prompt('Enter the name for the zip folder (without extension)');
             if (zipFolderName) {
@@ -343,7 +346,6 @@ async function hideDropZoneAndFileDetails() {
         })
         // Create a card div for file download options
         // Create Google Button
-        googlebutton.textContent ="Download Zip to google";
         googlebutton.addEventListener('click', async () => {
             const googleFolderName = window.prompt('Enter the name for the zip folder (without extension)');
             if (googleFolderName) {
@@ -351,7 +353,6 @@ async function hideDropZoneAndFileDetails() {
             }
         })
         //Create One Drive
-        onedrivebutton.textContent ="Download Zip to onedrive";
         onedrivebutton.addEventListener('click', async () => {
             const onedriveFolderName = window.prompt('Enter the name for the zip folder (without extension)');
             if (onedriveFolderName) {
@@ -407,7 +408,6 @@ async function hideDropZoneAndFileDetails() {
             uploadtoOneDrive('individual');
         });
 
-        shareButton.textContent = 'Share Files';
         shareButton.addEventListener('click', async() => {
             showModalMul();
         })
@@ -419,10 +419,10 @@ async function hideDropZoneAndFileDetails() {
     } else {
         // If there is only one file, create a simple download button
         downloadButton.style.display = 'block';
-        downloadButton.textContent = 'Download Encrypted File';  // Reuse the existing variable
+        placeholderIcon.classList.add('bx', 'bx-file-blank')
+        downloadType.textContent = 'Download Encrypted File';  // Reuse the existing variable
 
         shareButton.style.display = 'block';
-        shareButton.textContent = 'Share File'; 
         shareButton.onclick = () => showModal();
         
         // Add click event listener to the download button
@@ -440,11 +440,10 @@ async function hideDropZoneAndFileDetails() {
             var div = document.getElementById("file-details-container");
             div.innerHTML = "";
             seen.clear();
-            downloadContainer.style.display = 'block'
+            downloadContainer.style.display = 'none'
         });
 
-        googlebutton.style.display = 'block';
-        googlebutton.textContent = 'Upload File To Google';  // Reuse the existing variable
+        googlebutton.style.display = 'block';  // Reuse the existing variable
         
         // Add click event listener to the download button
         googlebutton.addEventListener('click', async () => {
@@ -453,7 +452,6 @@ async function hideDropZoneAndFileDetails() {
         
         
         onedrivebutton.style.display = 'block';
-        onedrivebutton.textContent = 'Upload File to OneDrive';  // Reuse the existing variable
         
         // Add click event listener to the download button
         onedrivebutton.addEventListener('click', async () => {
