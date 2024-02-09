@@ -13,8 +13,8 @@ import { sendFileToBackend } from "./virustotal.js";
     const msalParams = {
         auth: {
             authority:  "https://login.microsoftonline.com/consumers",
-            clientId: "2ab80a1e-7300-4cb1-beac-c38c730e8b7f",
-            redirectUri: "http://localhost:3000" //change this to JTR.lol
+            clientId: "e405b733-af32-4840-bdba-b70c2b8600cd",
+            redirectUri: "https://jtr.lol" //change this to JTR.lol
 
         },
     }

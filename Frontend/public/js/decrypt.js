@@ -371,10 +371,16 @@ async function downloadDecryptedFiles(type, name) {
             }
 
             const decryptedExtension = decryptedExtensionList[i % decryptedExtensionList.length];
-
+            const jwtToken = await get_cookie()
             let fileNameWithEnc = `${fileNameWithoutExtension}.${decryptedExtension}`;
             const email = await get_email_via_id()
-            const response = await fetch(`http://localhost:5000/download_single_decrypted_file/${fileNameWithEnc}/${email}`);
+            const response = await fetch(`http://localhost:5000/download_single_decrypted_file/${fileNameWithEnc}/${email}`,{
+                method : 'GET',
+                headers: {
+                    'Authorization': `Bearer: ${jwtToken}`
+                },
+
+            });
             const blob = await response.blob();
 
             const downloadLink = document.createElement('a');
