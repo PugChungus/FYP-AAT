@@ -76,7 +76,7 @@ accountDataRouter.post('/search_users', async (req, res) => {
     if (isValid === true) {
         console.log('Valid token');
         try {
-            const [tables] = await pool.execute('SELECT username, profile_picture, email_address FROM user_account WHERE username LIKE ?', [`${userInput}%`]);
+            const [tables] = await pool.execute('SELECT username, profile_picture, account_id FROM user_account WHERE username LIKE ?', [`${userInput}%`]);
     
             return res.status(200).json({ message: 'Account Data', result: tables });
         } catch (error) {
