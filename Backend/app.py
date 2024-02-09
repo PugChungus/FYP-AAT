@@ -603,7 +603,7 @@ def encrypt_files():
 
             user_dicts[email]['encrypted_data_dict'][new_file_name] = concat
             print("GODDAMNIT")
-            print(user_dicts)
+        
             #encrypted_data_dict[new_file_name] = concat
 
         return "End of Encryption", 200
@@ -1212,7 +1212,7 @@ def download_single_encrypted_file(filename, email):
     print(email)
     for keys, value in user_dicts[email]['encrypted_data_dict'].items():
         print("GODDAMN SON")
-        print(user_dicts)
+        
         print(keys, file=sys.stderr)
     encrypted_data = user_dicts[email]['encrypted_data_dict'].get(filename, None)
     # print(encrypted_data, file=sys.stderr)
