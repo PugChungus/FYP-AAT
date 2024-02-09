@@ -30,3 +30,106 @@ DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): localhost:3000
 DEBUG:urllib3.connectionpool:http://localhost:3000 "GET /get-account-id HTTP/1.1" 200 17
 INFO:app:User Dictoionary created by ryanleezx@gmail.com 
 INFO:werkzeug:127.0.0.1 - - [09/Feb/2024 17:17:12] "POST /create_user_dict HTTP/1.1" 200 -
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): localhost:3000
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+DEBUG:urllib3.connectionpool:http://localhost:3000 "POST /keys HTTP/1.1" 200 80
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): localhost:3000
+DEBUG:urllib3.connectionpool:http://localhost:3000 "GET /get-account-id HTTP/1.1" 200 17
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): localhost:3000
+DEBUG:urllib3.connectionpool:http://localhost:3000 "POST /get-email-by-id HTTP/1.1" 200 37
+INFO:app:User Dictoionary created by trevortanwc04@outlook.com 
+INFO:werkzeug:127.0.0.1 - - [09/Feb/2024 17:39:46] "POST /create_user_dict HTTP/1.1" 200 -
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): localhost:3000
+DEBUG:urllib3.connectionpool:http://localhost:3000 "GET /get-account-id HTTP/1.1" 200 17
+INFO:werkzeug:127.0.0.1 - - [09/Feb/2024 17:39:46] "POST /display_history HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [09/Feb/2024 17:39:49] "GET /aes_keygen HTTP/1.1" 200 -
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): localhost:3000
+DEBUG:urllib3.connectionpool:http://localhost:3000 "GET /get-account-id HTTP/1.1" 200 17
+INFO:app:User Dictoionary created by trevortanwc04@outlook.com 
+INFO:werkzeug:127.0.0.1 - - [09/Feb/2024 17:39:51] "POST /create_user_dict HTTP/1.1" 200 -
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.virustotal.com:443
+DEBUG:urllib3.connectionpool:https://www.virustotal.com:443 "GET /api/v3/files/495e9334a65c2c2dcf39bd144b4e2c6d0eebd49f15bb34ec564118378c4a9403 HTTP/1.1" 404 None
+INFO:werkzeug:127.0.0.1 - - [09/Feb/2024 17:39:54] "POST /upload_file HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [09/Feb/2024 17:39:55] "GET /clear_encrypted_folder/trevortanwc04@outlook.com HTTP/1.1" 200 -
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): localhost:3000
+DEBUG:urllib3.connectionpool:http://localhost:3000 "GET /get-account-id HTTP/1.1" 200 17
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): localhost:3000
+DEBUG:urllib3.connectionpool:http://localhost:3000 "POST /get-email-by-id HTTP/1.1" 200 37
+INFO:werkzeug:127.0.0.1 - - [09/Feb/2024 17:39:55] "POST /encrypt HTTP/1.1" 200 -
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): localhost:3000
+DEBUG:urllib3.connectionpool:http://localhost:3000 "GET /get-account-id HTTP/1.1" 200 17
+INFO:werkzeug:127.0.0.1 - - [09/Feb/2024 17:39:55] "POST /add_to_encryption_history HTTP/1.1" 200 -
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): localhost:3000
+DEBUG:urllib3.connectionpool:http://localhost:3000 "POST /keys HTTP/1.1" 200 80
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): localhost:3000
+DEBUG:urllib3.connectionpool:http://localhost:3000 "GET /get-account-id HTTP/1.1" 200 17
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): localhost:3000
+DEBUG:urllib3.connectionpool:http://localhost:3000 "POST /get-email-by-id HTTP/1.1" 200 37
+INFO:app:User Dictoionary created by trevortanwc04@outlook.com 
+INFO:werkzeug:127.0.0.1 - - [09/Feb/2024 17:41:17] "POST /create_user_dict HTTP/1.1" 200 -
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): localhost:3000
+DEBUG:urllib3.connectionpool:http://localhost:3000 "GET /get-account-id HTTP/1.1" 200 17
+INFO:werkzeug:127.0.0.1 - - [09/Feb/2024 17:41:18] "POST /display_history HTTP/1.1" 200 -
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.virustotal.com:443
+DEBUG:urllib3.connectionpool:https://www.virustotal.com:443 "GET /api/v3/files/495e9334a65c2c2dcf39bd144b4e2c6d0eebd49f15bb34ec564118378c4a9403 HTTP/1.1" 404 None
+INFO:werkzeug:127.0.0.1 - - [09/Feb/2024 17:41:22] "POST /upload_file HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [09/Feb/2024 17:41:23] "GET /clear_encrypted_folder/trevortanwc04@outlook.com HTTP/1.1" 200 -
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): localhost:3000
+DEBUG:urllib3.connectionpool:http://localhost:3000 "GET /get-account-id HTTP/1.1" 200 17
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): localhost:3000
+DEBUG:urllib3.connectionpool:http://localhost:3000 "POST /get-email-by-id HTTP/1.1" 200 37
+INFO:werkzeug:127.0.0.1 - - [09/Feb/2024 17:41:23] "POST /encrypt HTTP/1.1" 200 -
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): localhost:3000
+DEBUG:urllib3.connectionpool:http://localhost:3000 "GET /get-account-id HTTP/1.1" 200 17
+INFO:werkzeug:127.0.0.1 - - [09/Feb/2024 17:41:23] "POST /add_to_encryption_history HTTP/1.1" 200 -
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): localhost:3000
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+DEBUG:urllib3.connectionpool:http://localhost:3000 "POST /keys HTTP/1.1" 200 80
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): localhost:3000
+DEBUG:urllib3.connectionpool:http://localhost:3000 "GET /get-account-id HTTP/1.1" 200 17
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): localhost:3000
+DEBUG:urllib3.connectionpool:http://localhost:3000 "POST /get-email-by-id HTTP/1.1" 200 37
+INFO:app:User Dictoionary created by trevortanwc04@outlook.com 
+INFO:werkzeug:127.0.0.1 - - [09/Feb/2024 17:42:47] "POST /create_user_dict HTTP/1.1" 200 -
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): localhost:3000
+DEBUG:urllib3.connectionpool:http://localhost:3000 "GET /get-account-id HTTP/1.1" 200 17
+INFO:werkzeug:127.0.0.1 - - [09/Feb/2024 17:42:47] "POST /display_history HTTP/1.1" 200 -
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): localhost:3000
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+DEBUG:urllib3.connectionpool:http://localhost:3000 "POST /keys HTTP/1.1" 200 80
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): localhost:3000
+DEBUG:urllib3.connectionpool:http://localhost:3000 "GET /get-account-id HTTP/1.1" 200 17
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): localhost:3000
+DEBUG:urllib3.connectionpool:http://localhost:3000 "POST /get-email-by-id HTTP/1.1" 200 37
+INFO:app:User Dictoionary created by trevortanwc04@outlook.com 
+INFO:werkzeug:127.0.0.1 - - [09/Feb/2024 17:45:05] "POST /create_user_dict HTTP/1.1" 200 -
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): localhost:3000
+DEBUG:urllib3.connectionpool:http://localhost:3000 "GET /get-account-id HTTP/1.1" 200 17
+INFO:werkzeug:127.0.0.1 - - [09/Feb/2024 17:45:06] "POST /display_history HTTP/1.1" 200 -
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.virustotal.com:443
+DEBUG:urllib3.connectionpool:https://www.virustotal.com:443 "GET /api/v3/files/495e9334a65c2c2dcf39bd144b4e2c6d0eebd49f15bb34ec564118378c4a9403 HTTP/1.1" 404 None
+INFO:werkzeug:127.0.0.1 - - [09/Feb/2024 17:45:14] "POST /upload_file HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [09/Feb/2024 17:45:15] "GET /clear_encrypted_folder/trevortanwc04@outlook.com HTTP/1.1" 200 -
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): localhost:3000
+DEBUG:urllib3.connectionpool:http://localhost:3000 "GET /get-account-id HTTP/1.1" 200 17
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): localhost:3000
+DEBUG:urllib3.connectionpool:http://localhost:3000 "POST /get-email-by-id HTTP/1.1" 200 37
+INFO:werkzeug:127.0.0.1 - - [09/Feb/2024 17:45:16] "POST /encrypt HTTP/1.1" 200 -
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): localhost:3000
+DEBUG:urllib3.connectionpool:http://localhost:3000 "GET /get-account-id HTTP/1.1" 200 17
+INFO:werkzeug:127.0.0.1 - - [09/Feb/2024 17:45:16] "POST /add_to_encryption_history HTTP/1.1" 200 -
+DEBUG:schedule:Running job Job(interval=1, unit=hours, do=update_keys, args=(), kwargs={})
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): localhost:3000
+DEBUG:urllib3.connectionpool:http://localhost:3000 "POST /keys HTTP/1.1" 200 80
+DEBUG:schedule:Running job Job(interval=1, unit=hours, do=update_keys, args=(), kwargs={})
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): localhost:3000
+DEBUG:urllib3.connectionpool:http://localhost:3000 "POST /keys HTTP/1.1" 200 80

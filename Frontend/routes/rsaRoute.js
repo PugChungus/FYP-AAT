@@ -87,14 +87,14 @@ rsaRouter.post('/get_pubkey', async (req, res) => {
     if (isValid === true) {
         console.log('Valid token');
         try {
-            const email = req.body.email;
+            const account_id = req.body.target_id;
 
             // Now, you have the account_id, and you can use it in the next INSERT statement
             const publicKeyResult = await pool.execute(`SELECT public_key
             FROM public_key
             INNER JOIN user_account
             ON public_key.account_id = user_account.account_id
-            WHERE email_address = ?`, [email]);
+            WHERE user_account.account_id = ?`, [account_id]);
 
             
             if (publicKeyResult[0].length === 0) {
@@ -111,7 +111,6 @@ rsaRouter.post('/get_pubkey', async (req, res) => {
     }
 
 })
-
 
 rsaRouter.post('/create_pubkey', async (req, res) => {
     try {

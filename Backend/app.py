@@ -1046,15 +1046,15 @@ def send_file_to_user(filename):
         print('Valid Token')
     
     key_base64 = request.form.get('key')
-    shared_to_email = request.form.get('email')
-    shared_by_email = request.form.get('email2')
+    shared_to_id = request.form.get('target_id')
+    shared_by_email = request.form.get('email')
 
     connection = pool.connection()
     
     try:
         with connection.cursor() as cursor:
-            sql = "SELECT * FROM user_account WHERE email_address = %s"
-            cursor.execute(sql, (shared_to_email,))
+            sql = "SELECT * FROM user_account WHERE account_id = %s"
+            cursor.execute(sql, (shared_to_id,))
             result = cursor.fetchall()
             if len(result) == 0:
                 return jsonify({'error': 'Access forbidden'}), 401
@@ -1075,7 +1075,7 @@ def send_file_to_user(filename):
     for key, value in user_dicts[shared_by_email]["encrypted_data_dict"].items():
         print(key, 'key')
 
-    if not key_base64 or not shared_to_email or not shared_by_email:
+    if not key_base64 or not shared_to_id or not shared_by_email:
         abort(400, 'Invalid request data')
 
     encrypted_data = user_dicts[shared_by_email]["encrypted_data_dict"].get(filename, None)
@@ -1093,10 +1093,10 @@ def send_file_to_user(filename):
     try:
         with connection.cursor() as cursor:
             sql = """INSERT INTO file_shared (file, file_name, date_shared, shared_by, shared_to)
-                    VALUES (%s, %s, now(),
-                            (SELECT ua1.account_id FROM user_account ua1 WHERE ua1.email_address = %s),
-                            (SELECT ua2.account_id FROM user_account ua2 WHERE ua2.email_address = %s))"""
-            cursor.execute(sql, (concat, WideFileName, shared_by_email, shared_to_email))
+            VALUES (%s, %s, NOW(), 
+            (SELECT account_id FROM user_account WHERE email_address = %s),
+            %s)"""
+            cursor.execute(sql, (concat, WideFileName, shared_by_email, shared_to_id))
         connection.commit()
     except Exception as e:
         print(f"Error inserting into database: {e}", file=sys.stderr)
@@ -1131,15 +1131,15 @@ def send_zip_file_to_user(filename):
         print(key, 'key')
 
     key_base64 = request.form.get('key')
-    shared_to_email = request.form.get('email')
-    shared_by_email = request.form.get('email2')
+    shared_to_id = request.form.get('target_id')
+    shared_by_email = request.form.get('email')
 
     connection = pool.connection()
-    
+
     try:
         with connection.cursor() as cursor:
-            sql = "SELECT * FROM user_account WHERE email_address = %s"
-            cursor.execute(sql, (shared_to_email,))
+            sql = "SELECT * FROM user_account WHERE account_id = %s"
+            cursor.execute(sql, (shared_to_id,))
             result = cursor.fetchall()
             if len(result) == 0:
                 return jsonify({'error': 'Access forbidden'}), 401
@@ -1154,7 +1154,7 @@ def send_zip_file_to_user(filename):
     if shared_by_email != email_from_cookie:
         return jsonify({'error': 'Access forbidden'}), 401
 
-    if not key_base64 or not shared_to_email or not shared_by_email:
+    if not key_base64 or not shared_to_id or not shared_by_email:
         abort(400, 'Invalid request data')
 
     encrypted_zip_data = BytesIO()
@@ -1168,7 +1168,7 @@ def send_zip_file_to_user(filename):
     zip_filename = f'encrypted.zip'
 
     encrypted_zip_data.seek(0)
-    user_dicts[shared_by_email ][zip_filename] = encrypted_zip_data.getvalue()
+    user_dicts[shared_by_email][zip_filename] = encrypted_zip_data.getvalue()
     encrypted_zip_data.seek(0)
     encrypted_zip_data.truncate(0)
 
@@ -1188,10 +1188,10 @@ def send_zip_file_to_user(filename):
     try:
         with connection.cursor() as cursor:
             sql = """INSERT INTO file_shared (file, file_name, date_shared, shared_by, shared_to)
-                    VALUES (%s, %s, now(),
-                            (SELECT ua1.account_id FROM user_account ua1 WHERE ua1.email_address = %s),
-                            (SELECT ua2.account_id FROM user_account ua2 WHERE ua2.email_address = %s))"""
-            cursor.execute(sql, (concat, file_name, shared_by_email, shared_to_email))
+                    VALUES (%s, %s, NOW(),
+                    (SELECT ua1.account_id FROM user_account ua1 WHERE ua1.email_address = %s),
+                    %s)"""
+            cursor.execute(sql, (concat, file_name, shared_by_email, shared_to_id))
         connection.commit()
     except Exception as e:
         print(f"Error inserting into database: {e}", file=sys.stderr)

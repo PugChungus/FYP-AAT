@@ -9,28 +9,6 @@ let previouslySelectedUsers = [];
 
 // const selectedUsersContainer = document.getElementById('selectedUsersContainer');
 
-async function fetchEmailAddressById(id) {
-    try {
-        const response = await fetch(`http://localhost:3000/get-email-by-id`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ id })
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to fetch email by ID');
-        }
-
-        const data = await response.json();
-        return data.email;
-    } catch (error) {
-        console.error('Error fetching email by ID:', error);
-        throw error;
-    }
-}
-
 async function executeSQLQuery(userInput) {
     const formData = new FormData();
     formData.append('search', userInput);
@@ -60,8 +38,8 @@ async function executeSQLQuery(userInput) {
             for (const user of tables.result) {
                 const username = user.username;
                 const pfpBuffer = user.profile_picture;
-                const account_id = user.account_id;           
-                const email = await fetchEmailAddressById(account_id)
+                const account_id = user.account_id;
+                console.log(account_id)
 
                 let objectURL;
 
@@ -99,7 +77,7 @@ async function executeSQLQuery(userInput) {
 
                 // Add click event listener to select button
                 selectButton.addEventListener('click', () => {
-                    if (!selectedUsers.includes(email)) {
+                    if (!selectedUsers.includes(account_id)) {
                         const header = document.createElement('h3');
 
                         // Check if the array is empty and remove the header
@@ -113,9 +91,7 @@ async function executeSQLQuery(userInput) {
                             selectedUsersDiv.appendChild(header);
                         }
 
-                        
-
-                        selectedUsers.push(email);
+                        selectedUsers.push(account_id);
                         selectedUsersDiv.classList.add('selected-user');
                         const userwrapper = document.createElement('div')
                         userwrapper.classList.add("userWrapper");
@@ -131,7 +107,7 @@ async function executeSQLQuery(userInput) {
                             deleteIcon.remove();
                             userwrapper.remove()
 
-                            const index = selectedUsers.indexOf(email);
+                            const index = selectedUsers.indexOf(account_id);
                             if (index !== -1) {
                                 selectedUsers.splice(index, 1);
                             }
@@ -146,7 +122,7 @@ async function executeSQLQuery(userInput) {
                         selectedUsersDiv.appendChild(userwrapper);
                         
 
-                        console.log(`Selected user's email: ${email}`);
+                        console.log(`Selected user's account_id: ${account_id}`);
                         console.log(selectedUsers);
                     } else {
                         // Alert the user or handle the duplicate case as needed
@@ -214,13 +190,31 @@ export async function shareFile(type) {
             const keyData = JSON.parse(jsonString);
             const keyValue = keyData.keyValue; //DEK AES KEY
             console.log(keyValue, typeof(keyValue))
-            const share_target_email = selectedUsers[selectedUserIndex]
+            const share_target_id = selectedUsers[selectedUserIndex]
             console.log(keyValue)
-            console.log(share_target_email);
+            console.log(share_target_id);
 
             const formData = new FormData();
-            formData.append('email', share_target_email);
+            formData.append('account_id', share_target_id)
+
             const jwtToken = await get_cookie()
+ 
+            const usernameResponse = await fetch('http://localhost:3000/get_username_from_id', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer: ${jwtToken}`,
+                    },
+                body: formData,
+            });
+
+            let username
+
+            if (usernameResponse.ok) {
+                const responseData = await usernameResponse.json();
+                username = responseData.username;
+            }
+
+            formData.append('target_id', share_target_id);
             
             const response = await fetch('http://localhost:3000/get_pubkey', {
                 method: 'POST',
@@ -252,7 +246,7 @@ export async function shareFile(type) {
                 formData.append('key', rdata_base64)
 
                 const share_by_email = await get_email_via_id()
-                formData.append('email2', share_by_email)
+                formData.append('email', share_by_email)
 
                 if (type == 'individual') {
                     for (let fileIndex = 0; fileIndex < totalFiles; fileIndex++) {
@@ -277,7 +271,7 @@ export async function shareFile(type) {
                         });
 
                         if (response2.ok) {
-                            alert(`File ${fileNameWithEnc} successfully shared with ${share_target_email}.`)
+                            alert(`File ${fileNameWithEnc} successfully shared with ${username}.`)
                         }
                     }
                 } else if (type == 'zip') {
@@ -286,7 +280,7 @@ export async function shareFile(type) {
                     if (zipFolderName) {
                         const email = await get_email_via_id()
                         formData.append('zip_name', `${zipFolderName}.zip`);
-                        formData.append('useremail',email)
+                        formData.append('useremail', email)
                         const response2 = await fetch(`http://localhost:5000/send_zip/${filename}`, {
                             method: 'POST',
                             headers : {
@@ -296,7 +290,7 @@ export async function shareFile(type) {
                         });
 
                         if (response2.ok) {
-                            alert(`File ${zipFolderName}.zip successfully shared with ${share_target_email}.`)
+                            alert(`File ${zipFolderName}.zip successfully shared with ${username}.`)
                         }
 
                     } else {
@@ -307,13 +301,12 @@ export async function shareFile(type) {
                     alert('Selection not in range.')
                 }
             } else {
-                alert(`User: ${share_target_email} public key does not exist.`)
+                alert(`User ${username} public key does not exist.`)
             }
         }
     }
 }
   
-
 export async function showModal() {
     const modal = document.getElementById('shareModal');
 

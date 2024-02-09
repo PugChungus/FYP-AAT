@@ -89,4 +89,28 @@ accountDataRouter.post('/search_users', async (req, res) => {
 
 });
 
+accountDataRouter.post('/get_username_from_id', async (req, res) => {
+    const accountId = req.body.account_id;
+    const cookie_from_frontend = req.headers.authorization;
+    const isValid = await checkTokenValidity(cookie_from_frontend);
+    
+    if (isValid === true) {
+        console.log('Valid token');
+        try {
+            const [user] = await pool.execute('SELECT username FROM user_account WHERE account_id = ?', [accountId]);
+            
+            if (user.length === 0) {
+                return res.status(404).json({ error: 'User not found' });
+            }
+            
+            return res.status(200).json({ message: 'Username found', username: user[0].username });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ error: 'Internal Server Error' });
+        }
+    } else {
+        return res.status(401).json({ error: 'Invalid Token' });
+    }
+});
+
 export default accountDataRouter;
