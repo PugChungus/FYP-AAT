@@ -9,6 +9,27 @@ let previouslySelectedUsers = [];
 
 // const selectedUsersContainer = document.getElementById('selectedUsersContainer');
 
+async function fetchEmailAddressById(id) {
+    try {
+        const response = await fetch(`http://localhost:3000/get-email-by-id`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ id })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch email by ID');
+        }
+
+        const data = await response.json();
+        return data.email;
+    } catch (error) {
+        console.error('Error fetching email by ID:', error);
+        throw error;
+    }
+}
 
 async function executeSQLQuery(userInput) {
     const formData = new FormData();
@@ -39,7 +60,8 @@ async function executeSQLQuery(userInput) {
             for (const user of tables.result) {
                 const username = user.username;
                 const pfpBuffer = user.profile_picture;
-                const email = user.email_address;
+                const account_id = user.account_id;           
+                const email = await fetchEmailAddressById(account_id)
 
                 let objectURL;
 
@@ -60,8 +82,6 @@ async function executeSQLQuery(userInput) {
                 imgElement.style.maxHeight = '30px'; // Change the value as needed
                 imgElement.style.maxWidth = '30px'; // Change the value as needed
 
-
-                
                 const usernameElement = document.createElement('span');
                 usernameElement.textContent = username;
 
