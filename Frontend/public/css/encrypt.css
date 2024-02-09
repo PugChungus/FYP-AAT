@@ -37,6 +37,13 @@
     flex-direction: column;
     align-items: center;
     margin-top: 15px;
+    position: relative; /* Add position relative to enable positioning of the label */
+}
+
+label.btn {
+    width: 90%; /* Adjust the width percentage as needed */
+    max-width: 270px; /* Set a maximum width if needed */
+    margin-bottom: 10px; /* Add margin to separate the label from the buttons */
 }
 
 
@@ -59,8 +66,9 @@
 
 .btn-primary,
 #file-input-encrypt,
+#file-input-decrypt,
 #authorize_button {
-    background-color: #007bff; /* Bootstrap primary color */
+    background-color: black; /* Bootstrap primary color */
     color: white;
     border: none;
     padding: 10px;
@@ -195,13 +203,50 @@
 .drive-picker-buttons {
     display: flex;
     flex-direction: row;
-    gap: 10px; /* Adjust the gap between buttons as needed */
+    gap: 10px; /* Adjust the gap between buttons */
+    width: 80%; /* Adjust the width percentage as needed */
+    max-width: 250px; /* Set a maximum width if needed */
+    justify-content: center; /* Center the buttons horizontally */
 }
 
 .drive-picker-buttons button {
     flex: 1; /* Make buttons flexible to adjust their width */
+    max-width: 150px; /* Set a maximum width if needed */
 }
 
+@media screen and (max-width: 768px) {
+    .drive-picker-buttons {
+        flex-direction: column; /* Change to column layout on smaller screens */
+    }
+  
+    .drive-picker-buttons button {
+        width: 100%; /* Make buttons full width on smaller screens */
+        max-width: none; /* Remove max-width on smaller screens */
+    }
+
+
+    label.btn {
+        width: 80%; /* Adjust the width percentage as needed */
+        max-width: 250px; /* Set a maximum width if needed */
+        margin-bottom: 10px; /* Add margin to separate the label from the buttons */
+    }
+
+    .file-drop-area {
+        border: 2px dashed silver;
+        padding: 20px;
+        text-align: center;
+        width: 100%;
+        height: 320px;
+        border-radius: 20px;
+        background-color: #f8f9fa;
+    }
+
+    .eButton {
+        position: absolute;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+}
 .svg-icon {
     width: 16px; /* Adjust the width as needed */
     height: 16px; /* Adjust the height as needed */
@@ -211,6 +256,32 @@
 
 .download-container {
     display: none;
+    flex-direction: row;
+    justify-content: space-evenly; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    position: fixed; /* Position fixed to keep it centered regardless of scrolling */
+    top: 50%; /* Position from the top */
+    left: 50%; /* Position from the left */
+    transform: translate(-50%, -50%); /* Move it back by half its width and height to center it */
+    width: 80%; /* Adjust width as needed */
+    max-width: 80%;
+    height: 80%;
+    max-height: 80%;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 20px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); /* Add box shadow */
+}
+
+.download-container h2{
+    position: absolute;
+    top: 10%;
+}
+
+
+/* Boxicons styling */
+.download-container button i {
+    margin-right: 5px; /* Add margin between icon and text */
+    font-size: 20px; /* Adjust icon size */
 }
 
 .file-drop-area.drag-over {
@@ -234,6 +305,7 @@
 .deleteIcon {
     cursor: pointer; /* Show pointer cursor on hover */
 }
+
 
 @media screen and (max-width: 768px) {
     .drive-picker-buttons {

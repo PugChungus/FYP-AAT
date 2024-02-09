@@ -28,13 +28,15 @@ body {
       margin-bottom: 25px;
     }
     .table-header {
-      background-color: #95A5A6;
+      background-color: silver;
+      border-radius: 10px;
       font-size: 14px;
       text-transform: uppercase;
       letter-spacing: 0.03em;
       height: 40px;
       display: flex;
       align-items: center;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
     .table-row {
       background-color: #ffffff;
