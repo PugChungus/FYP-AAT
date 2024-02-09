@@ -14,7 +14,8 @@ import { sendFileToBackend } from "./virustotal.js";
         auth: {
             authority:  "https://login.microsoftonline.com/consumers",
             clientId: "2ab80a1e-7300-4cb1-beac-c38c730e8b7f",
-            redirectUri: "http://localhost:3000"
+            redirectUri: "http://localhost:3000" //change this to JTR.lol
+
         },
     }
 
@@ -279,8 +280,8 @@ import { sendFileToBackend } from "./virustotal.js";
                                     });
                                     
                                     let file = new File([await response.blob()], firstItem.name);
-                                    
-                                    sendFileToBackend(file)
+                                    handleFilefromPickers(file)
+                                    //sendFileToBackend(file)
                                 }
                                 else{
                                     console.log(error)
