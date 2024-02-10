@@ -36,22 +36,22 @@ export function handleFileUpload(event) {
     }
 }
 
-export function handleFilefromPickers(file){
+export function handleFilefromPickers(file) {
     // Ensure `files` is always an array to simplify processing
     
     selectedKey = keyDropdown.value; // Assuming this is desired at this point
     existingFileEntries = new Set();
     // Loop through each file
-        // Check if the file already exists in the set
-        if (!existingFileEntries.has(file.name)) {
-            // If not, send it to the backend and add to the set
-            sendFileToBackend(file);
-            existingFileEntries.add(file.name);
-        } else {
-            // If exists, you may want to handle it (skip or show a message)
-            alert(`File ${file.name} already exists. Skipping...`);
-        }
+    // Check if the file already exists in the set
+    if (!existingFileEntries.has(file.name)) {
+        // If not, send it to the backend and add to the set
+        sendFileToBackend(file);
+        existingFileEntries.add(file.name);
+    } else {
+        // If exists, you may want to handle it (skip or show a message)
+        alert(`File ${file.name} already exists. Skipping...`);
     }
+}
     
 
 
@@ -60,7 +60,7 @@ export function handleDrop(event) {
     event.preventDefault();
 
     const files = event.dataTransfer.files;
-
+    existingFileEntries = new Set();
     // Loop through each dropped file
     for (const file of files) {
            // Check if the file already exists in the set

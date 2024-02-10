@@ -4,6 +4,7 @@ import { sendFileToBackend, selectedFiles, seen } from "./virustotal.js";
 import { getGoogleToken } from './googlepickerdecrypt.js';
 import { getTokenForRequest } from './onedrivepickerdecrypt.js';
 import { get_email_via_id } from './profile.js';
+import { handleDragOver, handleDrop } from './encrypt.js';
 
 const keyDropdown = document.getElementById('key-dropdown');
 let selectedKey = keyDropdown.value;
@@ -32,12 +33,8 @@ async function handleFileUpload(event) {
 }
 
 export function handleFilefromDecryptPickers(file){
-    // Ensure `files` is always an array to simplify processing
-    
-    selectedKey = keyDropdown.value; // Assuming this is desired at this point
-
-            // If not, send it to the backend and add to the set
-            sendFileToBackend(file);
+    // If not, send it to the backend and add to the set
+    sendFileToBackend(file);
 }         
     
 keyDropdown.addEventListener('change', function () {
@@ -56,7 +53,8 @@ export async function uploadFilez() {
     }
 }
 
-
+document.getElementById('drop-area').addEventListener('dragover', handleDragOver)
+document.getElementById('drop-area').addEventListener('drop', handleDrop)
 
 async function hideDropZoneAndFileDetails() {
     const dropZone = document.querySelector('.drag-zone-container');

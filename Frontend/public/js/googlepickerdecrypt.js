@@ -1,5 +1,5 @@
 
-import { sendFileToBackend,  } from "./virustotal.js";
+import { sendFileToBackend  } from "./virustotal.js";
 import { isValidFileExtension, handleFilefromDecryptPickers } from "./decrypt.js";
 
 
