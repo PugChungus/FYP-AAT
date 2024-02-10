@@ -330,7 +330,9 @@ export async function showModal() {
 
     userNameInput.addEventListener('input', function () {
         const userInput = userNameInput.value.toLowerCase();
-        executeSQLQuery(userInput);
+        if (userInput.length >= 3) {
+            executeSQLQuery(userInput)
+        }
     });
 
     window.addEventListener('click', (event) => {
