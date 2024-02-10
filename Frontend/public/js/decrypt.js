@@ -4,12 +4,12 @@ import { sendFileToBackend, selectedFiles, seen } from "./virustotal.js";
 import { getGoogleToken } from './googlepickerdecrypt.js';
 import { getTokenForRequest } from './onedrivepickerdecrypt.js';
 import { get_email_via_id } from './profile.js';
-import { handleDragOver, handleDrop } from './encrypt.js';
 
 const keyDropdown = document.getElementById('key-dropdown');
 let selectedKey = keyDropdown.value;
 let decryptedExtension;
 let decryptedExtensionList = [];
+let existingFileEntries;
 
 
 
@@ -51,6 +51,29 @@ export async function uploadFilez() {
         console.log("No files selected to upload.");
         return;
     }
+}
+
+export function handleDrop(event) {
+    event.preventDefault();
+
+    const files = event.dataTransfer.files;
+    existingFileEntries = new Set();
+    // Loop through each dropped file
+    for (const file of files) {
+           // Check if the file already exists in the set
+           if (!existingFileEntries.has(file.name)) {
+            // If not, send it to the backend and add to the set
+            sendFileToBackend(file);
+            existingFileEntries.add(file.name);
+        } else {
+            // If exists, you may want to handle it (skip or show a message)
+            console.log(`File ${file.name} already exists. Skipping...`);
+        }
+    }
+}
+
+export function handleDragOver(event) {
+    event.preventDefault();
 }
 
 document.getElementById('drop-area').addEventListener('dragover', handleDragOver)
