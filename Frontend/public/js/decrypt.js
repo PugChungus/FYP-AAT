@@ -148,11 +148,9 @@ async function hideDropZoneAndFileDetails() {
     } else {
         // If there is only one file, create a simple download button
         downloadButton.style.display = 'block';
-        placeholderIcon.classList.add('bx', 'bx-file-blank')
-        downloadType.textContent = 'Download Encrypted File';  // Reuse the existing variable
+        placeholderIcon.classList.add('bx', 'bxs-file-archive')
+        downloadType.textContent = 'Download Decrypted ZIP';  // Reuse the existing variable
 
-        shareButton.style.display = 'block';
-        shareButton.onclick = () => showModal();
         
         // Add click event listener to the download button
         downloadButton.addEventListener('click', async () => {
@@ -164,7 +162,6 @@ async function hideDropZoneAndFileDetails() {
             googlebutton.style.display = 'none';
             onedrivebutton.style.display = 'none';
             downloadButton.style.display = 'none';
-            shareButton.style.display = 'none';
             selectedFiles.files = []
             var div = document.getElementById("file-details-container");
             div.innerHTML = "";
