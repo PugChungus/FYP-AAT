@@ -179,3 +179,40 @@
     font-size: 24px;
     color: #333333;
 }
+
+/* Media query for laptops */
+@media only screen and (min-width: 1024px) and (max-width: 1440px) {
+    .downloadEncrypted {
+        width: 20%;
+    }
+
+    .downloadGoogleDrive{
+        width: 20%;
+
+    }
+
+    .downloadOneDrive {
+        width: 20%;
+    }
+
+    .sharing {
+        width: 20%;
+    }
+
+    .googleText {
+        font-size: 13px;
+    }
+
+    .onedriveText {
+        font-size: 13px;
+    }
+
+    .shareText {
+        font-size: 13px;
+    }
+
+    .downloadType {
+        font-size: 13px;
+    }
+  }
+  
