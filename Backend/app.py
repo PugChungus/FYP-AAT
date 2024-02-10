@@ -36,6 +36,7 @@ import requests
 import numpy as np 
 from io import BytesIO
 import logging
+from logging.handlers import RotatingFileHandler
 
 app = Flask(__name__)
 # cors_config = {
@@ -46,6 +47,16 @@ app = Flask(__name__)
 #CORS(app,resources={r"*": cors_config})
 CORS(app)
 load_dotenv()
+
+logging.basicConfig(level=logging.INFO)
+
+log_handler = RotatingFileHandler('app.log', maxBytes=1024*1024, backupCount=10)
+log_handler.setLevel(logging.INFO)  # You can set the log level for this handler separately
+log_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+log_handler.setFormatter(log_formatter)
+
+# Add the handler to the app logger
+app.logger.addHandler(log_handler)
 
 MYSQL_HOST = os.getenv('MYSQL_HOST')
 MYSQL_PORT = int(os.getenv('MYSQL_PORT'))
@@ -191,6 +202,7 @@ def create_user_dict():
         authorization_header = request.headers.get('Authorization')
 
         if authorization_header is None:
+            app.logger.warning("Invalid Token")
             return "Token is Invalid"
         
         isValid = check_token_validity(authorization_header)
@@ -245,6 +257,7 @@ def create_user_dict():
         # decrypted_data_dict = user_dicts[email]["decrypted_data_dict"]
         print('big info here')
         print(user_dicts)
+        app.logger.info(f"User dictionary created for {email}")
         return jsonify("User dictionary created.")
     except Exception as e:
         print("Error:", e)

@@ -48,8 +48,16 @@ function createAccessLogStream() {
     });
 }
 
-// Log HTTP requests using Morgan with the rotating file stream
-app.use(morgan('combined', { stream: createAccessLogStream() }));
+// Define custom token for date in Singapore time
+morgan.token('date', (req, res, tz) => {
+    return moment().tz(tz).format('YYYY-MM-DD HH:mm:ss');
+});
+
+// Define custom format
+morgan.format('securityFormat', ':date[Asia/Singapore] | :remote-addr | :remote-user | :method | :url | :status | :res[content-length] | :response-time ms | :referrer | :user-agent | :req[header] | :res[header]');
+
+// Log HTTP requests using Morgan with the rotating file stream and custom format
+app.use(morgan('securityFormat', { stream: createAccessLogStream() }));
 
 
 

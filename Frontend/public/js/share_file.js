@@ -318,6 +318,7 @@ export async function showModal() {
     const zipRadio = document.getElementById('zipRadio');
     const standaloneText = document.getElementById('standaloneText');
     const zipText = document.getElementById('zipText');
+    const dropdownitem = document.querySelector('.dropdown-item')
 
     standaloneRadio.style.display = 'none'
     zipRadio.style.display = 'none'
@@ -326,11 +327,22 @@ export async function showModal() {
 
     closeModal.addEventListener('click', () => {
         modal.style.display = 'none'; // Hide the modal when the close button is clicked
+        userNameInput.value = ''
+       
+
+    // Clear existing selected users
+        selectedUsers = [];
+        const selectedUsersDiv = document.getElementById('selectedUserDiv');
+        selectedUsersDiv.innerHTML = ''; // Clear selected users container
+
+        // Remove dynamically created dropdown items
+        const dropdown = document.getElementById('userDropdown');
+        dropdown.innerHTML = ''; // Clear dropdown items
     });
 
     userNameInput.addEventListener('input', function () {
         const userInput = userNameInput.value.toLowerCase();
-        if (userInput.length >= 3) {
+        if (userInput.length >= 1) {
             executeSQLQuery(userInput)
         }
     });
@@ -363,11 +375,24 @@ export async function showModalMul() {
 
     closeModal.addEventListener('click', () => {
         modal.style.display = 'none'; // Hide the modal when the close button is clicked
+        userNameInput.value = ''
+       
+
+    // Clear existing selected users
+        selectedUsers = [];
+        const selectedUsersDiv = document.getElementById('selectedUserDiv');
+        selectedUsersDiv.innerHTML = ''; // Clear selected users container
+
+        // Remove dynamically created dropdown items
+        const dropdown = document.getElementById('userDropdown');
+        dropdown.innerHTML = ''; // Clear dr
     });
 
     userNameInput.addEventListener('input', function () {
         const userInput = userNameInput.value.toLowerCase();
-        executeSQLQuery(userInput);
+        if (userInput.length >= 1) {
+            executeSQLQuery(userInput)
+        }
     });
 
     window.addEventListener('click', (event) => {
