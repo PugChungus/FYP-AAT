@@ -35,6 +35,7 @@ import sib_api_v3_sdk
 import requests
 import numpy as np 
 from io import BytesIO
+import logging
 
 app = Flask(__name__)
 # cors_config = {

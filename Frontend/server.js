@@ -14,6 +14,7 @@ import { OAuth2Client } from "google-auth-library";
 import jwt from 'jsonwebtoken';
 import helmet from 'helmet';
 import rotatingFileStream from 'rotating-file-stream'
+import moment from 'moment-timezone';
 
 import { authorizeRoles, checkTokenValidity } from './routes/authorizeRolesRoute.js';
 import loginRouter from './routes/loginroute.js'
@@ -25,6 +26,7 @@ import accountDataRouter from './routes/accountDataRoute.js';
 import rsaRouter from './routes/rsaRoute.js';
 import hashPasswordRouter from './routes/hashpasswordRoute.js';
 import checkRouter from './routes/checkRoute.js';
+import { log } from 'console';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -33,13 +35,24 @@ const __dirname = dirname(__filename);
 const app = express();
 const port = 3000;
 
-const accessLogStream = rotatingFileStream.createStream('access.log', {
-    interval: '1d', // rotate daily
-    path: path.join(__dirname, 'log')
-  });
-  
-  // Log HTTP requests using Morgan with the rotating file stream
-  app.use(morgan('combined', { stream: accessLogStream }));
+moment.tz.setDefault('Asia/Singapore');
+
+function createAccessLogStream() {
+    return rotatingFileStream.createStream('access.log', {
+        interval: '1d', // Rotate daily
+        path: path.join(__dirname, 'log'),
+        size: '10M', // Limit size of individual log files
+        compress: 'gzip', // Compress rotated files
+        initialRotation: true, // Rotate files on startup
+        mode: '0644', // File mode (permissions)
+    });
+}
+
+// Log HTTP requests using Morgan with the rotating file stream
+app.use(morgan('combined', { stream: createAccessLogStream() }));
+
+
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -49,6 +62,8 @@ app.use((req, res, next) => {
   const nonce = crypto.randomBytes(16).toString('hex');
   // Set the nonce value as a local variable to be accessed in the view/template
   res.locals.nonce = nonce;
+
+  console.log(`Authentication attempt: ${req.method} ${req.originalUrl}`)
   // Call the next middleware
   next();
 });
