@@ -88,7 +88,19 @@ a.generateKey {
 }
 
 .col.col-3 {
-  flex-basis: 40%;
+  flex-basis: 15%;
+}
+
+.col.col-4 {
+  flex-basis: 15%;
+}
+
+.col.col-5{
+  flex-basis: 15%;
+}
+
+.col.col-6{
+  flex-basis: 15%;
 }
 
 .historyButton i {
