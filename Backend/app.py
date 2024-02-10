@@ -51,11 +51,17 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 
 log_handler = RotatingFileHandler('app.log', maxBytes=1024*1024, backupCount=10)
-log_handler.setLevel(logging.INFO)  # You can set the log level for this handler separately
-log_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-log_handler.setFormatter(log_formatter)
+log_handler.setLevel(logging.INFO)
 
-# Add the handler to the app logger
+# Define custom log format
+formatter = logging.Formatter(
+
+    '%(asctime)s - %(levelname)s - %(module)s - %(message)s - %(threadName)s'
+
+)
+
+log_handler.setFormatter(formatter)
+
 app.logger.addHandler(log_handler)
 
 MYSQL_HOST = os.getenv('MYSQL_HOST')
@@ -147,6 +153,11 @@ def run_scheduler():
     while True:
         schedule.run_pending()
         time.sleep(1)
+
+def get_remote_addr():
+    if request.environ.get('HTTP_X_FORWARDED_FOR'):
+        return request.environ.get('HTTP_X_FORWARDED_FOR').split(',')[0]
+    return request.environ.get('REMOTE_ADDR')
 
 def check_token_validity(authorization_header):
     try:
@@ -257,7 +268,7 @@ def create_user_dict():
         # decrypted_data_dict = user_dicts[email]["decrypted_data_dict"]
         print('big info here')
         print(user_dicts)
-        app.logger.info(f"User dictionary created for {email}")
+        app.logger.warning('This is a warning message from {}'.format(get_remote_addr()))
         return jsonify("User dictionary created.")
     except Exception as e:
         print("Error:", e)
