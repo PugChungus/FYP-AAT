@@ -342,6 +342,7 @@ async function hideDropZoneAndFileDetails() {
                 var div = document.getElementById("file-details-container");
                 div.innerHTML = "";
                 seen.clear();
+                downloadContainer.style.display = 'none'
             }
         })
         // Create a card div for file download options
