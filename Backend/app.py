@@ -1722,7 +1722,7 @@ def is_valid_token(hashed_token, username):
     print('V3:', ev_dicts[username]['token_evpayload'])
     token = ev_dicts[username]['token_evpayload']['token']
     print("It's not about the journey:", token)
-    expiration_timestamp = da_dicts[username]['token_evpayload']['expiration']
+    expiration_timestamp = ev_dicts[username]['token_evpayload']['expiration']
 
     # Validate the expiration
     current_timestamp = int(datetime.utcnow().timestamp())
