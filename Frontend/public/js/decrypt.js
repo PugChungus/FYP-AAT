@@ -9,6 +9,7 @@ const keyDropdown = document.getElementById('key-dropdown');
 let selectedKey = keyDropdown.value;
 let decryptedExtension;
 let decryptedExtensionList = [];
+let existingFileEntries;
 
 
 
@@ -32,12 +33,8 @@ async function handleFileUpload(event) {
 }
 
 export function handleFilefromDecryptPickers(file){
-    // Ensure `files` is always an array to simplify processing
-    
-    selectedKey = keyDropdown.value; // Assuming this is desired at this point
-
-            // If not, send it to the backend and add to the set
-            sendFileToBackend(file);
+    // If not, send it to the backend and add to the set
+    sendFileToBackend(file);
 }         
     
 keyDropdown.addEventListener('change', function () {
@@ -56,7 +53,31 @@ export async function uploadFilez() {
     }
 }
 
+export function handleDrop(event) {
+    event.preventDefault();
 
+    const files = event.dataTransfer.files;
+    existingFileEntries = new Set();
+    // Loop through each dropped file
+    for (const file of files) {
+           // Check if the file already exists in the set
+           if (!existingFileEntries.has(file.name)) {
+            // If not, send it to the backend and add to the set
+            sendFileToBackend(file);
+            existingFileEntries.add(file.name);
+        } else {
+            // If exists, you may want to handle it (skip or show a message)
+            console.log(`File ${file.name} already exists. Skipping...`);
+        }
+    }
+}
+
+export function handleDragOver(event) {
+    event.preventDefault();
+}
+
+document.getElementById('drop-area').addEventListener('dragover', handleDragOver)
+document.getElementById('drop-area').addEventListener('drop', handleDrop)
 
 async function hideDropZoneAndFileDetails() {
     const dropZone = document.querySelector('.drag-zone-container');

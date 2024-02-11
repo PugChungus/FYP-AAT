@@ -37,11 +37,12 @@ export async function sendFileToBackend(file) {
 
         if (scanResult.isValid) {
             console.log('Selected Files:', selectedFiles.files)
-            selectedFiles.files.push(file);
             if (seen.has(fileNameWithoutExtension)) {
                 alert('Duplicate file name');
                 return;
             }
+            
+            selectedFiles.files.push(file);
 
             seen.add(fileNameWithoutExtension);
             console.log(`Scan result for ${file.name}: Non-malicious. Proceeding with upload`);
