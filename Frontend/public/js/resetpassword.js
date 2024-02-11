@@ -8,15 +8,50 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
+const passwordRegex = /[<>&'"\$;`|]/
+
 export async function resetPassword() {
     try {
         const newPassword = document.getElementById('new-password-field').value;
         const confirmPassword = document.getElementById('confirm-password-field').value;
+        const minLength = 8;
 
         if (newPassword !== confirmPassword) {
             alert('New Password and Confirm Password do not match. Please check again.');
             return; // Stop execution if passwords do not match
         }
+
+        if ( !newPassword || !confirmPassword) {
+            alert("All fields must be filled");
+            return;
+          }
+        
+          // Check if email is valid
+        
+          // Check if passwords match
+          if (newPassword !== confirmPassword) {
+            alert("Passwords don't match");
+            return;
+          }
+          // if (insecurePasswords.has(lowercasedpassword)) {
+          //   alert("Your password is execeptionally weak, choose another one")
+          //   return;
+          // }
+          if (passwordRegex.test(newPassword)){
+            alert("Forbidden Characters Detected in password field")
+            return;
+          }
+      
+          if (newPassword.length < minLength) {
+            alert("Minimum length is 8 characters")
+              return;
+          }
+      
+          // Check if password contains at least one uppercase letter
+          if (!/[A-Z]/.test(newPassword)) {
+            alert("Password must contain at least one Uppercase letter")
+            return;
+          }
 
         const hashresponse = await fetch(`http://localhost:3000/hashpassword`, {
             method: 'POST',

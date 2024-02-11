@@ -1978,7 +1978,8 @@ def is_valid_tokenfp(hashed_token, username):
     print('V3:', fp_dicts[username]['token_fppayload'])
     token = fp_dicts[username]['token_fppayload']['token']
     print("It's not about the journey:", token)
-    expiration_timestamp = da_dicts[username]['token_fppayload']['expiration']
+    expiration_timestamp = fp_dicts[username]['token_fppayload']['expiration']
+    print("Timestamp:", expiration_timestamp)
 
     # Validate the expiration
     current_timestamp = int(datetime.utcnow().timestamp())
