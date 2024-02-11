@@ -72,11 +72,14 @@ async function executeSQLQuery(userInput) {
                 dropdownItem.appendChild(usernameElement);
 
                 // Create select button
-                const selectButton = document.createElement('button');
-                selectButton.textContent = 'Select';
+                const selectIcon = document.createElement('i');
+                selectIcon.classList.add('bx', 'bxs-user-plus')
+                selectIcon.title = 'Select User'
+                selectIcon.style.fontSize = '30px'
+                selectIcon.style.alignItems = 'right'
 
                 // Add click event listener to select button
-                selectButton.addEventListener('click', () => {
+                selectIcon.addEventListener('click', () => {
                     if (!selectedUsers.includes(account_id)) {
                         const header = document.createElement('h3');
 
@@ -131,7 +134,7 @@ async function executeSQLQuery(userInput) {
                 });
 
                 // Append select button to dropdown item
-                dropdownItem.appendChild(selectButton);
+                dropdownItem.appendChild(selectIcon);
 
                 // Append dropdown item to dropdown
                 dropdown.appendChild(dropdownItem);
@@ -355,6 +358,7 @@ export async function showModal() {
 
     document.getElementById('confirmShare').addEventListener('click', async function() {
         await shareFile('individual');
+        userNameInput.value = ''
         window.location.href = "http://localhost:3000/encrypt"
     });
     
@@ -417,11 +421,13 @@ export async function showModalMul() {
         if (standaloneRadio.checked) {
             console.log('Standalone option selected');
             await shareFile('individual');
+            userNameInput.value = ''
             window.location.href = "http://localhost:3000/encrypt"
             // Add your logic for standalone option
         } else if (zipRadio.checked) {
             console.log('Zip option selected');
             await shareFile('zip');
+            userNameInput.value = ''
             window.location.href = "http://localhost:3000/encrypt"
             // Add your logic for zip option
         } else {

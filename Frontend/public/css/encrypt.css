@@ -214,6 +214,16 @@ label.btn {
     max-width: 150px; /* Set a maximum width if needed */
 }
 
+.dropdown-item {
+    display: flex;
+    align-items: center;
+}
+
+.dropdown-item i {
+    position: absolute;
+    right: 5%;
+}
+
 @media screen and (max-width: 768px) {
     .drive-picker-buttons {
         flex-direction: column; /* Change to column layout on smaller screens */
@@ -266,7 +276,7 @@ label.btn {
     width: 80%; /* Adjust width as needed */
     max-width: 80%;
     height: 80%;
-    max-height: 80%;
+    max-height: 1000px;
     background-color: rgba(255, 255, 255, 0.5);
     border-radius: 20px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); /* Add box shadow */
@@ -320,6 +330,7 @@ label.btn {
 @media only screen and (max-width: 600px) {
     .wrapper {
         flex-direction: column;
+        height: auto; /* Allow wrapper to expand based on content */
     }
     .encasement-container {
         width: 100%;
@@ -328,4 +339,18 @@ label.btn {
     #file-details-container {
         width: 100%;
     }
+    .download-container {
+        flex-direction: column;
+        height: 1200px; 
+        overflow-y: auto; /* Enable vertical scrolling if content exceeds the height */
+        margin-top: 520px;
+        box-sizing: border-box;
+        position:absolute;
+    }
+    
+    .removal {
+        display: none;
+    }
+
 }
+

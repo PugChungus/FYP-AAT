@@ -219,7 +219,7 @@ async function displayFiles() {
       // Function to handle icon change on hover
       function handleIconChange() {
         decryptIcon.className = 'bx bx-lock-open-alt bx-tada';
-        decryptButton.style.fontSize = '25px'
+        decryptIcon.style.fontSize = '25px'
         decryptIcon.title = 'Decrypt File(s)';
       }
       

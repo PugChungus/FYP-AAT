@@ -27,16 +27,38 @@
             <div>
                 <a href="/home" class="nav_logo"> <i class='bx bx-layer nav_logo-icon'></i> <span class="nav_logo-name">JTR</span> </a>
                 <div class="nav_list">
-                    <a href="/home" class="nav_link"> <i class='bx bx-home' ></i> <span class="nav_name">Home</span> </a>
-                    <a href="/encrypt" class="nav_link"> <i class='bx bxs-lock'></i> <span class="nav_name">Encrypt</span> </a>
-                    <a href="/decrypt" class="nav_link"> <i class='bx bxs-lock-open'></i> <span class="nav_name">Decrypt</span> </a>
-                    <a href="/keymanagement" class="nav_link"> <i class='bx bx-key'></i> <span class="nav_name">Key Management</span> </a>
-                    <a href="/history" class="nav_link active"> <i class='bx bx-history'></i> <span class="nav_name">History</span> </a>
-                    <a href="/fileInbox" class="nav_link"><i class='bx bxs-inbox'></i><span class="nav_name">File Inbox</span>  </a>
+                    <a href="/home" class="nav_link"> 
+                        <i class='bx bx-home' title="Home"></i> 
+                        <span class="nav_name">Home</span> 
+                    </a>
+
+                    <a href="/encrypt" class="nav_link"> 
+                        <i class='bx bxs-lock' title="Encryption"></i> 
+                        <span class="nav_name">Encrypt</span> 
+                    </a>
+
+                    <a href="/decrypt" class="nav_link"> 
+                        <i class='bx bxs-lock-open' title="Decryption"></i> 
+                        <span class="nav_name">Decrypt</span> 
+                    </a>
+
+                    <a href="/keymanagement" class="nav_link"> 
+                        <i class='bx bx-key' title="Key Management"></i> 
+                        <span class="nav_name">Key Management</span> 
+                    </a>
+
+                    <a href="/history" class="nav_link active"> 
+                        <i class='bx bx-history' title="History"></i> 
+                        <span class="nav_name">History</span> 
+                    </a>
+
+                    <a href="/fileInbox" class="nav_link"> 
+                        <i class='bx bxs-inbox' title="File Inbox"></i><span class="nav_name">File Inbox</span> 
+                    </a>
                 </div>
             </div>
             <i class="nav_link" id="signOutLink"> 
-                <i class='bx bx-log-out nav_icon' id="signOutIcon"></i>
+                <i class='bx bx-log-out nav_icon' id="signOutIcon" title="Sign Out"></i>
                 <span class="nav_name" id="signOutText">Sign Out</span>
             </i>
         </nav>
@@ -45,14 +67,16 @@
     
     <div id="overlay" class="overlay"></div>
 
+    <div class="container">
         <div class="Header">
             <div class="keyHead">
                 <h2>Encryption / Decryption History</h2>
             </div>
-            <div id="clearhistory" class="historyButton">
+            <div class="buttons">
+            <div id="clearhistory" class="historyButton" title="Delete History">
                 <i class='bx bxs-trash bx-lg'></i>
-                <span class="hover-text">Clear History</span>
-            </div>    
+            </div>
+        </div>    
             </div>
         
         <ul class="responsive-table">
@@ -66,6 +90,7 @@
           </li>
         </ul>
     </div>
+</div>
 
     <script nonce="<%= nonce %>" type="text/javascript">
         const module = {};

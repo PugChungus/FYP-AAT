@@ -26,7 +26,7 @@ import accountDataRouter from './routes/accountDataRoute.js';
 import rsaRouter from './routes/rsaRoute.js';
 import hashPasswordRouter from './routes/hashpasswordRoute.js';
 import checkRouter from './routes/checkRoute.js';
-import { log } from 'console';
+import changePasswordRouter from './routes/changePasswordRoute.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -178,6 +178,7 @@ app.use('/', cookieRouter);
 app.use('/', tfaRouter);
 app.use('/', hashPasswordRouter)
 app.use('/', checkRouter);
+app.use('/', changePasswordRouter)
 
 
 app.use(express.static(path.join(__dirname, 'public')));

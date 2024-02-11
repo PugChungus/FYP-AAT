@@ -21,51 +21,64 @@ function updateKeyDisplay() {
 
     // Check if there are keys available
     if (keyData.length > 0) {
-        // Create a button to toggle the display of keys
-        const expandButton = document.createElement('button');
-        expandButton.classList.add('expansionButton')
-        expandButton.textContent = 'View all keys';
-        let expanded = false;
+        // Check if keys should be displayed directly or using the expand button
+        if (keyData.length <= 5) {
+            // Display all keys directly
+            const keyList = document.createElement('div');
+            keyList.classList.add('listkeys');
+            keyData.forEach((data) => {
+                const listItem = document.createElement('div');
+                listItem.textContent = data.keyName;
+                keyList.appendChild(listItem);
+            });
 
-        expandButton.addEventListener('click', () => {
-            expanded = !expanded;
+            // Replace the content of keydiv with the keys list
+            keydiv.innerHTML = '';
+            keydiv.appendChild(counterElement);
+            keydiv.appendChild(keyList);
+        } else {
+            // Create the expand icon to show all keys
+            const expandIcon = document.createElement('i');
+            expandIcon.classList.add('bx', 'bx-expand-alt', 'expansionIcon');
+            expandIcon.title = 'View All Keys'; // Set the title attribute
 
-            // Toggle between showing and hiding all keys
-            if (expanded) {
-                // Display all keys
-                const keyList = document.createElement('div');
-                keyList.classList.add('listkeys');
-                keyData.forEach((data) => {
-                    const listItem = document.createElement('div');
-                    listItem.textContent = data.keyName;
-                    keyList.appendChild(listItem);
-                });
+            expandIcon.addEventListener('click', () => {
+                toggleKeysVisibility();
+            });
 
-                // Replace the content of keydiv with the updated list
-                keydiv.innerHTML = '';
-                keydiv.appendChild(counterElement);
-                keydiv.appendChild(keyList);
-            } else {
-                // Display only the header and the button
-                keydiv.innerHTML = '';
-                keydiv.appendChild(counterElement);
-                keydiv.appendChild(expandButton);
-            }
-
-            // Update the button text
-            expandButton.textContent = expanded ? 'Collapse keys' : 'View all Keys';
-        });
-
-        // Replace the content of keydiv with the initial state (header and button)
-        keydiv.innerHTML = '';
-        keydiv.appendChild(counterElement);
-        keydiv.appendChild(expandButton);
+            // Replace the content of keydiv with the initial state (header and icon)
+            keydiv.innerHTML = '';
+            keydiv.appendChild(counterElement);
+            keydiv.appendChild(expandIcon);
+        }
     } else {
         // No keys available, only display the counter
         keydiv.innerHTML = '';
         keydiv.appendChild(counterElement);
     }
 }
+
+function toggleKeysVisibility() {
+    const keydiv = document.querySelector('.keydiv');
+    const counterElement = keydiv.querySelector('.keyheader');
+    const keyData = getAllKeyData();
+
+    // Display all keys
+    const keyList = document.createElement('div');
+    keyList.classList.add('listkeys');
+    keyData.forEach((data) => {
+        const listItem = document.createElement('div');
+        listItem.textContent = data.keyName;
+        keyList.appendChild(listItem);
+    });
+
+    // Replace the content of keydiv with the updated list
+    keydiv.innerHTML = '';
+    keydiv.appendChild(counterElement);
+    keydiv.appendChild(keyList);
+}
+
+
 
 let id;
 

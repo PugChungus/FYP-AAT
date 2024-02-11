@@ -214,5 +214,63 @@
     .downloadType {
         font-size: 13px;
     }
+
+
+  }
+
+
+  @media only screen and (max-width: 600px) {
+    .sharing {
+        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+        height: 200px;
+        width: 80%;
+        background-color: #f2f2f2; /* Greyish background */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Box shadow */
+        padding: 20px;
+        border-radius: 10px;
+        transition: 0.3s ease-out;
+    }
+
+    .downloadOneDrive {
+        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+        height: 200px;
+        width: 80%;
+        background-color: #f2f2f2; /* Greyish background */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Box shadow */
+        padding: 20px;
+        border-radius: 10px;
+        transition: 0.3s ease-out;
+    }
+
+    .downloadGoogleDrive {
+        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+        height: 200px;
+        width: 80%;
+        background-color: #f2f2f2; /* Greyish background */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Box shadow */
+        padding: 20px;
+        border-radius: 10px;
+        transition: 0.3s ease-out;
+    }
+
+    .downloadEncrypted {
+        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+        height: 200px;
+        width: 80%;
+        background-color: #f2f2f2; /* Greyish background */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Box shadow */
+        padding: 20px;
+        border-radius: 10px;
+        transition: 0.3s ease-out;
+    }
+
   }
   

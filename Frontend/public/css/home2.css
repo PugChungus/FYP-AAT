@@ -85,6 +85,39 @@
     margin-left: auto; /* Push the chevron icon to the right */
 }
 
+.expansionIcon:hover {
+    background-color: #c2b6b6; /* Change to desired color */
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.expansionIcon {
+    position: relative;
+}
+
+.expansionIcon::after {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(44, 42, 42, 0.7); /* Change to desired color */
+    color: #fff;
+    padding: 5px;
+    border-radius: 5px;
+    font-size: 12px;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s, visibility 0.3s;
+
+}
+
+.expansionIcon:hover::after {
+    visibility: visible;
+    opacity: 1;
+}
+
+
+
 
 
 @media only screen and (max-width: 768px) {
