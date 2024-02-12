@@ -71,4 +71,77 @@ export async function changePassword(event) {
     }
 }
 
+document.addEventListener("DOMContentLoaded", function() {
+    var toggleIcons = document.querySelectorAll(".toggle-password");
+    toggleIcons.forEach(function(icon) {
+        icon.addEventListener("click", function() {
+            var passwordField = this.previousElementSibling;
+            if (passwordField.type === "password") {
+                passwordField.type = "text";
+                this.classList.remove("fa-eye-slash");
+                this.classList.add("fa-eye");
+            } else {
+                passwordField.type = "password";
+                this.classList.remove("fa-eye");
+                this.classList.add("fa-eye-slash");
+            }
+        });
+
+        // Update icon based on initial state
+        var passwordField = icon.previousElementSibling;
+        if (passwordField.type === "password") {
+            icon.classList.add("fa-eye-slash");
+        } else {
+            icon.classList.add("fa-eye");
+        }
+
+        var backButton = document.getElementById("backButton");
+        backButton.addEventListener("click", function() {
+            window.location.href = "/profile"; // Redirect to the /profile page
+        });
+    });
+});
+
+
+function checkPasswordStrength(password) {
+    const strengthCriteria = [
+        { label: "Minimum 8 characters", isValid: password.length >= 8 },
+        { label: "Contains at least one uppercase letter", isValid: /[A-Z]/.test(password) },
+        { label: "Contains at least one lowercase letter", isValid: /[a-z]/.test(password) },
+        { label: "Contains at least one digit", isValid: /\d/.test(password) },
+        { label: "Contains at least one special character", isValid: /[^a-zA-Z0-9]/.test(password) }
+    ];
+  
+    return strengthCriteria;
+  }
+  
+  // Function to update password strength dropdown
+  function updatePasswordStrength() {
+    var password = document.getElementById("new-password").value;
+    var strengthCriteria = checkPasswordStrength(password);
+  
+    var passwordStrengthDiv = document.getElementById("password-strength");
+    var passwordStrengthList = document.getElementById("password-strength-list");
+    
+    // Hide the password strength div if password field is empty
+    if (password.trim() === "") {
+        passwordStrengthDiv.style.display = "none";
+        return;
+    }
+    
+    passwordStrengthDiv.style.display = "block"; // Show the password strength div
+    
+    passwordStrengthList.innerHTML = ""; // Clear previous list items
+  
+    strengthCriteria.forEach(criteria => {
+        var listItem = document.createElement("li");
+        listItem.textContent = criteria.label + ": " + (criteria.isValid ? "✓" : "✗");
+        listItem.style.color = criteria.isValid ? "green" : "red";
+        passwordStrengthList.appendChild(listItem);
+    });
+  }
+  
+  // Listen for input events on the password field
+document.getElementById("new-password").addEventListener("input", updatePasswordStrength);
+
 document.getElementById('submitChange').addEventListener('click', changePassword);

@@ -39,13 +39,15 @@ import logging
 from logging.handlers import RotatingFileHandler
 
 app = Flask(__name__)
-# cors_config = {
-#     "origins": ["http://localhost:3000","http://localhost:5000" ],
-#     "methods": ["GET", "POST", "PUT", "DELETE"],
-    
-# }
-#CORS(app,resources={r"*": cors_config})
-CORS(app)
+
+CORS(
+    app,
+    origins=["http://localhost:3000"],
+    methods=["GET", "POST"],
+    allow_headers=["Content-Type", "Authorization"],
+    supports_credentials=True  # Set to False
+)
+
 load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
@@ -68,6 +70,7 @@ MYSQL_PORT = int(os.getenv('MYSQL_PORT'))
 MYSQL_USER = os.getenv('MYSQL_USER')
 MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD')
 MYSQL_DATABASE = os.getenv('MYSQL_DATABASE')
+PASSWORD = os.getenv('PASSWORD')
 
 pool = PooledDB(
     creator=pymysql,  # Database library/module
@@ -123,8 +126,7 @@ def getEmailAddressById(id, authorization_header):
 def fetch_latest_keys():
     try:
         # Make a POST request with the password
-        password = '513e2bb4e26ad8a2f1bcf51bb53a0b207d5e33567bc75aeec31d209c573c47975f63b390e20eaee4b06ec7c51d1ae12c8194b623099872b225e7cbbb1f13b486c82bb6aa6e664ee6fd726b316873db8aa4f9aaa48bfea65819d81a109d511c82215269af'  # Replace with your actual password
-        response = requests.post('http://localhost:3000/keys', json={'password': password})
+        response = requests.post('http://localhost:3000/keys', json={'password': PASSWORD})
         
         # Check if the response is successful
         response.raise_for_status()
@@ -496,7 +498,7 @@ def virustotal_scan(hash_value):
                     return 'non-malicious'
             else:
                 print("Malicious information not available.")
-                app.logger.warning(f'There is no warning for the following file uploaded by {get_remote_addr()}.')
+                app.logger.warning(f'There is no history for the following file uploaded by {get_remote_addr()}.')
         else:
             print("Invalid response format.")
 
@@ -515,12 +517,14 @@ def upload_file():
         authorization_header = request.headers.get('Authorization')
 
         if authorization_header is None:
+            app.logger.warning(f'A malicious file was uploaded by IP:{get_remote_addr()}. Consider blacklisting IP')
             return "Token is Invalid"
         
         isValid = check_token_validity(authorization_header)
         
         if not isValid:
             print('Invalid Token.')
+            app.logger.warning(f'A malicious file was uploaded by IP:{get_remote_addr()}. Consider blacklisting IP')
             return "Invalid Token."
         else:
             print('Valid Token')
@@ -537,6 +541,7 @@ def upload_file():
 
         if result == 'malicious':
             print(f"The file {uploaded_file.filename} is malicious. Upload denied.")
+            app.logger.warning(f'A malicious file was uploaded by IP:{get_remote_addr()}. Consider blacklisting IP')
             return {"isValid": False, "message": "Malicious file. Upload denied."}
 
         print(f"Received file: {uploaded_file.filename}")
@@ -553,12 +558,14 @@ def encrypt_files():
         authorization_header = request.headers.get('Authorization')
         
         if authorization_header is None:
+            app.logger.critical(f"Invalid Token. encrypt/f was attempted to be accessed by {get_remote_addr()}")
             return "Token is Invalid"
         
         isValid = check_token_validity(authorization_header)
         
         if not isValid:
             print('Invalid Token.')
+            app.logger.critical(f"Invalid Token. encrypt/f was attempted to be accessed by {get_remote_addr()}")
             return "Invalid Token."
         else:
             print('Valid Token')
@@ -582,6 +589,7 @@ def encrypt_files():
 
 
         if email != email_from_cookie:
+            app.logger.critical(f"Access Denied. Unauthorized action by {get_remote_addr()}")
             return jsonify({'error': 'Access forbidden'}), 401
 
         clear_dict = request.form['clear']
@@ -637,6 +645,7 @@ def encrypt_files():
     except Exception as e:
         
         print("Error processing Files:", str(e))
+        app.logger.error(f"Internal Server error for {get_remote_addr()}")
         return {"isValid": False, "error": str(e)}, 500
 
 @app.route('/decrypt', methods=['POST'])
@@ -646,12 +655,14 @@ def decrypt_files():
         email = request.form['emailuser']
 
         if authorization_header is None:
+            app.logger.critical(f"Invalid Token. decrypt/f was attempted to be accessed by {get_remote_addr()}")
             return "Token is Invalid"
         
         isValid = check_token_validity(authorization_header)
         
         if not isValid:
             print('Invalid Token.')
+            app.logger.critical(f"Invalid Token. decrypt/f was attempted to be accessed by {get_remote_addr()}")
             return "Invalid Token."
         else:
             print('Valid Token')
@@ -752,6 +763,7 @@ def decrypt_files():
 
     except Exception as e:
         print("Error processing Files:", str(e))
+        app.logger.error(f"Internval Server Error for {get_remote_addr()}")
         return {"isValid": False, "error": str(e)}, 500
     
 @app.route('/decrypt2', methods=['POST'])
@@ -761,12 +773,14 @@ def decrypt_files2():
         authorization_header = request.headers.get('Authorization')
 
         if authorization_header is None:
+            app.logger.critical(f"Invalid Token. decrypt2/f was attempted to be accessed by {get_remote_addr()}")
             return "Token is Invalid"
         email = request.form['email']
         isValid = check_token_validity(authorization_header)
         
         if not isValid:
             print('Invalid Token.')
+            app.logger.critical(f"Invalid Token. decrypt2/f was attempted to be accessed by {get_remote_addr()}")
             return "Invalid Token."
         else:
             print('Valid Token')
@@ -876,6 +890,7 @@ def decrypt_files2():
 
     except Exception as e:
         print("Error processing Files:", str(e))
+        app.logger.error(f"Internal Server error for {get_remote_addr()}")
         return {"isValid": False, "error": str(e)}, 500
 
 @app.route('/clear_history', methods=['POST'])
@@ -884,12 +899,14 @@ def clear_history():
         authorization_header = request.headers.get('Authorization')
 
         if authorization_header is None:
+            app.logger.critical(f"Invalid Token. clear_history/f was attempted to be accessed by {get_remote_addr()}")
             return "Token is Invalid"
         
         isValid = check_token_validity(authorization_header)
         
         if not isValid:
             print('Invalid Token.')
+            app.logger.critical(f"Invalid Token. clear_history/f was attempted to be accessed by {get_remote_addr()}")
             return "Invalid Token."
         else:
             print('Valid Token')
@@ -898,8 +915,10 @@ def clear_history():
         id_from_cookie = getAccountIdFromCookie(authorization_header)
 
         if id == id_from_cookie:
+            app.logger.info(f"Id Matches Id from cookie for {get_remote_addr()}")
             print('Match')
         else:
+            app.logger.critical(f'Unauthorized acess was attemped by {get_remote_addr()}')
             return jsonify({'error': 'Access forbidden'}), 401
 
         sql = "DELETE FROM history " \
@@ -916,6 +935,7 @@ def clear_history():
 
     except Exception as e:
         connection.rollback()
+        app.logger.error(f"Internal Server Error for {get_remote_addr()}")
         return jsonify({'error': str(e)}), 500
 
     
@@ -925,12 +945,14 @@ def display_history():
         authorization_header = request.headers.get('Authorization')
 
         if authorization_header is None:
+            app.logger.critical(f"Invalid Token. display_history/f was attempted to be accessed by {get_remote_addr()}")
             return "Token is Invalid"
         
         isValid = check_token_validity(authorization_header)
         
         if not isValid:
             print('Invalid Token.')
+            app.logger.critical(f"Invalid Token. display_history/f was attempted to be accessed by {get_remote_addr()}")
             return "Invalid Token."
         else:
             print('Valid Token')
@@ -939,8 +961,10 @@ def display_history():
         id_from_cookie = getAccountIdFromCookie(authorization_header)
 
         if account_id == id_from_cookie:
+            app.logger.info(f"Id Matches Id from cookie for {get_remote_addr()}")
             print('Match')
         else:
+            app.logger.critical(f'Unauthorized acess was attemped by {get_remote_addr()}')
             return jsonify({'error': 'Access forbidden'}), 401
 
         sql = "SELECT history.time, history.file_name, history.file_size, history.type, history.key_name " \
@@ -953,7 +977,7 @@ def display_history():
         with connection.cursor() as cursor:
             cursor.execute(sql, (account_id))
             rows = cursor.fetchall()
-            print(rows)
+            
             
         column_names = [desc[0] for desc in cursor.description]
         result = [dict(zip(column_names, row)) for row in rows]
@@ -962,6 +986,7 @@ def display_history():
 
     except Exception as e:
         connection.rollback()
+        app.logger.error(f'Internal Server Error for IP: {get_remote_addr()}')
         return jsonify({'error': str(e)}), 500
 
 @app.route('/add_to_encryption_history', methods=['POST'])
@@ -971,12 +996,14 @@ def encrypt_history():
         print("Authorization_header", authorization_header) 
 
         if authorization_header is None:
+            app.logger.critical(f"Invalid Token. add_to_encryption_history/f was attempted to be accessed by {get_remote_addr()}")
             return "Token is Invalid"
         
         isValid = check_token_validity(authorization_header)
         
         if not isValid:
             print('Invalid Token.')
+            app.logger.critical(f"Invalid Token. add_to_encryption_history/f was attempted to be accessed by {get_remote_addr()}")
             return "Invalid Token."
         else:
             print('Valid Token')
@@ -990,6 +1017,7 @@ def encrypt_history():
         if account_id == id_from_cookie:
             print('Match')
         else:
+            app.logger.critical(f"Unauthorized Access attempted by IP: {get_remote_addr()}")
             return jsonify({'error': 'Access forbidden'}), 401
         # Assuming you have a function to retrieve account_id based on email
         key_name = request.form['key_name']
@@ -1006,11 +1034,12 @@ def encrypt_history():
             cursor.execute(sql, (datetime.now(), file_name, file_size, account_id, type_of_encryption, key_name))
         
         connection.commit()
-        
+
         return jsonify({'message': 'Data inserted successfully'})
     
     except Exception as e:
         connection.rollback()
+        app.logger.error(f"Internal Server Error for IP: {get_remote_addr()}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/add_to_decryption_history', methods=['POST'])
@@ -1019,12 +1048,14 @@ def decrypt_history():
         authorization_header = request.headers.get('Authorization')
 
         if authorization_header is None:
+            app.logger.critical(f"Invalid Token. add_to_decryption_history/f was attempted to be accessed by {get_remote_addr()}")
             return "Token is Invalid"
         
         isValid = check_token_validity(authorization_header)
         
         if not isValid:
             print('Invalid Token.')
+            app.logger.critical(f"Invalid Token. add_to_decryption_history/f was attempted to be accessed by {get_remote_addr()}")
             return "Invalid Token."
         else:
             print('Valid Token')
@@ -1036,8 +1067,10 @@ def decrypt_history():
         account_id = int(request.form['id'])  # Use request.form for form data
         id_from_cookie = getAccountIdFromCookie(authorization_header)
         if account_id == id_from_cookie:
+
             print('Match')
         else:
+            app.logger.critical(f"Unauthorized Access attempted by IP: {get_remote_addr()}")
             return jsonify({'error': 'Access forbidden'}), 401
         # Assuming you have a function to retrieve account_id based on email
         type_of_encryption = request.form['type']  # Use request.form for form data
@@ -1057,6 +1090,7 @@ def decrypt_history():
     
     except Exception as e:
         connection.rollback()
+        app.logger.error(f'Internal Server Error for IP: {get_remote_addr()}')
         return jsonify({'error': str(e)}), 500
 
 @app.route('/send_file/<filename>', methods=['POST'])
@@ -1065,12 +1099,14 @@ def send_file_to_user(filename):
     print("Send User Authorizataion: ", authorization_header)
 
     if authorization_header is None:
+        app.logger.critical(f"Invalid Token. send_file/<filename>/f was attempted to be accessed by {get_remote_addr()}")
         return "Token is Invalid"
 
     isValid = check_token_validity(authorization_header)
 
     if not isValid:
         print('Invalid Token.')
+        app.logger.critical(f"Invalid Token. send_file/<filename>/f was attempted to be accessed by {get_remote_addr()}")
         return "Invalid Token."
     else:
         print('Valid Token')
@@ -1087,16 +1123,19 @@ def send_file_to_user(filename):
             cursor.execute(sql, (shared_to_id,))
             result = cursor.fetchall()
             if len(result) == 0:
+                app.logger.critical(f"Unauthorized Access attempted by IP: {get_remote_addr()}")
                 return jsonify({'error': 'Access forbidden'}), 401
             # Process the query result here
         connection.commit()
     except Exception as e:
+        app.logger.critical(f"Unauthorized Access attempted by IP: {get_remote_addr()}")
         return jsonify({'error': 'Access forbidden'}), 401
     
     id = getAccountIdFromCookie(authorization_header)
     email_from_cookie = getEmailAddressById(id, authorization_header)
 
     if shared_by_email != email_from_cookie:
+        app.logger.critical(f"Unauthorized Access attempted by IP: {get_remote_addr()}")
         return jsonify({'error': 'Access forbidden'}), 401
 
     print(filename, 'file')
@@ -1106,6 +1145,7 @@ def send_file_to_user(filename):
         print(key, 'key')
 
     if not key_base64 or not shared_to_id or not shared_by_email:
+        app.logger.warning(f"Invalid Request made by IP: {get_remote_addr}")
         abort(400, 'Invalid request data')
 
     encrypted_data = user_dicts[shared_by_email]["encrypted_data_dict"].get(filename, None)
@@ -1130,6 +1170,7 @@ def send_file_to_user(filename):
         connection.commit()
     except Exception as e:
         print(f"Error inserting into database: {e}", file=sys.stderr)
+        app.logger.error(f"Internal Server Error for IP: {get_remote_addr()}")
         return 'Internal Server Error', 500
     finally:
         connection.close()
@@ -1142,11 +1183,13 @@ def send_zip_file_to_user(filename):
     print("Send User Authorizataion: ", authorization_header)
 
     if authorization_header is None:
+        app.logger.critical(f"Invalid Token. send_zip/<filename>/f was attempted to be accessed by {get_remote_addr()}")
         return "Token is Invalid"
         
     isValid = check_token_validity(authorization_header)
     if not isValid:
         print('Invalid Token.')
+        app.logger.critical(f"Invalid Token. send_zip/<filename>/f was attempted to be accessed by {get_remote_addr()}")
         return "Invalid Token."
     else:
         print('Valid Token')
@@ -1172,19 +1215,23 @@ def send_zip_file_to_user(filename):
             cursor.execute(sql, (shared_to_id,))
             result = cursor.fetchall()
             if len(result) == 0:
+                app.logger.critical(f"Unauthorized Access attempted by IP: {get_remote_addr()}")
                 return jsonify({'error': 'Access forbidden'}), 401
             # Process the query result here
         connection.commit()
     except Exception as e:
+        app.logger.critical(f"Unauthorized Access attempted by IP: {get_remote_addr()}")
         return jsonify({'error': 'Access forbidden'}), 401
 
     id = getAccountIdFromCookie(authorization_header)
     email_from_cookie = getEmailAddressById(id, authorization_header)
 
     if shared_by_email != email_from_cookie:
+        app.logger.critical(f"Unauthorized Access attempted by IP: {get_remote_addr()}")
         return jsonify({'error': 'Access forbidden'}), 401
 
     if not key_base64 or not shared_to_id or not shared_by_email:
+        app.logger.warning(f'Invalid Request Made from IP: {get_remote_addr()}')
         abort(400, 'Invalid request data')
 
     encrypted_zip_data = BytesIO()
@@ -1225,6 +1272,7 @@ def send_zip_file_to_user(filename):
         connection.commit()
     except Exception as e:
         print(f"Error inserting into database: {e}", file=sys.stderr)
+        app.logger.error(f"Internal Server Error for IP: {get_remote_addr()}")
         return 'Internal Server Error', 500
     finally:
         connection.close()
@@ -1255,6 +1303,7 @@ def download_single_encrypted_file(filename, email):
     # Set the Content-Disposition header to specify the filename
     response = Response(encrypted_data, content_type='application/octet-stream')
     response.headers['Content-Disposition'] = f'attachment; filename="{WideFileName}"'
+    app.logger.info(f"Encrypted file was downloaded by IP: {get_remote_addr()}")
     return response
 
 @app.route('/download_zip/<filename>/<email>', methods=['GET'])
@@ -1288,6 +1337,7 @@ def download_zip(filename,email):
     response = Response(encrypted_data, content_type='application/octet-stream')
     response.headers['Content-Disposition'] = f'attachment; filename="{WideFileName}"'
 
+    app.logger.info(f"Encrypted zipped file was downloaded by IP: {get_remote_addr()}")
     return response
 
 @app.route('/download_single_decrypted_file/<filename>/<email>', methods=['GET'])
@@ -1298,6 +1348,7 @@ def download_single_decrypted_file(filename,email):
 
     if not isValid:
         print('Invalid Token.')
+        app.logger.critical(f"Invalid Token. download_single_decrypted_file/<filename>/<email>/f was attempted to be accessed by {get_remote_addr()}")
         return "Invalid Token."
     else:
         print('Valid Token')
@@ -1305,6 +1356,7 @@ def download_single_decrypted_file(filename,email):
     id = getAccountIdFromCookie(authorization_header)
     email_from_cookie = getEmailAddressById(id, authorization_header)
     if email != email_from_cookie:
+        app.logger.critical(f"Unauthorized Access attempted by IP: {get_remote_addr()}")
         return jsonify({'error': 'Access forbidden'}), 401
 
     print(filename, 'file')
@@ -1318,6 +1370,8 @@ def download_single_decrypted_file(filename,email):
     # Set the Content-Disposition header to specify the filename
     response = Response(decrypted_data, content_type='application/octet-stream')
     response.headers['Content-Disposition'] = f'attachment; filename="{WideFileName}"'
+
+    app.logger.info(f"Decrypted file was downloaded by IP: {get_remote_addr()}")
     return response
 
 @app.route('/download_decrypted_zip/<filename>/<email>', methods=['GET'])
@@ -1353,6 +1407,7 @@ def download_decrypted_zip(filename,email):
     response = Response(decrypted_data, content_type='application/octet-stream')
     response.headers['Content-Disposition'] = f'attachment; filename="{WideFileName}"'
 
+    app.logger.info(f"Decrypted zipped file was downloaded by IP: {get_remote_addr()}")
     return response
 
 @app.route('/clear_encrypted_folder/<email>', methods=['GET'])
@@ -1378,12 +1433,14 @@ def generate_2fa_qr_code():
         authorization_header = request.headers.get('Authorization')
 
         if authorization_header is None:
+            app.logger.critical(f"Invalid Token. generate_2fa_qr_code/f was attempted to be accessed by {get_remote_addr()}")
             return "Token is Invalid"
         
         isValid = check_token_validity(authorization_header)
         
         if not isValid:
             print('Invalid Token.')
+            app.logger.critical(f"Invalid Token. generate_2fa_qr_code/f was attempted to be accessed by {get_remote_addr()}")
             return "Invalid Token."
         else:
             print('Valid Token')
@@ -1393,6 +1450,7 @@ def generate_2fa_qr_code():
         email_from_cookie = getEmailAddressById(id, authorization_header)
 
         if email != email_from_cookie:
+            app.logger.critical(f"Unauthorized Access attempted by IP: {get_remote_addr()}")
             return jsonify({'error': 'Access forbidden'}), 401
         
         print("WHAT IS THE EMAIL:", email)
@@ -1409,8 +1467,10 @@ def generate_2fa_qr_code():
         otp = totp.now()
         qr_code_url = totp.provisioning_uri(email, issuer_name="jtr.lol")
 
+        app.logger.info(f"Qr Code Generated by {email} at {get_remote_addr()}")
         return jsonify({'qr_code_url': qr_code_url, 'otp': otp, 'secret': secret})
     except Exception as e:
+        app.logger.error(f"Internal Server Error at {get_remote_addr()}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/verify_otp', methods=['POST'])
@@ -1419,12 +1479,14 @@ def verify_otp():
         authorization_header = request.headers.get('Authorization')
         
         if authorization_header is None:
+            app.logger.critical(f"Invalid Token. verify_otp/f was attempted to be accessed by {get_remote_addr()}")
             return "Token is Invalid"
         
         isValid = check_token_validity(authorization_header)
         
         if not isValid:
             print('Invalid Token.')
+            app.logger.critical(f"Invalid Token. verify_otp/f was attempted to be accessed by {get_remote_addr()}")
             return "Invalid Token."
         else:
             print('Valid Token')
@@ -1434,6 +1496,7 @@ def verify_otp():
         email_from_cookie = getEmailAddressById(id, authorization_header)
 
         if email != email_from_cookie:
+            app.logger.critical(f"Unauthorized Access attempted by IP: {get_remote_addr()}")
             return jsonify({'error': 'Access forbidden'}), 401
         
         otp_value = request.form.get('otp')
@@ -1454,10 +1517,13 @@ def verify_otp():
         if is_valid:
             # Insert the secret into the database upon successful OTP validation
             insert_secret_into_db(email, secret)
+            app.logger.info(f'{email} provided a valid OTP. IP: {get_remote_addr()}')
             return jsonify({"is_valid": 1, "message": "OTP is valid"})
         else:
+            app.logger.warning(f'{email} provided an invalid OTP. IP: {get_remote_addr()}')
             return jsonify({"is_valid": 0, "message": "Invalid OTP"})
     except Exception as e:
+        app.logger.error(f"Internal Server Error for IP: {get_remote_addr()}")
         return jsonify({"is_valid": 0, "message": f"Error: {str(e)}"}), 500
 
 @app.route('/verify_2fa', methods=['POST'])
@@ -1489,6 +1555,7 @@ def verify_2fa():
         except Exception as e:
             connection.rollback()
             print("Error executing SQL query:", str(e))
+            app.logger.error(f'Internal Server Error at IP: {get_remote_addr()}')
             return "Error executing SQL query", 500
 
         if secret is None:
@@ -1501,8 +1568,10 @@ def verify_2fa():
         print("IsitValid: ", is_valid)
 
         if is_valid:
+            app.logger.info(f'{email} provided a valid OTP. IP: {get_remote_addr()}')
             return jsonify({'message': 'OTP is valid', 'email': email})
         else:
+            app.logger.warning(f'{email} provided an invalid OTP. IP: {get_remote_addr()}')
             return jsonify({'error': 'Invalid OTP', 'email': email})
     except Exception as e:
         return jsonify({'error': str(e), 'email': email}), 500
@@ -1520,6 +1589,7 @@ def send_secret():
 
         return jsonify({'message': 'Secret received and stored successfully'})
     except Exception as e:
+        app.logger.error(f'Internal Server Error at IP: {get_remote_addr()}')
         return jsonify({'error': str(e)}), 500
 
 @app.route('/send_email', methods=['POST'])
@@ -1528,9 +1598,10 @@ def send_email():
         data = request.json
         email = data.get('email')
         # Store the secret in user_secrets dictionary
-
+        app.logger.info(f"send_email performed b")
         return jsonify({'message': 'Email Sent'})
     except Exception as e:
+        app.logger.error(f'Internal Server Error at IP: {get_remote_addr()}')
         return jsonify({'error': str(e)}), 500                      
 
 def insert_secret_into_db(email, secret):
@@ -1540,8 +1611,10 @@ def insert_secret_into_db(email, secret):
             sql = "UPDATE user_account SET tfa_secret = %s WHERE email_address = %s"
             cursor.execute(sql, (secret, email))
         connection.commit()
+        app.logger.info(f"Secret of {email} inserted into DB at IP: {get_remote_addr()}")
     except Exception as e:
         connection.rollback()
+        app.logger.error(f'Internal Server Error at IP: {get_remote_addr()}')
         print("Error inserting secret into the database: ", str(e)), 500
 
 def encrypt_email(email):
@@ -1554,6 +1627,7 @@ def encrypt_email(email):
     print("e3")
     encrypted_email = cipher.encrypt(padded_email)
     print("e4")
+    app.logger.info(f"Email of {email} encrypted by IP: {get_remote_addr()}")
     return b64encode(IV + encrypted_email).decode()
 
 def decrypt_email(encrypted_email):
@@ -1567,6 +1641,7 @@ def decrypt_email(encrypted_email):
     
     decrypted_data = unpad(cipher.decrypt(encrypted_data[16:]), AES.block_size)
     print("d4")
+    app.logger.info(f"Decrypted email decrypted by IP: {get_remote_addr()}")
     return decrypted_data.decode()
 
 @app.route('/encrypt_email', methods=['POST'])
@@ -1574,6 +1649,7 @@ def encrypt_email_route():
     data = request.get_json()
     email = data.get('email', '')
     encrypted_email = encrypt_email(email)
+    app.logger.info(f"Email of {email} encrypted by IP: {get_remote_addr()}")
     return jsonify({'encryptedEmail': encrypted_email})
 
 @app.route('/decrypt_email', methods=['POST'])
@@ -1581,6 +1657,7 @@ def decrypt_email_route():
     data = request.get_json()
     encrypted_email = data.get('encryptedEmail', '')
     decrypted_email = decrypt_email(encrypted_email)
+    app.logger.info(f"Decrypted email decrypted by IP: {get_remote_addr()}")
     return jsonify({'decryptedEmail': decrypted_email})
 
 def check_email_existence(api_key, email):
@@ -1610,11 +1687,14 @@ def check_email_route():
     email = request.form.get('email')
 
     if not api_key or not email:
+        app.logger.info(f"Email field Missing at IP: {get_remote_addr()}")
         return jsonify({'error': 'Missing required parameters'})
 
     if check_email_existence(api_key, email):
+        app.logger.info(f"Valid email Inputted at IP: {get_remote_addr()}")
         return jsonify({'status': 'exists'})
     else:
+        app.logger.warning(f"Invalid email Inputted at IP: {get_remote_addr()}")
         return jsonify({'status': 'not exists'})
     
 #Start of Email Verication Email Code
@@ -1649,24 +1729,23 @@ def email_verification():
         }
 
     token_evpayload = ev_dicts[username]['token_evpayload']
-    print("New Dict:", ev_dicts)
+
 
     expiration_time = datetime.utcnow() + timedelta(minutes=15)
     expiration_timestamp = int(expiration_time.timestamp())
 
     verification_token = secrets.token_urlsafe(32)
-    print("VERFICATION TOKEN:", verification_token)
+ 
 
     hashed_token = hashlib.sha256(verification_token.encode()).hexdigest()
 
-    print("Checking THis hash:", hashed_token)
+ 
 
     token_evpayload['token'] = verification_token
     token_evpayload['hashed_token'] = hashed_token
     token_evpayload['expiration'] = expiration_timestamp
     encoded_username = base64.b64encode(username.encode()).decode()
     url_parameters = f"token={hashed_token}.{encoded_username}"
-    print('Update DICTS', ev_dicts)
     configuration = sib_api_v3_sdk.Configuration()
     configuration.api_key['api-key'] = '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'
 
@@ -1709,7 +1788,6 @@ def email_verification():
     </html>
     """
     sender = {"name":"JTR Support","email":"jtrhelp123@gmail.com"}
-    print(f"Recipient's email address: {emailaddress}")
     to = [{'email': emailaddress}]
     cc = None
     bcc =None
@@ -1721,18 +1799,15 @@ def email_verification():
     try:
         api_response = api_instance.send_transac_email(send_smtp_email)
         pprint(api_response)
+        app.logger.info(f'Verification Email Succesfully sent to {emailaddress} request by IP: {get_remote_addr()}')
         return jsonify({'message': 'Email verification sent successfully'})
     except ApiException as e:
         print("Exception when calling SMTPApi->send_transac_email: %s\n" % e)
+        app.logger.warning(f'Error Sending email requested by IP: {get_remote_addr()}')
         return jsonify({'error': 'Failed to send email verification'})
     
 def is_valid_token(hashed_token, username):
-    print("Is trying is_valid_token")
-    print("V1:", ev_dicts)
-    print('V2:', ev_dicts[username])
-    print('V3:', ev_dicts[username]['token_evpayload'])
     token = ev_dicts[username]['token_evpayload']['token']
-    print("It's not about the journey:", token)
     expiration_timestamp = ev_dicts[username]['token_evpayload']['expiration']
 
     # Validate the expiration
@@ -1742,13 +1817,12 @@ def is_valid_token(hashed_token, username):
 
     # Validate the hashed token
     hash_object = hashlib.sha256(f"{token}".encode()).hexdigest()
-    print('but the friends we made along the way:', hash_object)
     if hashed_token == hash_object:
-        print("MET")
+        app.logger.info(f'Valid Token check by IP: {get_remote_addr()}')
         return True
-    
-    print("NYET")
-    return False
+    else:
+        app.logger.warning(f'Account Activation Token was not succesfully validated for IP: {get_remote_addr()}')
+        return False
 
     
 @app.route('/verify_account', methods=['POST'])
@@ -1759,15 +1833,12 @@ def verify_account():
         token = data.get('token', '')  
         username = data.get('username', '')
         username = base64.b64decode(username.encode()).decode()
-        print("POWER OF FRIENDSHIP:", token)
+
 
         # Assuming you have a function is_valid_token for token validation
         if is_valid_token(token, username):  # Provide token_evpayload as the second argument
-            print("CHECKED")
             
             if username in ev_dicts:
-                print("Success")
-                print("UserName:", username)
 
                 # Assuming you have a function pool.connection() for database connection
                 connection = pool.connection()
@@ -1784,12 +1855,13 @@ def verify_account():
                         ev_dicts[username]['token_evpayload']['expiration'] = 0
                         ev_dicts[username]['token_evpayload']['email'] = ''
 
-                        print("After Verification:", ev_dicts)
 
+                    app.logger.info(f"Email Verfication Succesfully performed for {username} at IP: {get_remote_addr()}")
                     return jsonify({'activation_status': 'success'})
 
                 except Exception as e:
                     print(f"Error updating database: {e}")
+                    app.logger.error(f'Internal Server Error for IP: {get_remote_addr()}')
                     return jsonify({'activation_status': 'error'})
 
                 finally:
@@ -1798,30 +1870,31 @@ def verify_account():
         else:
             # Return error response
             print("Id aint here broski")
+            app.logger.error(f'Internal Server Error for IP: {get_remote_addr()}')
             return jsonify({'activation_status': 'error'})
 
     except Exception as e:
         print(f"Error processing request: {e}")
+        app.logger.error(f'Internal Server Error for IP: {get_remote_addr()}')
         return jsonify({'activation_status': 'error'})
 
 # Make sure to include this return statement for cases where the function does not enter the 'if' block
+    app.logger.error(f'Internal Server Error for IP: {get_remote_addr()}')
     return jsonify({'activation_status': 'error'})
 
 def encrypt_user_data(user_data):
     cipher = AES.new(SECRET_KEY2, AES.MODE_CBC, IV2)
-    print("ENCRYPTION KEY2:", SECRET_KEY2)
     padded_user_data = pad(user_data.encode(), AES.block_size)
     encrypted_user_data = cipher.encrypt(padded_user_data)
-    print("WHAT THE:", b64encode(IV2 + encrypted_user_data).decode())
+    app.logger.info(f'Encrypting Encrypted User Data performed by IP: {get_remote_addr()}')
     return b64encode(IV2 + encrypted_user_data).decode()
 
 def decrypt_user_data(encrypted_user_data):
     encrypted_data = b64decode(encrypted_user_data.encode())
     iv = encrypted_data[:16]
-    print("decryption KEY2:", SECRET_KEY2)
     cipher = AES.new(SECRET_KEY2, AES.MODE_CBC, iv)
     decrypted_data = unpad(cipher.decrypt(encrypted_data[16:]), AES.block_size)
-    print("WHAT THE TEH:", decrypted_data.decode())
+    app.logger.info(f'Decrypting Encrypted User Data performed by IP: {get_remote_addr()}')
     return decrypted_data.decode()
 
 
@@ -1830,15 +1903,15 @@ def encrypt_user_data_route():
     data = request.get_json()
     user_data = data.get('userData', '')
     encrypted_user_data = encrypt_user_data(user_data)
-    print("data1:", encrypted_user_data)  # Call the correct function
+    app.logger.info(f'Encrypting Encrypted User Data performed by IP: {get_remote_addr()}')
     return jsonify({'encryptedUserData': encrypted_user_data})
 
 @app.route('/decrypt_user_data', methods=['POST'])
 def decrypt_user_data_route():
     data = request.get_json()
     encrypted_user_data = data.get('encryptedUserData', '')
-    print('encrypted Data Getting:', encrypted_user_data)  # Call the correct function
     decrypted_user_data = decrypt_user_data(encrypted_user_data)
+    app.logger.info(f'Decrypting Encrypted User Data performed by IP: {get_remote_addr()}')
     return jsonify({'decryptedUserData': decrypted_user_data})
 
 #End of email verification code
@@ -1855,7 +1928,6 @@ token_fppayload = {
 @app.route('/email_forgetPassword', methods=['POST'])
 def email_forgetPassword():
     data = request.get_json()
-    print(f"Received JSON data: {data}")
     emailaddress = data.get('email','')
 
     username = None
@@ -1876,7 +1948,6 @@ def email_forgetPassword():
 
                 if result:
                     username = result[0]
-                    print("UserName?:", username)
                 else:
                     username = None
                     
@@ -1886,7 +1957,6 @@ def email_forgetPassword():
 
     except Exception as e:
         connection.rollback()
-        print("Error executing SQL query:", str(e)), 500
 
 
     global fp_dicts
@@ -1903,18 +1973,15 @@ def email_forgetPassword():
         }
 
     token_fppayload = fp_dicts[username]['token_fppayload']
-    print("New Dict:", fp_dicts)
 
 
     expiration_time = datetime.utcnow() + timedelta(minutes=15)
     expiration_timestamp = int(expiration_time.timestamp())
 
     verification_token = secrets.token_urlsafe(32)
-    print("VERFICATION TOKEN:", verification_token)
 
     hashed_token = hashlib.sha256(verification_token.encode()).hexdigest()
 
-    print("Checking THis hash:", hashed_token)
 
     token_fppayload['token'] = verification_token
     token_fppayload['hashed_token'] = hashed_token
@@ -1922,7 +1989,6 @@ def email_forgetPassword():
     token_fppayload['email'] = emailaddress
     encoded_username = base64.b64encode(username.encode()).decode()
     url_parameters = f"token={hashed_token}.{encoded_username}"
-    print('Update DICTS', fp_dicts)
     configuration = sib_api_v3_sdk.Configuration()
     configuration.api_key['api-key'] = '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'
 
@@ -1965,7 +2031,6 @@ def email_forgetPassword():
     </html>
     """
     sender = {"name":"JTR Support","email":"jtrhelp123@gmail.com"}
-    print(f"Recipient's email address: {emailaddress}")
     to = [{'email': emailaddress}]
     cc = None
     bcc =None
@@ -1977,20 +2042,16 @@ def email_forgetPassword():
     try:
         api_response = api_instance.send_transac_email(send_smtp_email)
         pprint(api_response)
+        app.logger.info(f"Email Forget Password Succesfully performed for {username} at IP: {get_remote_addr()}")
         return jsonify({'message': 'Email verification sent successfully'})
     except ApiException as e:
         print("Exception when calling SMTPApi->send_transac_email: %s\n" % e)
+        app.logger.error(f"Internal Server Error for IP:{get_remote_addr()}")
         return jsonify({'error': 'Failed to send email verification'})
     
 def is_valid_tokenfp(hashed_token, username):
-    print("trying is_valid_tokenfp")
-    print("V1:", fp_dicts)
-    print('V2:', fp_dicts[username])
-    print('V3:', fp_dicts[username]['token_fppayload'])
     token = fp_dicts[username]['token_fppayload']['token']
-    print("It's not about the journey:", token)
     expiration_timestamp = fp_dicts[username]['token_fppayload']['expiration']
-    print("Timestamp:", expiration_timestamp)
 
     # Validate the expiration
     current_timestamp = int(datetime.utcnow().timestamp())
@@ -1999,45 +2060,13 @@ def is_valid_tokenfp(hashed_token, username):
 
     # Validate the hashed token
     hash_object = hashlib.sha256(f"{token}".encode()).hexdigest()
-    print('but the friends we made along the way:', hash_object)
     if hashed_token == hash_object:
-        print("MET")
+        app.logger.info(f'Forget Token validation by {username} at IP:{get_remote_addr()}')
         return True
-    
-    print("NYET")
-    return False
+    else:
+        app.logger.warning(f'Forget Token was not succesfully validated for IP: {get_remote_addr()}')
+        return False
 
-def encrypt_emailfp(email):
-    cipher = AES.new(SECRET_KEYFP, AES.MODE_CBC, IVFP)
-    print("e1")
-    print("ENCRYPTION KEY1:", SECRET_KEYFP)
-    print("Encryption IV:", IVFP)
-    print("e2")
-    padded_email = pad(email.encode(), AES.block_size)
-    print("e3")
-    encrypted_email = cipher.encrypt(padded_email)
-    print("e4")
-    print("WhaT  THE:", b64encode(IVFP + encrypted_email).decode())
-    return b64encode(IVFP + encrypted_email).decode()
-
-def decrypt_emailfp(encrypted_email):
-    try:
-        print("checking email:", encrypted_email)
-        encrypted_data = b64decode(encrypted_email.encode())
-        print("d1", encrypted_data)
-        iv = encrypted_data[:16]
-        print("d2", iv)
-        print("decryption KEY1:", SECRET_KEYFP)
-        cipher = AES.new(SECRET_KEYFP, AES.MODE_CBC, iv)
-        print("d3", cipher)
-
-        decrypted_data = unpad(cipher.decrypt(encrypted_data[16:]), AES.block_size)
-        print("d4")
-        print("CHauihbdfis:", decrypted_data.decode())
-        return decrypted_data.decode()
-    except Exception as e:
-        print("Decryption error:", str(e))
-        raise
 
     
 @app.route('/verify_reset_password', methods=['POST'])
@@ -2048,8 +2077,6 @@ def reset_password():
         token = data.get('token', '')
         username = data.get('username', '')
         username = base64.b64decode(username.encode()).decode()
-        print("Username", username)
-        print("POWER OF FRIENDSHIP:", token)
 
         # Assuming you have a function is_valid_token for token validation
         if is_valid_tokenfp(token, username):  # Provide token_evpayload as the second argument
@@ -2058,39 +2085,35 @@ def reset_password():
             
             if username in fp_dicts:
                 username = username
-                print("ASNI Username:", username)
-                email = fp_dicts[username]['token_fppayload']['email']
-                print("Email:",email)
-                encrypted_email = encrypt_emailfp(email)
-                print("What data type:", type(encrypted_email))
-                print("What data :", encrypted_email)
                 username = base64.b64encode(username.encode()).decode()
 
 
                 # Assuming you have a function pool.connection() for database connection
                 
-
-                return jsonify({'Validation': 'success', 'encrypted_email': encrypted_email, 'encoded': username})
+                app.logger.info(f'Token Was Validated succesfully for {username} at IP: {get_remote_addr()} ')
+                return jsonify({'Validation': 'success', 'encoded': username})
 
         else:
             # Return error response
-            print("Id aint here broski")
+            app.logger.warning(f'Token Was Not Validated succesfully  IP: {get_remote_addr()} ')
             return jsonify({'Validation': 'failed'})
 
     except Exception as e:
         print(f"Error processing request: {e}")
+        app.logger.warning(f'Token Was Not Validated succesfully  IP: {get_remote_addr()} ')
         return jsonify({'activation_status': 'error'})
 
 # Make sure to include this return statement for cases where the function does not enter the 'if' block
+    app.logger.warning(f'Token Was Not Validated succesfully  IP: {get_remote_addr()} ')
     return jsonify({'activation_status': 'error'})
 
 @app.route('/a_reset_password', methods=['POST'])
 def a_reset_password():
     try:
         data = request.get_json()
-        print("resetdata:", data)
 
         if 'newPassword' not in data :
+            app.logger.warning(f'Missing paramaters submitted by {get_remote_addr()}')
             return jsonify({'error': 'Missing parameters'}), 400
 
         new_password = data['newPassword']
@@ -2098,7 +2121,6 @@ def a_reset_password():
         username = data['encodedu']
         
         email = base64.b64decode(username.encode()).decode()
-        print('decode:', username)
 
 
         try:
@@ -2110,13 +2132,16 @@ def a_reset_password():
                 cursor.execute(sql, (new_password, email))
             connection.commit()
 
+            app.logger.info(f"Password Successfully updated for {username} at IP: {get_remote_addr()}")
             return jsonify({'message': 'Password updated successfully'})
 
         except Exception as e:
             connection.rollback()
+            app.logger.error(f"Internal Server Error for IP: {get_remote_addr()}")
             return jsonify({'error': str(e)}), 500
 
     except Exception as e:
+        app.logger.error(f"Internal Server Error for IP: {get_remote_addr()}")
         return jsonify({'error': str(e)}), 500
 
 
@@ -2134,7 +2159,6 @@ token_dtfapayload = {
 @app.route('/email_disabletfa', methods=['POST'])
 def email_disabletfa():
     data = request.get_json()
-    print(f"Received JSON data: {data}")
     emailaddress = data.get('email','')
     try:
         connection = pool.connection()
@@ -2161,7 +2185,6 @@ def email_disabletfa():
     global dtfa_dicts
     global token_dtfapayload
 
-    print("Checking username before check:", username)
     if username not in dtfa_dicts:
         dtfa_dicts[username] = {
             'token_dtfapayload': {
@@ -2173,14 +2196,11 @@ def email_disabletfa():
         }
 
     token_dtfapayload = dtfa_dicts[username]['token_dtfapayload']
-    print("New Dict:", dtfa_dicts)
 
     verification_token = secrets.token_urlsafe(32)
-    print("VERFICATION TOKEN:", verification_token)
 
     hashed_token = hashlib.sha256(verification_token.encode()).hexdigest()
 
-    print("Checking THis hash:", hashed_token)
 
     token_dtfapayload['token'] = verification_token
     token_dtfapayload['hashed_token'] = hashed_token
@@ -2188,7 +2208,6 @@ def email_disabletfa():
     token_dtfapayload['email'] = emailaddress
     encoded_username = base64.b64encode(username.encode()).decode()
     url_parameters = f"token={hashed_token}.{encoded_username}"
-    print('Update DICTS', dtfa_dicts)
     configuration = sib_api_v3_sdk.Configuration()
     configuration.api_key['api-key'] = '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'
 
@@ -2231,7 +2250,6 @@ def email_disabletfa():
     </html>
     """
     sender = {"name":"JTR Support","email":"jtrhelp123@gmail.com"}
-    print(f"Recipient's email address: {emailaddress}")
     to = [{'email': emailaddress}]
     cc = None
     bcc =None
@@ -2243,18 +2261,15 @@ def email_disabletfa():
     try:
         api_response = api_instance.send_transac_email(send_smtp_email)
         pprint(api_response)
+        app.logger.info(f"Email for disabling TFA Succesfully performed for {username} at IP: {get_remote_addr()}")
         return jsonify({'message': 'Email sent successfully'})
     except ApiException as e:
         print("Exception when calling SMTPApi->send_transac_email: %s\n" % e)
+        app.logger.info(f"Email for disabling TFA was not Succesfully performed for IP: {get_remote_addr()}")
         return jsonify({'error': 'Failed to send email'})
     
 def is_valid_tokendtfa(hashed_token, username):
-    print('Trying is_valid_tokendtfa ')
-    print("V1:", dtfa_dicts)
-    print('V2:', dtfa_dicts[username])
-    print('V3:', dtfa_dicts[username]['token_dtfapayload'])
     token = dtfa_dicts[username]['token_dtfapayload']['token']
-    print("It's not about the journey:", token)
     expiration_timestamp = token_dtfapayload['expiration']
 
     # Validate the expiration
@@ -2264,13 +2279,12 @@ def is_valid_tokendtfa(hashed_token, username):
 
     # Validate the hashed token
     hash_object = hashlib.sha256(f"{token}".encode()).hexdigest()
-    print('but the friends we made along the way:', hash_object)
     if hashed_token == hash_object:
-        print("MET")
+        app.logger.info(f'Disable TFA Token was succesfully validated for {username} at IP: {get_remote_addr()}')
         return True
-    
-    print("NYET")
-    return False
+    else:
+        app.logger.warning(f'Disable TFA Token was not succesfully validated for IP: {get_remote_addr()}')
+        return False
 
 @app.route('/verify_disable_tfa', methods=['POST'])
 def disable_tfa():
@@ -2280,14 +2294,9 @@ def disable_tfa():
         token = data.get('token', '')
         username = data.get('username', '')
         username = base64.b64decode(username.encode()).decode()
-        print("Username", username)
-        print('Type iF username:', type(username))
-        print("POWER OF FRIENDSHIP:", token)
 
         # Assuming you have a function is_valid_token for token validation
         if is_valid_tokendtfa(token, username):  # Provide token_evpayload as the second argument
-            print("CHECKED")
-            print('OMG:', token_dtfapayload)
             
             if username in dtfa_dicts:
                 username = username
@@ -2301,21 +2310,24 @@ def disable_tfa():
                         cursor.execute(sql, (username))
                     connection.commit()
 
+                    app.logger.info(f"TFA Succesfully disabled by {username} at IP: {get_remote_addr()}")
+
 
                 except Exception as e:
                         connection.rollback()
+                        app.logger.error(f'Internal Server Error for IP: {get_remote_addr()}')
                         return jsonify({'error': str(e)}), 500
     
-
+            app.logger.info(f"TFA Succesfully disabled by {username} at IP: {get_remote_addr()}")
             return jsonify({'Validation': 'success'})
 
         else:
             # Return error response
-            print("Id aint here broski")
+            app.logger.warning(f'Invalid Token Submmision from IP: {get_remote_addr()}')
             return jsonify({'Validation': 'failed'})
 
     except Exception as e:
-        print(f"Error processing request: {e}")
+        app.logger.error(f'Internal Server Error for IP: {get_remote_addr()}')
         return jsonify({'activation_status': 'error'})
 
 #End of Disable 2fa Email code
@@ -2332,28 +2344,26 @@ token_dapayload = {
 @app.route('/email_deletea', methods=['POST'])
 def email_deletea():
     authorization_header = request.headers.get('Authorization')
-    print('Auth TOken', authorization_header)
 
     if authorization_header is None:
-        print('Not Valid')
+        app.logger.critical(f"Invalid Token. email_deletaa/f to be accessed by {get_remote_addr()}")
         return "Token is Invalid"
     
     isValid = check_token_validity(authorization_header)
-    print('isValid?', isValid)
     
     if not isValid:
-        print('Invalid Token.')
+        app.logger.critical(f"Invalid Token. email_deletaa/f to be accessed by {get_remote_addr()}")
         return "Invalid Token."
     else:
         print('Valid Token')
 
     data = request.get_json()
-    print(f"Received JSON data: {data}")
     emailaddress = data.get('email','')
     id = getAccountIdFromCookie(authorization_header)
     email_from_cookie = getEmailAddressById(id, authorization_header)
 
     if emailaddress != email_from_cookie:
+        app.logger.critical(f"Unauthorized Access attempted by IP: {get_remote_addr()}")
         return jsonify({'error': 'Access forbidden'}), 401
     
     username = data.get('username', '')
@@ -2374,21 +2384,17 @@ def email_deletea():
         }
 
     token_dapayload = da_dicts[username]['token_dapayload']
-    print("New Dict:", da_dicts)
 
     verification_token = secrets.token_urlsafe(32)
-    print("VERFICATION TOKEN:", verification_token)
 
     hashed_token = hashlib.sha256(verification_token.encode()).hexdigest()
 
-    print("Checking THis hash:", hashed_token)
 
     token_dapayload['token'] = verification_token
     token_dapayload['hashed_token'] = hashed_token
     token_dapayload['expiration'] = expiration_timestamp
     encoded_username = base64.b64encode(username.encode()).decode()
     url_parameters = f"token={hashed_token}.{encoded_username}"
-    print("Update dadict", da_dicts)
     # token_dapayload['email'] = emailaddress
     configuration = sib_api_v3_sdk.Configuration()
     configuration.api_key['api-key'] = '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'
@@ -2432,7 +2438,6 @@ def email_deletea():
     </html>
     """
     sender = {"name":"JTR Support","email":"jtrhelp123@gmail.com"}
-    print(f"Recipient's email address: {emailaddress}")
     to = [{'email': emailaddress}]
     cc = None
     bcc =None
@@ -2444,36 +2449,30 @@ def email_deletea():
     try:
         api_response = api_instance.send_transac_email(send_smtp_email)
         pprint(api_response)
+        app.logger.info(f'Delete account email successfully sent to {emailaddress} request by IP: {get_remote_addr()}')
         return jsonify({'message': 'Email sent successfully'})
     except ApiException as e:
         print("Exception when calling SMTPApi->send_transac_email: %s\n" % e)
+        app.logger.warning(f'Delete account email was not successfully sent to IP: {get_remote_addr()}')
         return jsonify({'error': 'Failed to send email'})
     
 def is_valid_tokenda(hashed_token, username):
-    print('is tryin is_valid_tokenda ')
-    print("V1:", da_dicts)
-    print('V2:', da_dicts[username])
-    print('V3:', da_dicts[username]['token_dapayload'])
     token = da_dicts[username]['token_dapayload']['token']
-    print("It's not about the journey:", token)
     expiration_timestamp = da_dicts[username]['token_dapayload']['expiration']
-    print('expiration TimeStamp:', expiration_timestamp)
 
     # Validate the expiration
     current_timestamp = int(datetime.utcnow().timestamp())
     if current_timestamp > expiration_timestamp:
-        print('Currrent Time Stamp:', current_timestamp)
         return False
 
     # Validate the hashed token
     hash_object = hashlib.sha256(f"{token}".encode()).hexdigest()
-    print('but the friends we made along the way:', hash_object)
     if hashed_token == hash_object:
-        print("MET")
+        app.logger.info(f"Token Successfully validated for {username} at IP: {get_remote_addr()}")
         return True
-    
-    print("NYET")
-    return False
+    else:
+        app.logger.warning(f"Token not Successfully validated for IP: {get_remote_addr()}")
+        return False
 
 @app.route('/verify_delete_account', methods=['POST'])
 def delete_account():
@@ -2483,17 +2482,11 @@ def delete_account():
         token = data.get('token', '')
         username = data.get('username','')
         username = base64.b64decode(username.encode()).decode()
-        print('Username:', username)
-        print("POWER OF FRIENDSHIP:", token)
 
         # Assuming you have a function is_valid_token for token validation
         if is_valid_tokenda(token, username):  # Provide token_evpayload as the second argument
-            print("CHECKED")
-            print('OMG:', token_dapayload)
             
             if username in da_dicts:
-                print('Success')
-                print('UserName:', username)
 
                 try:
             # Proceed with the database update for username only
@@ -2504,22 +2497,24 @@ def delete_account():
                         cursor.execute(sql, (username))
                     connection.commit()
 
+                    app.logger.info(f"Account Succesfully deleted by {username} at IP: {get_remote_addr()}")
                     return jsonify({'message': 'Account Deleted successfully'})
 
                 except Exception as e:
                         connection.rollback()
+
                         return jsonify({'error': str(e)}), 500
     
-
+            app.logger.info(f"Account Succesfully deleted by {username} at IP: {get_remote_addr()}")
             return jsonify({'Validation': 'success'})
 
         else:
             # Return error response
-            print("Id aint here broski")
+            app.logger.warning(f'Invalid Token Submmision from IP: {get_remote_addr()}')
             return jsonify({'Validation': 'failed'})
 
     except Exception as e:
-        print(f"Error processing request: {e}")
+        app.logger.error(f'Internal Server Error for IP: {get_remote_addr()}')
         return jsonify({'activation_status': 'error'})
 
 
