@@ -1,5 +1,5 @@
 body {
-    font-family: 'lato', sans-serif;
+    font-family: 'Inter';
   }
   .container {
     max-width: 100%;
@@ -32,7 +32,8 @@ body {
       margin-bottom: 25px;
     }
     .table-header {
-      background-color: silver;
+      background-color: black;
+      color: white;
       border-radius: 10px;
       font-size: 14px;
       text-transform: uppercase;

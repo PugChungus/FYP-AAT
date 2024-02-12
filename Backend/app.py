@@ -57,10 +57,9 @@ log_handler.setLevel(logging.INFO)
 
 # Define custom log format
 formatter = logging.Formatter(
-
-    '%(asctime)s - %(levelname)s - %(module)s - %(message)s - %(threadName)s'
-
+    '%(asctime)s - %(levelname)s - %(name)s - %(module)s - %(funcName)s - %(lineno)d - %(message)s - PID:%(process)d'
 )
+
 
 log_handler.setFormatter(formatter)
 
@@ -215,7 +214,7 @@ def create_user_dict():
         authorization_header = request.headers.get('Authorization')
 
         if authorization_header is None:
-            app.logger.warning("Invalid Token")
+            app.logger.critical("Invalid Token. create_user_dict is being attempted to be accessed ", get_remote_addr())
             return "Token is Invalid"
         
         isValid = check_token_validity(authorization_header)
@@ -223,9 +222,12 @@ def create_user_dict():
         
         if not isValid:
             print('Invalid Token.')
-            return jsonify({'error': 'Invalid Token'}), 500
+            app.logger.critical("Invalid Token. create_user_dict is being attempted to be accessed ", get_remote_addr())
+            return jsonify({'error': 'Invalid Token'}), 401
         else:
             print('Valid Token')
+            app.logger.info(f"Valid Token. create_user_dict has been accessed by {get_remote_addr()}")
+
  
         if 'id' in request.form:
             account_id = int(request.form['id'])
@@ -233,8 +235,11 @@ def create_user_dict():
 
             if account_id == id_from_cookie:
                 print('Match')
+                app.logger.info(f"Cookies Match. Proceeding for {get_remote_addr()} ")
             else:
+                app.logger.critical(f'Access forbidden for {get_remote_addr()}')
                 return jsonify({'error': 'Access forbidden'}), 401
+                
 
             connection = pool.connection()
 
@@ -252,6 +257,7 @@ def create_user_dict():
             email_from_cookie = getEmailAddressById(id, authorization_header)
 
             if email != email_from_cookie:
+                app.logger.critical(f'Access forbidden for {get_remote_addr()}')
                 return jsonify({'error': 'Access forbidden'}), 401
 
         global user_dicts
@@ -270,10 +276,11 @@ def create_user_dict():
         # decrypted_data_dict = user_dicts[email]["decrypted_data_dict"]
         print('big info here')
         print(user_dicts)
-        app.logger.warning('This is a warning message from {}'.format(get_remote_addr()))
+        app.logger.info(f'User Dict Created by {email} from {get_remote_addr()}')
         return jsonify("User dictionary created.")
     except Exception as e:
         print("Error:", e)
+        app.logger.warning(f'Server error for {get_remote_addr()}')
         return jsonify({'error': str(e)}), 500
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'svg'}  # Define the allowed image file extensions
@@ -283,15 +290,18 @@ def upload():
     authorization_header = request.headers.get('Authorization')
 
     if authorization_header is None:
+        app.logger.critical(f"Invalid Token. upload was attempted to be accessed by {get_remote_addr()}")
         return "Token is Invalid"
     
     isValid = check_token_validity(authorization_header)
     
     if not isValid:
         print('Invalid Token.')
+        app.logger.critical(f"Invalid Token. upload was attempted to be accessed by {get_remote_addr()}")
         return "Invalid Token."
     else:
         print('Valid Token')
+        app.logger.info(f'Valid Token. Accessed by {get_remote_addr()}')
 
     username = request.form.get('name')
     uploaded_file = request.files.get('profile-picture')
@@ -301,6 +311,7 @@ def upload():
     if account_id == id_from_cookie:
         print('Match')
     else:
+        app.logger.critical(f"Unauthorized access attempted by {get_remote_addr()}")
         return jsonify({'error': 'Access forbidden'}), 401
 
     print(uploaded_file, username)
@@ -314,9 +325,11 @@ def upload():
             with connection.cursor() as cursor:
                 cursor.execute(sql, (username, account_id))
             connection.commit()
+            app.logger.info(f"Username successfully changed by id:{id} at {get_remote_addr()} ")
             return jsonify({'message': 'Username updated successfully'})
         except Exception as e:
             connection.rollback()
+            app.logger.warning(f"Error accessing route for id:{id} at {get_remote_addr()}")
             return jsonify({'error': str(e)}), 500
 
     print("hello")
@@ -328,6 +341,7 @@ def upload():
         return jsonify({'error': 'No selected file'})
 
     if not allowed_file(uploaded_file.filename):
+        app.logger.critical(f"Invalid Image Upload attempted by id:{id} at {get_remote_addr()}")
         return jsonify({'error': 'Invalid file type. Only image files are allowed.'})
 
     # Read the contents of the file as bytes
@@ -335,6 +349,7 @@ def upload():
 
     # Check if the file is a valid image
     if not is_valid_image(file_bytes):
+        app.logger.critical(f"Invalid Image Upload attempted by id:{id} at {get_remote_addr()}")
         return jsonify({'error': 'Invalid image file'})
 
     try:
@@ -345,6 +360,7 @@ def upload():
         with connection.cursor() as cursor:
             cursor.execute(sql, (username, file_bytes, account_id))
         connection.commit()
+        app.logger.info(f"Username and Profile Picture Succesfully changes by id:{id} at {get_remote_addr}")
         return jsonify({'message': 'File uploaded successfully'})
     except Exception as e:
         connection.rollback()
@@ -355,9 +371,11 @@ def aes_keygen():
     try:
         generated_key = get_random_bytes(32)
         print(generated_key, file=sys.stderr)
+        app.logger.info(f"Key Generated at {get_remote_addr()}")
         return jsonify({'key': generated_key.hex()})
     except Exception as e:
         print("Error generating key: ", str(e))
+        app.logger.error(f'Error generating Key at  {get_remote_addr()}')
         return jsonify({"error": str(e)}), 500
 
 @app.route('/check_key', methods=['POST'])
@@ -366,15 +384,19 @@ def check_key():
         authorization_header = request.headers.get('Authorization')
 
         if authorization_header is None:
+            app.logger.critical(f"Invalid Token. upload was attempted to be accessed by {get_remote_addr()}")
             return "Token is Invalid"
         
         isValid = check_token_validity(authorization_header)
         
         if not isValid:
             print('Invalid Token.')
+            app.logger.critical(f"Invalid Token. upload was attempted to be accessed by {get_remote_addr()}")
             return "Invalid Token."
         else:
             print('Valid Token')
+            app.logger.info(f'Valid Token. Accessed by {get_remote_addr()}')
+
         #secure file upload
         uploaded_file = request.files['file']
         file_content = uploaded_file.read()
@@ -385,12 +407,15 @@ def check_key():
 
         # Check if the file size is exactly 32 bytes
         if file_size == 64:
+            app.logger.info(f'Key upload by {get_remote_addr()} is valid.')
             return jsonify({'fileName': file_name, 'keyContent': key_file_content})
         else:
+            app.logger.warning(f"Key uploaded was invalid. Take note of following IP: {get_remote_addr()}")
             return jsonify({"error": "Invalid key size. The key must be 32 bytes."}), 400
 
     except Exception as e:
         print("Error generating key: ", str(e))
+        app.logger.warning(f'Error accessing endpoint for {get_remote_addr()}')
         return jsonify({"error": str(e)}), 500
 
 def allowed_file(filename):
@@ -419,8 +444,10 @@ def store_secret(email, secret):
             sql = "UPDATE user_account SET tfa_secret = %s WHERE email_address = %s"
             cursor.execute(sql, (secret, email))
         connection.commit()
+        app.logger.info(f'Secret Stored for IP: {get_remote_addr()}')
     except Exception as e:
         connection.rollback()
+        app.logger.warning(f"Error storing key for IP: {get_remote_addr()}")
         print("Error storing secret: ", str(e)), 500
 
 def format_size(size_in_bytes):
@@ -463,48 +490,26 @@ def virustotal_scan(hash_value):
                 malicious_count = last_analysis_stats['malicious']
                 if malicious_count > 0:
                     print(f"The file with hash {hash_value} is malicious. Detected by {malicious_count} antivirus engines.")
+                    app.logger.warning(f'A malicious file was uploaded by IP:{get_remote_addr()}. Consider blacklisting IP')
                     return 'malicious'
                 else:
                     print(f"The file with hash {hash_value} is not detected as malicious by any antivirus engine.")
+                    app.logger.info(f'A file was succesfully scanned and was not found malicious by {get_remote_addr()}')
                     return 'non-malicious'
             else:
                 print("Malicious information not available.")
+                app.logger.warning(f'There is no warning for the following file uploaded by {get_remote_addr()}.')
         else:
             print("Invalid response format.")
+
     elif response.status_code == 404:
         print(f"The file with hash {hash_value} is not found on VirusTotal.")
+        app.logger.warning(f'There is no warning for the following file uploaded by {get_remote_addr()}.')
     else:
         print(f"Error: {response.status_code}, {response.text}")
+        app.logger.warning(f"Following error for IP: {get_remote_addr()}: {response.status_code}{response.text}")
 
 
-def virustotal_scan(hash_value):
-    API_KEY = '495d37149054ebae8de04fbf1e19b8f41987188a818d9df9ef7fa775c61ad4e8'
-    url = f'https://www.virustotal.com/api/v3/files/{hash_value}'
-    headers = {'x-apikey': API_KEY}
-
-    response = requests.get(url, headers=headers)
-
-    if response.status_code == 200:
-        json_response = response.json()
-        if 'data' in json_response and 'attributes' in json_response['data']:
-            attributes = json_response['data']['attributes']
-            last_analysis_stats = attributes.get('last_analysis_stats', {})
-            if 'malicious' in last_analysis_stats:
-                malicious_count = last_analysis_stats['malicious']
-                if malicious_count > 0:
-                    print(f"The file with hash {hash_value} is malicious. Detected by {malicious_count} antivirus engines.")
-                    return 'malicious'
-                else:
-                    print(f"The file with hash {hash_value} is not detected as malicious by any antivirus engine.")
-                    return 'non-malicious'
-            else:
-                print("Malicious information not available.")
-        else:
-            print("Invalid response format.")
-    elif response.status_code == 404:
-        print(f"The file with hash {hash_value} is not found on VirusTotal.")
-    else:
-        print(f"Error: {response.status_code}, {response.text}")
 
 @app.route('/upload_file', methods=['POST'])
 def upload_file():

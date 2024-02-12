@@ -9,7 +9,6 @@ const keyDropdown = document.getElementById('key-dropdown');
 let selectedKey = keyDropdown.value;
 let decryptedExtension;
 let decryptedExtensionList = [];
-let existingFileEntries;
 
 
 
@@ -33,10 +32,16 @@ async function handleFileUpload(event) {
 }
 
 export function handleFilefromDecryptPickers(file){
-    // If not, send it to the backend and add to the set
-    sendFileToBackend(file);
+    // Ensure `files` is always an array to simplify processing
+    
+    selectedKey = keyDropdown.value; // Assuming this is desired at this point
+
+            // If not, send it to the backend and add to the set
+            sendFileToBackend(file);
 }         
     
+
+
 keyDropdown.addEventListener('change', function () {
     // Update the selected key value
     selectedKey = keyDropdown.value;
@@ -53,31 +58,7 @@ export async function uploadFilez() {
     }
 }
 
-export function handleDrop(event) {
-    event.preventDefault();
 
-    const files = event.dataTransfer.files;
-    existingFileEntries = new Set();
-    // Loop through each dropped file
-    for (const file of files) {
-           // Check if the file already exists in the set
-           if (!existingFileEntries.has(file.name)) {
-            // If not, send it to the backend and add to the set
-            sendFileToBackend(file);
-            existingFileEntries.add(file.name);
-        } else {
-            // If exists, you may want to handle it (skip or show a message)
-            console.log(`File ${file.name} already exists. Skipping...`);
-        }
-    }
-}
-
-export function handleDragOver(event) {
-    event.preventDefault();
-}
-
-document.getElementById('drop-area').addEventListener('dragover', handleDragOver)
-document.getElementById('drop-area').addEventListener('drop', handleDrop)
 
 async function hideDropZoneAndFileDetails() {
     const dropZone = document.querySelector('.drag-zone-container');
@@ -174,9 +155,11 @@ async function hideDropZoneAndFileDetails() {
     } else {
         // If there is only one file, create a simple download button
         downloadButton.style.display = 'block';
-        placeholderIcon.classList.add('bx', 'bxs-file-archive')
-        downloadType.textContent = 'Download Decrypted ZIP';  // Reuse the existing variable
+        placeholderIcon.classList.add('bx', 'bx-file-blank')
+        downloadType.textContent = 'Download Encrypted File';  // Reuse the existing variable
 
+        shareButton.style.display = 'block';
+        shareButton.onclick = () => showModal();
         
         // Add click event listener to the download button
         downloadButton.addEventListener('click', async () => {
@@ -188,6 +171,7 @@ async function hideDropZoneAndFileDetails() {
             googlebutton.style.display = 'none';
             onedrivebutton.style.display = 'none';
             downloadButton.style.display = 'none';
+            shareButton.style.display = 'none';
             selectedFiles.files = []
             var div = document.getElementById("file-details-container");
             div.innerHTML = "";
@@ -450,10 +434,18 @@ async function uploadtoGoogle (type,name){
 
             let fileNameWithEnc = `${fileNameWithoutExtension}.${decryptedExtension}`;
             const email = await get_email_via_id()
+            const jwtToken = await get_cookie()
+            
             const backendurl = `http://localhost:5000/download_single_decrypted_file/${fileNameWithEnc}/${email}`
 
-            const blob = await fetch(backendurl).then(response => response.blob());
-        
+            const response = await fetch(`http://localhost:5000/download_single_decrypted_file/${fileNameWithEnc}/${email}`,{
+                method : 'GET',
+                headers: {
+                    'Authorization': `Bearer: ${jwtToken}`
+                },
+
+            });
+            const blob = response.blob()
             const headers = new Headers();
             headers.append('Authorization', 'Bearer ' + accesstoken);
 
@@ -574,13 +566,19 @@ async function uploadtoOneDrive (type,name){
 
             let fileNameWithEnc = `${fileNameWithoutExtension}.${decryptedExtension}`;
 
-             
+            const jwtToken = await get_cookie()
             const email = await get_email_via_id()
             const OneDriveAPI = `https://api.onedrive.com/v1.0/drive/root:/${fileNameWithEnc}:/content`;
             const backendurl = `http://localhost:5000/download_single_decrypted_file/${fileNameWithEnc}/${email}`
 
-            const blob = await fetch(backendurl).then(response => response.blob());
-        
+            const response = await fetch(`http://localhost:5000/download_single_decrypted_file/${fileNameWithEnc}/${email}`,{
+                method : 'GET',
+                headers: {
+                    'Authorization': `Bearer: ${jwtToken}`
+                },
+
+            });
+            const blobe = response.blob()
             const headers = new Headers();
             headers.append('Authorization', 'Bearer: ' + accesstoken);
 
