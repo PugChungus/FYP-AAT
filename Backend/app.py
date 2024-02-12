@@ -1782,7 +1782,7 @@ def email_verification():
         </head>
         <body>
             <h1>Verify Your Email Address</h1>
-            <p>Thank you for signing up! Click the link below to verify your email address:</p>
+            <p>Thank you for signing up! Click the link below to activate your account:</p>
             <a href="http://localhost:3000/activation?{url_parameters}">Verify Email</a>
         </body>
     </html>
@@ -1993,7 +1993,7 @@ def email_forgetPassword():
     configuration.api_key['api-key'] = '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'
 
     api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
-    subject = "Email Verification"
+    subject = "Reset Password"
     html_content = f"""
     <html>
         <head>
@@ -2212,7 +2212,7 @@ def email_disabletfa():
     configuration.api_key['api-key'] = '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'
 
     api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
-    subject = "Email Verification"
+    subject = "Disable 2 Factor Authorization"
     html_content = f"""
     <html>
         <head>
@@ -2400,7 +2400,7 @@ def email_deletea():
     configuration.api_key['api-key'] = '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'
 
     api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
-    subject = "Email Verification"
+    subject = "Account Deletion"
     html_content = f"""
     <html>
         <head>
