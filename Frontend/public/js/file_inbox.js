@@ -269,14 +269,17 @@ function creatEntry(fileName, sender , dateTime, decryptor) {
   const col1 = document.createElement('div');
   col1.className = 'col col-3';
   col1.textContent = fileName;
+  col1.title = fileName;
 
   const col2 = document.createElement('div');
   col2.className = 'col col-2';
   col2.textContent = sender;
+  col2.title = sender;
 
   const col3 = document.createElement('div');
   col3.className = 'col col-3';
   col3.textContent = dateTime;
+  col3.title = dateTime;
 
   const col4 = document.createElement('div');
   col4.className = 'col col-1 col-right';
