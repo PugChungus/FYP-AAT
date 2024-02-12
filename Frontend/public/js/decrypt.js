@@ -66,6 +66,7 @@ async function hideDropZoneAndFileDetails() {
     const dropZoneEncasement = document.querySelector('.encasement-container');
     const decryptButton = document.getElementById('decryptButton');
     const downloadContainer = document.querySelector('.download-container');
+    const decryptHeader = document.querySelector('.decryptHeader')
 
     
     dropZone.style.display = 'none';
@@ -99,6 +100,7 @@ async function hideDropZoneAndFileDetails() {
                 var div = document.getElementById("file-details-container");
                 div.innerHTML = "";
                 seen.clear();
+                decryptHeader.style.display = 'block'
             }
 
         });
@@ -132,6 +134,7 @@ async function hideDropZoneAndFileDetails() {
             var div = document.getElementById("file-details-container");
             div.innerHTML = "";
             seen.clear();
+            decryptHeader.style.display = 'block'
         });
         const individualGoogle = document.createElement('button');
         individualGoogle.textContent = 'Upload Files To Google Individually';
@@ -174,6 +177,7 @@ async function hideDropZoneAndFileDetails() {
             div.innerHTML = "";
             seen.clear();
             downloadContainer.style.display = 'none'
+            decryptHeader.style.display = 'block'
         });
         // If there is only one file, create a simple download button
         googlebutton.style.display = 'block';

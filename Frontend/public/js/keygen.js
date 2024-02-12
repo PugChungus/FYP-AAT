@@ -6,6 +6,7 @@ function openKeyCard() {
 
 export function closeKeyCard() {
     document.getElementById('keyCard').style.display = 'none';
+    document.getElementById('keyName').value = ''
 }
 
 function isValidKeyName(keyName) {
@@ -45,9 +46,9 @@ export function generateKey() {
 
                     // Create the key entry using the new function
                     createKeyEntry(keyName, getCurrentDateTime(), hexKey);
+                    alert('Key generated successfully: ', data.key);
                 }
 
-                alert('Key generated successfully: ', data.key);
             } else {
                 console.error('Key not found in the response: ', data);
             }

@@ -203,60 +203,109 @@ async function displayFiles() {
     // const rdata_unpadded = unpadString(rdata_padded);
 
     // Create a new row
-    var newRow = document.createElement('tr');
 
-    // Add cells to the row
-    var cellFileName = document.createElement('td');
-    cellFileName.textContent = file_name;
-
-    var cellSharedEmail = document.createElement('td');
-    cellSharedEmail.textContent = shared_email;
-
-    var cellDate = document.createElement('td');
-    cellDate.textContent = date;
 
     const user_email = await get_email_via_id();
 
     const checkKey = await checkKeyExistence(`${user_email}_db`, `${user_email}__Object_Store`, 'Private Key');
 
     if (checkKey == true) {
-      var cellDecryptButton = document.createElement('td');
-      var decryptButton = document.createElement('button');
-      decryptButton.textContent = 'Decrypt File';
+      var decryptIcon = document.createElement('i');
+      decryptIcon.className = 'bx bx-lock-open-alt';
+      decryptIcon.style.color = '#0a0a0a';
+      decryptIcon.style.fontSize = '25px'
+      decryptIcon.title = 'Decrypt File(s)';
+      
+      // Function to handle icon change on hover
+      function handleIconChange() {
+        decryptIcon.className = 'bx bx-lock-open-alt bx-tada';
+        decryptIcon.style.fontSize = '25px'
+        decryptIcon.title = 'Decrypt File(s)';
+      }
+      
+      // Function to handle icon revert when not hovered
+      function handleIconRevert() {
+        decryptIcon.className = 'bx bx-lock-open-alt';
+        decryptIcon.style.fontSize = '25px'
+        decryptIcon.title = 'Decrypt File(s)';
+      }
+      
+      // Event listeners for hover effects
+      decryptIcon.addEventListener('mouseenter', handleIconChange);
+      decryptIcon.addEventListener('mouseleave', handleIconRevert);
+      
 
       (function (currentFileData, currentFileName, currentUserEmail, currentSharedId) {
-        decryptButton.addEventListener('click', function () {
+        decryptIcon.addEventListener('click', function () {
           decryptFile(currentFileData, currentFileName, currentUserEmail, currentSharedId);
         });
       })(file_data, file_name, user_email, share_id);
 
-      cellDecryptButton.appendChild(decryptButton);
+      creatEntry(file_name, shared_email, date, decryptIcon)
 
       // Append cells to the row
-      newRow.appendChild(cellFileName);
-      newRow.appendChild(cellSharedEmail);
-      newRow.appendChild(cellDate);
-      newRow.appendChild(cellDecryptButton);
 
       // Append the new row to the table body
-      document.querySelector('.file-table tbody').appendChild(newRow);
     } else {
-      var cellDecryptButton = document.createElement('td');
-      var decryptButton = document.createElement('p');
-      decryptButton.textContent = 'Private key does not exist.';
-      decryptButton.style.color = 'red';
-      cellDecryptButton.appendChild(decryptButton);
-
-      // Append cells to the row
-      newRow.appendChild(cellFileName);
-      newRow.appendChild(cellSharedEmail);
-      newRow.appendChild(cellDate);
-      newRow.appendChild(cellDecryptButton);
+      
+      var decryptIcon = document.createElement('i');
+      decryptIcon.className = 'bx bxs-user-x';
+      decryptIcon.style.color = '#0a0a0a';
+      decryptIcon.style.fontSize = '25px'
+      decryptIcon.title = 'Private Key Of This User Does Not Exist';
+      creatEntry(file_name, shared_email, date, decryptIcon)
 
       // Append the new row to the table body
-      document.querySelector('.file-table tbody').appendChild(newRow);
     }
   }
+}
+
+function creatEntry(fileName, sender , dateTime, decryptor) {
+  const EntriesContainer = document.querySelector('.responsive-table');
+
+  const newEntry = document.createElement('li');
+  newEntry.className = 'table-row';
+
+  const col1 = document.createElement('div');
+  col1.className = 'col col-3';
+  col1.textContent = fileName;
+  col1.title = fileName;
+
+  const col2 = document.createElement('div');
+  col2.className = 'col col-2';
+  col2.textContent = sender;
+  col2.title = sender;
+
+  const col3 = document.createElement('div');
+  col3.className = 'col col-3';
+  col3.textContent = dateTime;
+  col3.title = dateTime;
+
+  const col4 = document.createElement('div');
+  col4.className = 'col col-1 col-right';
+  col4.append(decryptor)
+
+  // Create the download icon
+  const downloadLink = document.createElement('a');
+  downloadLink.href = '#';
+  downloadLink.addEventListener('click', function (event) {
+      event.preventDefault();
+      downloadKey(keyContent, keyName);
+  });
+
+  
+  const spacer = document.createElement('span');
+  spacer.className = 'icon-spacer';
+  col4.appendChild(spacer);
+
+  // Create the delete icon
+
+  newEntry.appendChild(col1);
+  newEntry.appendChild(col2);
+  newEntry.appendChild(col3);
+  newEntry.appendChild(col4);
+
+  EntriesContainer.appendChild(newEntry);
 }
 
 displayFiles()

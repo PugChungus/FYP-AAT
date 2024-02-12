@@ -110,7 +110,7 @@ accountRouter.post('/check_username', async (req, res) => {
       const count = result[0].count;
   
       if (count > 0) {
-        return res.status(200).json({ message: 'Username already exists', exists: true });
+        return res.status(400).json({ message: 'Username already exists', exists: true });
       } else {
         return res.status(200).json({ message: 'Username is available', exists: false });
       }

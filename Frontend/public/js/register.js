@@ -46,6 +46,9 @@ async function checkUsername() {
 
 function checkEmail() {
     var email = document.getElementById('email-field').value;
+    var emailbox = document.getElementById('email-field')
+    var check =document.getElementById('check')
+    var error = document.getElementById('error-circle')
 
     if (email.trim() !== "") {
         // Perform AJAX call only if email is not empty or whitespace
@@ -55,9 +58,22 @@ function checkEmail() {
             data: { email: email },
             success: function(response) {
                 if (response.status === "exists") {
-                    alert("OK");
+                  emailbox.style.borderWidth = '1px'; // Set the border width to 1 pixel
+                  emailbox.style.borderStyle = 'solid'; // Set the border style to solid
+                  emailbox.style.borderColor = 'green';
+                  check.style.display = 'block'
+                  check.style.color = 'green'
+                  error.style.display = 'none'
+                  console.log("Correct")
                 } else {
-                    alert("Please use an email that actually exists");
+                  emailbox.style.borderWidth = '1px'; // Set the border width to 1 pixel
+                  emailbox.style.borderStyle = 'solid'; // Set the border style to solid
+                  emailbox.style.borderColor = 'red'; 
+                  error.style.display = 'block'
+                  error.style.color = 'red'
+                  check.style.display = 'none'                
+
+                  console.log("Wrong")
                 }
             },
             error: function() {
@@ -177,3 +193,44 @@ async function register() {
       console.error('Error during fetch:', error);
     }
 }
+
+function checkPasswordStrength(password) {
+  const strengthCriteria = [
+      { label: "Minimum 8 characters", isValid: password.length >= 8 },
+      { label: "Contains at least one uppercase letter", isValid: /[A-Z]/.test(password) },
+      { label: "Contains at least one lowercase letter", isValid: /[a-z]/.test(password) },
+      { label: "Contains at least one digit", isValid: /\d/.test(password) },
+      { label: "Contains at least one special character", isValid: /[^a-zA-Z0-9]/.test(password) }
+  ];
+
+  return strengthCriteria;
+}
+
+// Function to update password strength dropdown
+function updatePasswordStrength() {
+  var password = document.getElementById("password-field").value;
+  var strengthCriteria = checkPasswordStrength(password);
+
+  var passwordStrengthDiv = document.getElementById("password-strength");
+  var passwordStrengthList = document.getElementById("password-strength-list");
+  
+  // Hide the password strength div if password field is empty
+  if (password.trim() === "") {
+      passwordStrengthDiv.style.display = "none";
+      return;
+  }
+  
+  passwordStrengthDiv.style.display = "block"; // Show the password strength div
+  
+  passwordStrengthList.innerHTML = ""; // Clear previous list items
+
+  strengthCriteria.forEach(criteria => {
+      var listItem = document.createElement("li");
+      listItem.textContent = criteria.label + ": " + (criteria.isValid ? "✓" : "✗");
+      listItem.style.color = criteria.isValid ? "green" : "red";
+      passwordStrengthList.appendChild(listItem);
+  });
+}
+
+// Listen for input events on the password field
+document.getElementById("password-field").addEventListener("input", updatePasswordStrength);

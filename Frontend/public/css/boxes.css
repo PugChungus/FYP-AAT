@@ -1,0 +1,33 @@
+.form-group {
+    position: relative;
+}
+
+.input-icon-container {
+    position: relative;
+}
+
+.input-icon-container box-icon {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 10px; /* Adjust as necessary based on the position you desire */
+}
+
+.input-icon-container .form-control {
+    padding-right: 30px; /* Adjust as necessary based on the size of your icons */
+}
+
+/* Add hover effect */
+.input-icon-container box-icon:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    white-space: nowrap;
+}

@@ -85,7 +85,7 @@ loginRouter.post('/login', async (req, res) => {
                         console.log("Activation Status: ", tables[0][0].activated)
 
                         if (tables[0][0].activated === 0) {
-                            return res.status(200).json({ message: 'Account is Not Activated', result });
+                            return res.status(400).json({ message: 'Account is Not Activated', result });
                         } else {
                             console.log();
                             if (tables[0][0].is_2fa_enabled === 1) {
@@ -108,18 +108,18 @@ loginRouter.post('/login', async (req, res) => {
                             return res.status(200).json({ message: 'Account Login Success', result });
                         }
                     } else {
-                        return res.status(200).json({ message: 'Account Login Failed', result });
+                        return res.status(400).json({ message: 'Account Login Failed', result });
                     }
                 }
             } else {
-                return res.status(200).json({ message: 'Account Login Failed' });
+                return res.status(400).json({ message: 'Account Login Failed' });
             }
         } else {
-            return res.status(401).json({ message: 'Account Login Failed' });
+            return res.status(400).json({ message: 'Account Login Failed' });
         }
     } catch (error) {
         console.error(error);
-        return res.status(401).json({ error: 'Internal Server Error' });
+        return res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 

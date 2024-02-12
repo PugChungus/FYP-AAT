@@ -304,6 +304,7 @@ async function hideDropZoneAndFileDetails() {
     const dropZoneEncasement = document.querySelector('.encasement-container');
     const encryptButton = document.getElementById('encryptButton');
     const downloadContainer = document.querySelector('.download-container');
+    const encryptHeader = document.querySelector('.encryptHeader')
 
 
     // Append the download button to the document or display it wherever needed
@@ -317,6 +318,7 @@ async function hideDropZoneAndFileDetails() {
     dropZoneEncasement.style.display = 'none';
     downloadContainer.style.display = 'block'
     downloadContainer.style.display = 'flex'
+    encryptHeader.style.display = 'none'
     const googlebutton = document.getElementById('uploadgoogleButton')
     const onedrivebutton = document.getElementById('UploadToOneDrive')
     const downloadButton = document.getElementById('downloadButton');
@@ -343,6 +345,7 @@ async function hideDropZoneAndFileDetails() {
                 div.innerHTML = "";
                 seen.clear();
                 downloadContainer.style.display = 'none'
+                encryptHeader.style.display = 'block'
             }
         })
         // Create a card div for file download options
@@ -396,6 +399,7 @@ async function hideDropZoneAndFileDetails() {
             var div = document.getElementById("file-details-container");
             div.innerHTML = "";
             seen.clear();
+            encryptHeader.style.display = 'block'
         });
         const individualGoogle = document.createElement('button');
         individualGoogle.textContent = 'Upload Files To Google Individually';
@@ -442,6 +446,7 @@ async function hideDropZoneAndFileDetails() {
             div.innerHTML = "";
             seen.clear();
             downloadContainer.style.display = 'none'
+            encryptHeader.style.display = 'block'
         });
 
         googlebutton.style.display = 'block';  // Reuse the existing variable
