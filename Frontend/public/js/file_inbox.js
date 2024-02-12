@@ -247,14 +247,15 @@ async function displayFiles() {
 
       // Append the new row to the table body
     } else {
-      var cellDecryptButton = document.createElement('td');
-      var decryptButton = document.createElement('p');
-      decryptButton.textContent = 'Private key does not exist.';
-      decryptButton.style.color = 'red';
-      creatEntry(file_name, shared_email, date, decryptButton)
+      
+      var decryptIcon = document.createElement('i');
+      decryptIcon.className = 'bx bxs-user-x';
+      decryptIcon.style.color = '#0a0a0a';
+      decryptIcon.style.fontSize = '25px'
+      decryptIcon.title = 'Private Key Of This User Does Not Exist';
+      creatEntry(file_name, shared_email, date, decryptIcon)
 
       // Append the new row to the table body
-      document.querySelector('.file-table tbody').appendChild(newRow);
     }
   }
 }
