@@ -105,9 +105,13 @@ export async function uploadFiles() {
 async function clearEncryptedFolder() {
     try {
         const email = await get_email_via_id()
-        
+        const jwtToken = await get_cookie();
         const clearResponse = await fetch(`http://localhost:5000/clear_encrypted_folder/${email}`, {
             method: 'GET',
+            headers: {
+                'Authorization': `Bearer: ${jwtToken}`
+            },
+
             
         });
         
@@ -281,7 +285,13 @@ async function downloadEncryptedFiles(type, name) {
         const filename = 'encrypted.zip';
         const outfilename = `${name}.zip`;
         const email = await get_email_via_id()
-        const response = await fetch(`http://localhost:5000/download_zip/${filename}/${email}`);
+        const jwtToken = await get_cookie()
+        const response = await fetch(`http://localhost:5000/download_zip/${filename}/${email}`,{
+            method : 'GET',
+            headers : {
+                'Authorization': `Bearer: ${jwtToken}`
+            },
+        });
         
         const blob = await response.blob();
 
@@ -533,11 +543,21 @@ async function uploadtoGoogle (type,name){
     } else {
         const filename = 'encrypted.zip'
         const email = await get_email_via_id()
-        const backendURL = `http://localhost:5000/download_zip/${filename}/${email}`;
+        
         const googleDriveAPI = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
 
         // Step 1: Download ZIP file from the backend
-        const blob = await fetch(backendURL).then(response => response.blob());
+
+        const jwtToken = await get_cookie()
+        const response = await fetch(`http://localhost:5000/download_zip/${filename}/${email}`,{
+            method : 'GET',
+            headers : {
+                'Authorization': `Bearer: ${jwtToken}`
+            },
+        });
+
+        const blob = await response.blob();
+
         // Step 2: Upload ZIP file to Google Drive
         
         const accessToken = await getGoogleToken();
@@ -671,7 +691,15 @@ async function uploadtoOneDrive (type,name){
         
         const OneDriveAPI = `https://api.onedrive.com/v1.0/drive/root:/${filenamefordrive}:/content`;
         // Step 1: Download ZIP file from the backend
-        const blobe = await fetch(backendURL).then(response => response.blob());
+        const jwtToken = await get_cookie()
+        const response = await fetch(`http://localhost:5000/download_zip/${filename}/${email}`,{
+            method : 'GET',
+            headers : {
+                'Authorization': `Bearer: ${jwtToken}`
+            },
+        });
+
+        const blobe = await response.blob();
         // Step 2: Upload ZIP file to One Drive
         const headers = new Headers();
 

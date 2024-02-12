@@ -218,8 +218,13 @@ export function isValidFileExtension(file) {
 async function clearDecryptedFolder() {
     try {
         const email =  await get_email_via_id()
+        const jwtToken = await get_cookie()
         const clearResponse = await fetch(`http://localhost:5000/clear_decrypted_folder/${email}`, {
             method: 'GET',
+            headers: {
+                'Authorization': `Bearer: ${jwtToken}`
+            },
+
         });
 
         if (clearResponse.ok) {

@@ -1308,6 +1308,20 @@ def download_single_encrypted_file(filename, email):
 
 @app.route('/download_zip/<filename>/<email>', methods=['GET'])
 def download_zip(filename,email):
+    authorization_header = request.headers.get('Authorization')
+
+    
+    isValid = check_token_validity(authorization_header)
+    if not isValid:
+        print('Invalid Token.')
+        return "Invalid Token."
+    else:
+        print('Valid Token')
+    id = getAccountIdFromCookie(authorization_header)
+    email_from_cookie = getEmailAddressById(id, authorization_header)
+
+    if email != email_from_cookie:
+        return jsonify({'error': 'Access forbidden'}), 401
 
     print(filename, file=sys.stderr)
     encrypted_zip_data = BytesIO()
@@ -1412,15 +1426,42 @@ def download_decrypted_zip(filename,email):
 
 @app.route('/clear_encrypted_folder/<email>', methods=['GET'])
 def clear_encrypted_folder(email):
-    
-    
+    authorization_header = request.headers.get('Authorization')
+    isValid = check_token_validity(authorization_header)
+    id = getAccountIdFromCookie(authorization_header)
+    email_from_cookie = getEmailAddressById(id, authorization_header)
+
+    if email != email_from_cookie:
+        return jsonify({'error': 'Access forbidden'}), 401
+
+
+    if not isValid:
+        print('Invalid Token.')
+        return "Invalid Token."
+    else:
+        print('Valid Token')
+
+
     user_dicts[email]["encrypted_data_dict"].clear()
     return 'Encrypted folder cleared', 200
 
 @app.route('/clear_decrypted_folder/<email>', methods=['GET'])
 def clear_decrypted_folder(email):
-    print("fuck object promise dawg")
-    print(email)
+    authorization_header = request.headers.get('Authorization')
+    isValid = check_token_validity(authorization_header)
+    id = getAccountIdFromCookie(authorization_header)
+    email_from_cookie = getEmailAddressById(id, authorization_header)
+
+    if email != email_from_cookie:
+        return jsonify({'error': 'Access forbidden'}), 401
+
+
+    if not isValid:
+        print('Invalid Token.')
+        return "Invalid Token."
+    else:
+        print('Valid Token')
+
     user_dicts[email]["decrypted_data_dict"].clear()
     #decrypted_data_dict.clear()
     return 'Decrypted folder cleared', 200
