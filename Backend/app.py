@@ -39,13 +39,15 @@ import logging
 from logging.handlers import RotatingFileHandler
 
 app = Flask(__name__)
-# cors_config = {
-#     "origins": ["http://localhost:3000","http://localhost:5000" ],
-#     "methods": ["GET", "POST", "PUT", "DELETE"],
-    
-# }
-#CORS(app,resources={r"*": cors_config})
-CORS(app)
+
+CORS(
+    app,
+    origins=["http://localhost:3000"],
+    methods=["GET", "POST"],
+    allow_headers=["Content-Type", "Authorization"],
+    supports_credentials=True  # Set to False
+)
+
 load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
@@ -68,6 +70,7 @@ MYSQL_PORT = int(os.getenv('MYSQL_PORT'))
 MYSQL_USER = os.getenv('MYSQL_USER')
 MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD')
 MYSQL_DATABASE = os.getenv('MYSQL_DATABASE')
+PASSWORD = os.getenv('PASSWORD')
 
 pool = PooledDB(
     creator=pymysql,  # Database library/module
@@ -123,8 +126,7 @@ def getEmailAddressById(id, authorization_header):
 def fetch_latest_keys():
     try:
         # Make a POST request with the password
-        password = '513e2bb4e26ad8a2f1bcf51bb53a0b207d5e33567bc75aeec31d209c573c47975f63b390e20eaee4b06ec7c51d1ae12c8194b623099872b225e7cbbb1f13b486c82bb6aa6e664ee6fd726b316873db8aa4f9aaa48bfea65819d81a109d511c82215269af'  # Replace with your actual password
-        response = requests.post('http://localhost:3000/keys', json={'password': password})
+        response = requests.post('http://localhost:3000/keys', json={'password': PASSWORD})
         
         # Check if the response is successful
         response.raise_for_status()
