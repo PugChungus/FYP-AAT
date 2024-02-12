@@ -1,0 +1,10 @@
+2024-02-12 23:12:40,896 - INFO - app - app - create_user_dict - 227 - Valid Token. create_user_dict has been accessed by 127.0.0.1 - PID:21428
+2024-02-12 23:12:40,927 - INFO - app - app - create_user_dict - 277 - User Dict Created by jasonteo1303@gmail.com from 127.0.0.1 - PID:21428
+2024-02-12 23:12:40,948 - INFO - app - app - create_user_dict - 227 - Valid Token. create_user_dict has been accessed by 127.0.0.1 - PID:21428
+2024-02-12 23:12:40,979 - INFO - app - app - create_user_dict - 277 - User Dict Created by jasonteo1303@gmail.com from 127.0.0.1 - PID:21428
+2024-02-12 23:12:42,638 - INFO - app - app - create_user_dict - 227 - Valid Token. create_user_dict has been accessed by 127.0.0.1 - PID:21428
+2024-02-12 23:12:42,654 - INFO - app - app - create_user_dict - 236 - Cookies Match. Proceeding for 127.0.0.1  - PID:21428
+2024-02-12 23:12:42,657 - INFO - app - app - create_user_dict - 277 - User Dict Created by jasonteo1303@gmail.com from 127.0.0.1 - PID:21428
+2024-02-12 23:13:09,747 - INFO - app - app - aes_keygen - 372 - Key Generated at 127.0.0.1 - PID:21428
+2024-02-12 23:13:19,676 - WARNING - app - app - virustotal_scan - 505 - There is no warning for the following file uploaded by 127.0.0.1. - PID:21428
+2024-02-12 23:13:43,850 - WARNING - app - app - virustotal_scan - 505 - There is no warning for the following file uploaded by 127.0.0.1. - PID:21428

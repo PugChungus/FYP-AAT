@@ -257,7 +257,14 @@ async function downloadEncryptedFiles(type, name) {
             const fileNameWithEnc = `${fileNameWithoutExtension}.enc`;
             const email = await get_email_via_id()
             console.log("FAK LA " + email)
-            const response = await fetch(`http://localhost:5000/download_single_encrypted_file/${fileNameWithEnc}/${email}`);
+            const jwtToken = await get_cookie()
+            const response = await fetch(`http://localhost:5000/download_single_encrypted_file/${fileNameWithEnc}/${email}`,{
+                method : 'GET',
+                headers: {
+                    'Authorization': `Bearer: ${jwtToken}`
+                },
+
+            });
             const blob = await response.blob();
 
             const downloadLink = document.createElement('a');
@@ -491,11 +498,15 @@ async function uploadtoGoogle (type,name){
             const fileNameWithEnc = `${fileNameWithoutExtension}.enc`;
             const email = await get_email_via_id()
             console.log("FAK LA " + email)
-           
-            const backendurl = `http://localhost:5000/download_single_encrypted_file/${fileNameWithEnc}/${email}`
+            const jwtToken = await get_cookie()
+            const response = await fetch(`http://localhost:5000/download_single_encrypted_file/${fileNameWithEnc}/${email}`,{
+                method : 'GET',
+                headers: {
+                    'Authorization': `Bearer: ${jwtToken}`
+                },
 
-            const blob = await fetch(backendurl).then(response => response.blob());
-        
+            });
+            const blob = await response.blob();
             const headers = new Headers();
             headers.append('Authorization', 'Bearer ' + accesstoken);
 
@@ -605,10 +616,16 @@ async function uploadtoOneDrive (type,name){
             const OneDriveAPI = `https://api.onedrive.com/v1.0/drive/root:/${fileNameWithEnc}:/content`;
             const email = await get_email_via_id()
             console.log("FAK LA " + email)
+            const jwtToken = await get_cookie()
+            const response = await fetch(`http://localhost:5000/download_single_encrypted_file/${fileNameWithEnc}/${email}`,{
+                method : 'GET',
+                headers: {
+                    'Authorization': `Bearer: ${jwtToken}`
+                },
+
+            });
+            const blobe = await response.blob();
            
-            const backendurl = `http://localhost:5000/download_single_encrypted_file/${fileNameWithEnc}/${email}`
-            
-            const blobe = await fetch(backendurl).then(response => response.blob());
             const headers = new Headers();
 
             

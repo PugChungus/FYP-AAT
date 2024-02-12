@@ -1233,6 +1233,12 @@ def send_zip_file_to_user(filename):
 
 @app.route('/download_single_encrypted_file/<filename>/<email>', methods=['GET'])
 def download_single_encrypted_file(filename, email):
+        
+    authorization_header = request.headers.get('Authorization')
+    id = getAccountIdFromCookie(authorization_header)
+    email_from_cookie = getEmailAddressById(id, authorization_header)
+    if email != email_from_cookie:
+        return jsonify({'error': 'Access forbidden'}), 401
     
     print(filename, file=sys.stderr)
   
