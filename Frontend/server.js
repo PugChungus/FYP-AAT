@@ -160,14 +160,19 @@ app.use(
 // };
 // app.use(cors(corsOptions));
 
-  
+const corsOptions = {
+    origin: 'http://127.0.0.1:5000', // Allow requests from this origin
+    methods: ['GET', 'POST'],      // Allow only specified HTTP methods
+    allowedHeaders: ['Content-Type'], // Allow only specified headers
+    credentials: true              // Allow sending cookies along with requests
+};  
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 // app.use(cors(corsOptions));
 app.use(upload.any());
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use('/', keyRouter);
 app.use('/', loginRouter);

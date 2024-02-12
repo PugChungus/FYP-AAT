@@ -43,6 +43,8 @@ async function rotateKeys() {
   formData.append('email', email);
   formData.append('public_key', pem_public);
 
+  const jwtToken = await get_cookie();
+
   const response = await fetch('http://localhost:3000/update_pubkey', {
     method: 'POST',
     headers: {
@@ -64,6 +66,7 @@ async function rotateKeys() {
 }
 
 export function showKeyRotationWarning() {
+  // Create a card element to display the warning message
   const cardDiv = document.createElement('div');
   cardDiv.className = 'card';
   cardDiv.innerHTML = `
@@ -77,34 +80,34 @@ export function showKeyRotationWarning() {
       </div>
 
       <button type="button" class="btn btn-danger" id="denyRotation">Deny</button>
-      <button type="button" class="btn btn-success" id="confirmRotation">Confirm</button>
+      <button type="button" class="btn btn-success" id="confirmRotation" disabled>Confirm</button>
     </div>`;
 
-  // Append cardDiv to the document
+  // Append cardDiv to the document body
   document.body.appendChild(cardDiv);
 
+  // Retrieve the elements after appending to the DOM
   const rotateConfirmationInput = document.getElementById('rotateConfirmation');
+  const denyRotationButton = document.getElementById('denyRotation');
+  const confirmRotationButton = document.getElementById('confirmRotation');
 
+  // Add event listeners
   rotateConfirmationInput.addEventListener('input', () => {
+    // Enable the "Confirm" button only when the correct phrase is entered
     const confirmationPhrase = 'rotate keys';
     const userEnteredPhrase = rotateConfirmationInput.value.trim().toLowerCase();
-  
-    // Enable the "Confirm" button only when the correct phrase is entered
     confirmRotationButton.disabled = userEnteredPhrase !== confirmationPhrase;
   });
 
-  // Retrieve the elements and add event listeners after appending to the DOM
-  const denyRotationButton = document.getElementById('denyRotation');
-  denyRotationButton.addEventListener('click', function () {
+  denyRotationButton.addEventListener('click', () => {
+    // Remove the warning card when "Deny" button is clicked
     cardDiv.remove();
   });
 
-  const confirmRotationButton = document.getElementById('confirmRotation');
-  confirmRotationButton.addEventListener('click', async function () {
-    // Call the rotateKeys function when the Confirm button is clicked
+  confirmRotationButton.addEventListener('click', async () => {
+    // Call the rotateKeys function when the "Confirm" button is clicked
     await rotateKeys();
-
-    // Hide the cardDiv after confirmation
+    // Remove the warning card after confirmation
     cardDiv.remove();
   });
 
