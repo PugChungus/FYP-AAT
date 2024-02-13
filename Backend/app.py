@@ -1485,14 +1485,11 @@ def download_decrypted_zip(filename,email):
     zip_filename = f'unencrypted.zip'
 
     decrypted_zip_data.seek(0)
-    if zip_filename in user_dicts[email].keys():
-        pass
-    else:
-        user_dicts[email]["decrypted_data_dict"][zip_filename] = decrypted_zip_data.getvalue()
+    user_dicts[email]["decrypted_data_dict"][zip_filename] = decrypted_zip_data.getvalue()
     decrypted_zip_data.seek(0)
     decrypted_zip_data.truncate(0)
 
-    decrypted_data = user_dicts[email].get(filename, None)
+    decrypted_data = user_dicts[email]["decrypted_data_dict"].get(filename, None)
 
     if decrypted_data is None:
         return 'File not found', 404
