@@ -31,6 +31,26 @@ export async function changePassword(event) {
         return;
     }
 
+    if (!/[A-Z]/.test(newPassword)) {
+        alert("Password must contain at least one Uppercase letter")
+        return;
+      }
+
+      if (!/[a-z]/.test(newPassword)) {
+        alert("Password must contain at least one Lowercase letter")
+        return;
+      }
+
+      if (!/[0-9]/.test(newPassword)) {
+        alert("Password must contain at least one digit")
+        return;
+      }
+
+    if (!/[^a-zA-Z0-9]/.test(password)) {
+        alert("Password must contain at least one special Character")
+        return;
+      }
+
     try {
         const jwtToken = await get_cookie();
         const email = await get_email_via_id();
