@@ -39,6 +39,7 @@ import logging
 import pickle
 import tempfile
 from logging.handlers import RotatingFileHandler
+import re
 
 
 app = Flask(__name__)
@@ -65,9 +66,13 @@ log_handler.setFormatter(formatter)
 
 app.logger.addHandler(log_handler)
 
+
+emailRegex = r'^[\w-]+(\.[\w-]+)*@[A-Za-z0-9]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$'
+
+
 def decrypt(environment_name):
-    infile = "C:\\Users\\Trevor Tan\\OneDrive\\Documents\\GitHub\\FYP-AAT\\Backend\\.env2"
-    keyfile = "C:\\Users\\Trevor Tan\\OneDrive\\Documents\\GitHub\\FYP-AAT\\Backend\\key.txt"
+    infile = ".env2"
+    keyfile = "key.txt"
     
     with open(keyfile, "rb") as key:
         keydata = key.read()
@@ -284,6 +289,11 @@ def create_user_dict():
 
         elif 'email' in request.form:
             email = request.form['email']
+            if re.match(emailRegex, email):
+                print("Valid Email Address")
+            else:
+                app.logger.critical(f'Invalid Email from {get_remote_addr()}')
+                return jsonify({'error': 'Access forbidden'}), 401
             id = getAccountIdFromCookie(authorization_header)
             email_from_cookie = getEmailAddressById(id, authorization_header)
 
@@ -302,11 +312,6 @@ def create_user_dict():
                 'encrypted_data_dict': {},
                 'decrypted_data_dict': {}
             }
-        print(user_dicts)
-        # encrypted_data_dict = user_dicts[email]["encrypted_data_dict"]
-        # decrypted_data_dict = user_dicts[email]["decrypted_data_dict"]
-        print('big info here')
-        print(user_dicts)
         app.logger.info(f'User Dict Created by {email} from {get_remote_addr()}')
         return jsonify("User dictionary created.")
     except Exception as e:
@@ -615,6 +620,11 @@ def encrypt_files():
         print(uploaded_files)
 
         email = request.form['email']
+        if re.match(emailRegex, email):
+            print("Valid Email")
+        else:
+            app.logger.critical(f'Invalid Email {get_remote_addr()}')
+            return jsonify({'error': 'Access forbidden'}), 401
         id = getAccountIdFromCookie(authorization_header)
         email_from_cookie = getEmailAddressById(id, authorization_header)
 
@@ -807,6 +817,11 @@ def decrypt_files2():
             app.logger.critical(f"Invalid Token. decrypt2/f was attempted to be accessed by {get_remote_addr()}")
             return "Token is Invalid"
         email = request.form['email']
+        if re.match(emailRegex, email):
+            print("Valid Token")
+        else:
+            app.logger.critical(f'Invalid Email {get_remote_addr()}')
+            return jsonify({'error': 'Access forbidden'}), 401
         isValid = check_token_validity(authorization_header)
         
         if not isValid:
@@ -1145,6 +1160,11 @@ def send_file_to_user(filename):
     key_base64 = request.form.get('key')
     shared_to_id = request.form.get('target_id')
     shared_by_email = request.form.get('email')
+    if re.match(emailRegex, shared_by_email):
+            print("Valid Token")
+    else:
+        app.logger.critical(f'Invalid Email {get_remote_addr()}')
+        return jsonify({'error': 'Access forbidden'}), 401
 
     connection = pool.connection()
     
@@ -1227,6 +1247,11 @@ def send_zip_file_to_user(filename):
 
     print(filename, 'file')
     email = request.form.get('useremail')
+    if re.match(emailRegex, email):
+            print("Valid Token")
+    else:
+        app.logger.critical(f'Invalid Email {get_remote_addr()}')
+        return jsonify({'error': 'Access forbidden'}), 401
     # Assuming encrypted_data_dict is a global dictionary
 
     # for key, value in encrypted_data_dict.items():
@@ -1237,6 +1262,11 @@ def send_zip_file_to_user(filename):
     key_base64 = request.form.get('key')
     shared_to_id = request.form.get('target_id')
     shared_by_email = request.form.get('email')
+    if re.match(emailRegex, shared_by_email):
+        print("Valid Token")
+    else:
+        app.logger.critical(f'Invalid Email {get_remote_addr()}')
+        return jsonify({'error': 'Access forbidden'}), 401
 
     connection = pool.connection()
 
@@ -1542,6 +1572,11 @@ def generate_2fa_qr_code():
             print('Valid Token')
 
         email = request.form.get('email')
+        if re.match(emailRegex, email):
+            print("Valid Token")
+        else:
+            app.logger.critical(f'Invalid Email {get_remote_addr()}')
+            return jsonify({'error': 'Access forbidden'}), 401
         id = getAccountIdFromCookie(authorization_header)
         email_from_cookie = getEmailAddressById(id, authorization_header)
 
@@ -1588,6 +1623,11 @@ def verify_otp():
             print('Valid Token')
 
         email = request.form.get('email')
+        if re.match(emailRegex, email):
+            print("Valid Token")
+        else:
+            app.logger.critical(f'Invalid Email {get_remote_addr()}')
+            return jsonify({'error': 'Access forbidden'}), 401
         id = getAccountIdFromCookie(authorization_header)
         email_from_cookie = getEmailAddressById(id, authorization_header)
 
@@ -1781,6 +1821,11 @@ def check_email_existence(api_key, email):
 def check_email_route():
     api_key = '86da3112fcda1e710eaf536b25298d036bd2424b'
     email = request.form.get('email')
+    if re.match(emailRegex, email):
+        print("Valid Token")
+    else:
+        app.logger.critical(f'Invalid Email {get_remote_addr()}')
+        return jsonify({'error': 'Access forbidden'}), 401
 
     if not api_key or not email:
         app.logger.info(f"Email field Missing at IP: {get_remote_addr()}")
