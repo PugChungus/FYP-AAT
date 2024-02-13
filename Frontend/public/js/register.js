@@ -130,6 +130,21 @@ async function register() {
       alert("Password must contain at least one Uppercase letter")
       return;
     }
+
+    if (!/[a-z]/.test(password)) {
+      alert("Password must contain at least one Lowercase letter")
+      return;
+    }
+
+    if (!/[0-9]/.test(password)) {
+      alert("Password must contain at least one Digit")
+      return;
+    }
+
+    if (!/[^a-zA-Z0-9]/.test(password)) {
+      alert("Password must contain at least one special Character")
+      return;
+    }
     
     try {
       const formData = new FormData();
