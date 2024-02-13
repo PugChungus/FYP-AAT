@@ -37,7 +37,7 @@ CREATE TABLE `history` (
   KEY `account_id_idx` (`account_id`),
   KEY `fkey_account_id` (`account_id`),
   CONSTRAINT `fkey_account_id` FOREIGN KEY (`account_id`) REFERENCES `user_account` (`account_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=127 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=302 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -46,7 +46,6 @@ CREATE TABLE `history` (
 
 LOCK TABLES `history` WRITE;
 /*!40000 ALTER TABLE `history` DISABLE KEYS */;
-INSERT INTO `history` VALUES (121,'2024-02-05 13:29:55','Lian-Sher-Li-OLEVEL-1.pdf','371.02 KB',139,'encryption','asda'),(122,'2024-02-05 14:04:08','Lian-Sher-Li-OLEVEL (1).pdf','371.02 KB',139,'encryption','asdad'),(123,'2024-02-05 14:04:08','Lian-Sher-Li-ALEVEL-1.pdf','354.39 KB',139,'encryption','asdad'),(124,'2024-02-05 14:05:31','Lian-Sher-Li-OLEVEL (1).pdf','371.02 KB',139,'encryption','asdad'),(125,'2024-02-05 14:05:31','Lian-Sher-Li-ALEVEL-1.pdf','354.39 KB',139,'encryption','asdad'),(126,'2024-02-05 14:23:49','Lian-Sher-Li-OLEVEL (1).pdf','371.02 KB',139,'Encryption','asda');
 /*!40000 ALTER TABLE `history` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -59,4 +58,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-02-06 20:07:36
+-- Dump completed on 2024-02-13 20:44:26

@@ -34,7 +34,7 @@ CREATE TABLE `user_account` (
   PRIMARY KEY (`account_id`),
   UNIQUE KEY `email_address_UNIQUE` (`email_address`),
   UNIQUE KEY `username_UNIQUE` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=140 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=143 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -43,7 +43,6 @@ CREATE TABLE `user_account` (
 
 LOCK TABLES `user_account` WRITE;
 /*!40000 ALTER TABLE `user_account` DISABLE KEYS */;
-INSERT INTO `user_account` VALUES (58,'OsakerLover','$argon2d$v=19$m=1024,t=1,p=1$ZGFiMDhlMWRhZWJkMzdkNDMzZjA3MmY4YmNkZjJlNDM$Ji74nVzqYXIeB8kqHS8DosehyzFrkNWu','ryanleezhengxian@gmail.com',NULL,1,'W2OQ3UAAPIE3MAROLMBB4IUND7I3OKDB',1),(92,'Vorzhe','$argon2d$v=19$m=1024,t=1,p=1$MjViMDYwM2NlZTJmOThkNDAxM2I4MzI4YmQ3ZjQzODA$kXblEHN3lxWzIrNQJh3JTvVPtXmlCnbC','trevortan@airesatech.com',NULL,0,NULL,1),(134,'trevortanwc04@outlook.com','$argon2d$v=19$m=1024,t=1,p=1$MDEyMTRmNTk1MjFkNTNkN2Y0Mjk3NGMwNTJjYjU0NDY$MC/FsszeqFvqD9YC5RpULSJ7WRHUbgnj','trevortanwc04@outlook.com',NULL,1,'SYYNFJQADPJJE33IDVPFXEIWUPLUEUAX',1),(139,'Osaka','$argon2d$v=19$m=1024,t=1,p=1$YTg4ZTUxOWRhNTA3ZWQ3ZTY4ZDgwMzFjNjQyMTM3NDE$WgW6rV377eVnE4zExa4HVzB/gFb61JRK','ryanleezx@gmail.com',NULL,0,NULL,1);
 /*!40000 ALTER TABLE `user_account` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -56,4 +55,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-02-06 20:07:36
+-- Dump completed on 2024-02-13 20:44:25
