@@ -477,6 +477,8 @@ async function uploadtoGoogle (type,name){
         const filenamee = name
         console.log(filenamee)
         
+        const jwtToken = await get_cookie()
+        const email = await get_email_via_id()
 
         // Step 1: Download ZIP file from the backend
         const response = await fetch(`http://localhost:5000/download_decrypted_zip/${filename}/${email}`,{
@@ -604,7 +606,7 @@ async function uploadtoOneDrive (type,name){
         const filenamefordrive = `${name}.zip`
         const filename = 'unencrypted.zip'
         const email = await get_email_via_id()
-        
+        const jwtToken = await get_cookie()
         const OneDriveAPI= `https://api.onedrive.com/v1.0/drive/root:/${filenamefordrive}:/content`;
 
         // Step 1: Download ZIP file from the backend

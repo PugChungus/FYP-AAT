@@ -9,6 +9,7 @@ document.getElementById('reg').addEventListener('click', register);
 
 const emailRegex = /^[\w-]+(\.[\w-]+)*@[A-Za-z0-9]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$/;
 const passwordRegex = /[<>&'"\$;`|]/
+const specialcharregex = /[?!@#$%&]/;
 
 async function checkUsername() {
   // Get the username from the input field
@@ -141,7 +142,7 @@ async function register() {
       return;
     }
 
-    if (!/[^a-zA-Z0-9]/.test(password)) {
+    if (specialcharregex.test(password)) {
       alert("Password must contain at least one special Character")
       return;
     }
