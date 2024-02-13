@@ -58,8 +58,19 @@ morgan.token('userInput', (req, res) => {
     return JSON.stringify(req.body); // Assuming request body is JSON
 });
 
+// Define custom token for security headers
+morgan.token('securityHeaders', (req, res) => {
+    const securityHeaders = {
+        'Content-Security-Policy': res.get('Content-Security-Policy'),
+        'X-Frame-Options': res.get('X-Frame-Options'),
+        'X-XSS-Protection': res.get('X-XSS-Protection'),
+        // Add more security headers as needed
+    };
+    return JSON.stringify(securityHeaders);
+});
+
 // Define custom format
-morgan.format('securityFormat', ':date[Asia/Singapore] | :remote-addr | :remote-user | :method | :url | :status | :res[content-length] | :response-time ms | :referrer | :user-agent | :req[header] | :res[header] | :userInput');
+morgan.format('securityFormat', ':date[Asia/Singapore] | :remote-addr | :remote-user | :method | :url | :status | :res[content-length] | :response-time ms | :referrer | :user-agent | :req[header] | :res[header] | :userInput | :securityHeaders');
 
 // Log HTTP requests using Morgan with the rotating file stream and custom format
 app.use(morgan('securityFormat', { stream: createAccessLogStream() }));

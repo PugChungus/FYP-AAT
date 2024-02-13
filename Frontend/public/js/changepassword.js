@@ -46,7 +46,7 @@ export async function changePassword(event) {
         return;
       }
 
-    if (!/[^a-zA-Z0-9]/.test(password)) {
+    if (!/[^a-zA-Z0-9]/.test(newPassword)) {
         alert("Password must contain at least one special Character")
         return;
       }

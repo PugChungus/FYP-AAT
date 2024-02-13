@@ -349,20 +349,30 @@ async function hideDropZoneAndFileDetails() {
         downloadButton.addEventListener('click', async() => {
             const zipFolderName = window.prompt('Enter the name for the zip folder (without extension)');
             if (zipFolderName) {
-                downloadEncryptedFiles('zip', zipFolderName);
-                dropZone.style.display = 'block';
-                fileDetails.style.display = 'block';
-                encryptButton.style.display = 'block';
-                dropZoneEncasement.style.display = 'block';
-                googlebutton.style.display = 'none';
-                onedrivebutton.style.display = 'none';
-                downloadButton.style.display = 'none';
-                selectedFiles.files = []
-                var div = document.getElementById("file-details-container");
-                div.innerHTML = "";
-                seen.clear();
-                downloadContainer.style.display = 'none'
-                encryptHeader.style.display = 'block'
+                // Define your regex pattern for validation
+                const regex = /^[a-zA-Z0-9_-]+$/; // Example: Only allows letters, numbers, underscores, and hyphens
+
+                // Check if the input matches the regex pattern
+                if (regex.test(zipFolderName)) {
+                    // If the input is valid, proceed with the actions
+                    downloadEncryptedFiles('zip', zipFolderName);
+                    dropZone.style.display = 'block';
+                    fileDetails.style.display = 'block';
+                    encryptButton.style.display = 'block';
+                    dropZoneEncasement.style.display = 'block';
+                    googlebutton.style.display = 'none';
+                    onedrivebutton.style.display = 'none';
+                    downloadButton.style.display = 'none';
+                    selectedFiles.files = [];
+                    var div = document.getElementById("file-details-container");
+                    div.innerHTML = "";
+                    seen.clear();
+                    downloadContainer.style.display = 'none';
+                    encryptHeader.style.display = 'block';
+                } else {
+                    // If the input is not valid, display an error message
+                    alert('Please enter a valid folder name (only letters, numbers, underscores, and hyphens are allowed).');
+                }
             }
         })
         // Create a card div for file download options
