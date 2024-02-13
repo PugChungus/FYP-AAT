@@ -1,7 +1,6 @@
 from __future__ import print_function
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, jsonify, Response, abort
-from werkzeug.utils import secure_filename
+from flask import Flask , request, jsonify, Response, abort
 from flask_cors import cross_origin
 from Crypto.Cipher import AES
 from datetime import datetime, timedelta
