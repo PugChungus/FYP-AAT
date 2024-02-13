@@ -39,3 +39,10 @@
 2024-02-12 18:26:32,038 - WARNING - app - This is a warning message from 127.0.0.1 - Thread-2 (process_request_thread)
 2024-02-12 18:27:14,161 - WARNING - app - This is a warning message from 127.0.0.1 - Thread-2 (process_request_thread)
 2024-02-12 18:45:26,811 - WARNING - app - This is a warning message from 127.0.0.1 - Thread-2 (process_request_thread)
+2024-02-13 22:47:03,484 - WARNING - app - app - create_user_dict - 314 - Server error for 127.0.0.1 - PID:37896
+2024-02-13 22:47:03,980 - CRITICAL - app - app - display_history - 986 - Invalid Token. display_history/f was attempted to be accessed by 127.0.0.1 - PID:37896
+2024-02-13 22:47:09,435 - WARNING - app - app - create_user_dict - 314 - Server error for 127.0.0.1 - PID:37896
+2024-02-13 23:10:08,756 - INFO - app - app - create_user_dict - 260 - Valid Token. create_user_dict has been accessed by 127.0.0.1 - PID:25408
+2024-02-13 23:10:08,770 - INFO - app - app - create_user_dict - 310 - User Dict Created by trevortanwc04@outlook.com from 127.0.0.1 - PID:25408
+2024-02-13 23:10:09,294 - INFO - app - app - display_history - 995 - Id Matches Id from cookie for 127.0.0.1 - PID:25408
+2024-02-13 23:10:15,119 - INFO - app - app - aes_keygen - 405 - Key Generated at 127.0.0.1 - PID:25408

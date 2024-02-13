@@ -1,14 +1,20 @@
 import cron from 'node-cron';
 import crypto from 'crypto';
+import CryptoJS from "crypto-js"
 import express from 'express';
 import dotenv from 'dotenv';
 
 dotenv.config()
 
+function decrypt(data) {
+    var decrypted = CryptoJS.AES.decrypt(data, encryption_key);
+    var object = decrypted.toString(CryptoJS.enc.Utf8);
+    return object
+}
+
 const keyRouter = express.Router();
 const encryption_key = "846cfa5d2e8dd94532d81a21eacc99d7f7a9bf5317fe2f7a52f3a646ac85a97d"
-const adminPassword = process.env.ADMIN_PASSWORD ? Buffer.from(process.env.ADMIN_PASSWORD, 'base64').toString('utf-8') : undefined;
-
+const adminPassword = decrypt(process.env.ADMIN_PASSWORD)
 
 export let keys = {
     secretJwtKey: crypto.randomBytes(32).toString('hex'),

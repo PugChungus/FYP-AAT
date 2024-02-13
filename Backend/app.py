@@ -14,6 +14,7 @@ from datetime import datetime, timezone
 from PIL import Image, ImageDraw
 from io import BytesIO
 from flask_cors import CORS
+from io import StringIO
 import pymysql
 import io
 import base64
@@ -35,6 +36,8 @@ import requests
 import numpy as np 
 from io import BytesIO
 import logging
+import pickle
+import tempfile
 from logging.handlers import RotatingFileHandler
 
 
@@ -48,8 +51,6 @@ CORS(
     supports_credentials=True  # Set to False
 )
 
-load_dotenv()
-
 logging.basicConfig(level=logging.INFO)
 
 log_handler = RotatingFileHandler('app.log', maxBytes=1024*1024, backupCount=10)
@@ -60,32 +61,48 @@ formatter = logging.Formatter(
     '%(asctime)s - %(levelname)s - %(name)s - %(module)s - %(funcName)s - %(lineno)d - %(message)s - PID:%(process)d'
 )
 
-
 log_handler.setFormatter(formatter)
 
 app.logger.addHandler(log_handler)
 
-MYSQL_HOST = os.getenv('MYSQL_HOST')
-MYSQL_PORT = os.getenv('MYSQL_PORT')
-MYSQL_USER = os.getenv('MYSQL_USER')
-MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD')
-MYSQL_DATABASE = os.getenv('MYSQL_DATABASE')
-PASSWORD = os.getenv('PASSWORD')
+def decrypt(environment_name):
+    infile = "C:\\Users\\Trevor Tan\\OneDrive\\Documents\\GitHub\\FYP-AAT\\Backend\\.env2"
+    keyfile = "C:\\Users\\Trevor Tan\\OneDrive\\Documents\\GitHub\\FYP-AAT\\Backend\\key.txt"
+    
+    with open(keyfile, "rb") as key:
+        keydata = key.read()
+        iv = keydata[:16]        #first 16 bytes
+        key = keydata[16:]       #start from the 16 byte all the way to the end of the file
+    
+    with open(infile, "rb") as fin:
+        fin.read(16)                 #read the first 16 bytes from the file so that pickle 
+        
+        ciphertext = pickle.load(fin)
+        
+        aes = AES.new(key, AES.MODE_CBC, iv=iv)
+        
+        plaintext = aes.decrypt(ciphertext)
+        
+        unpadded = unpad(plaintext, AES.block_size)
 
-if MYSQL_HOST:
-    MYSQL_HOST = base64.b64decode(MYSQL_HOST).decode('utf-8')
-if MYSQL_USER:
-    MYSQL_USER = base64.b64decode(MYSQL_USER).decode('utf-8')
-if MYSQL_PASSWORD:
-    MYSQL_PASSWORD = base64.b64decode(MYSQL_PASSWORD).decode('utf-8')
-if MYSQL_DATABASE:
-    MYSQL_DATABASE = base64.b64decode(MYSQL_DATABASE).decode('utf-8')
-if PASSWORD:
-    PASSWORD = base64.b64decode(PASSWORD).decode('utf-8')
+        string = unpadded.decode('utf-8')
 
-# Convert MYSQL_PORT to integer
-if MYSQL_PORT:
-    MYSQL_PORT = int(base64.b64decode(MYSQL_PORT).decode('utf-8'))
+        with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
+            temp_file.write(string)
+            temp_file_path = temp_file.name
+
+        load_dotenv(temp_file_path)
+        os.unlink(temp_file_path)
+        
+        return os.getenv(environment_name)
+
+MYSQL_HOST = decrypt('MYSQL_HOST')
+MYSQL_PORT = int(decrypt('MYSQL_PORT'))
+MYSQL_USER = decrypt('MYSQL_USER')
+MYSQL_PASSWORD = decrypt('MYSQL_PASSWORD')
+MYSQL_DATABASE = decrypt('MYSQL_DATABASE')
+PASSWORD = decrypt('ADMIN_PASSWORD')
+
 pool = PooledDB(
     creator=pymysql,  # Database library/module
     maxconnections=None,  # Maximum number of connections in the pool
