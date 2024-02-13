@@ -545,6 +545,7 @@ async function uploadtoGoogle (type,name){
             .then(response => response.json())
             .then(data => {
                 console.log('Files uploaded successfully:', data);
+                alert('File uploaded !')
             })
             .catch(error => {
                 console.error('Error uploading file:', error);
@@ -608,6 +609,7 @@ async function uploadtoGoogle (type,name){
         if (updateResponse.ok) {
             const updateData = await updateResponse.json();
             console.log('Filename updated successfully:', updateData);
+            alert('File uploaded !')
         } else {
             console.error('Error updating filename:', updateResponse.statusText);
         }
@@ -666,7 +668,7 @@ async function uploadtoOneDrive (type,name){
             console.log(uploadUrl)
             // Step 2: Upload File to Session
             const uploadResult = await uploadFileInChunks(uploadUrl, blobe);
-
+            alert('File uploaded !')
             console.log('Upload result:', uploadResult);
 
         }
@@ -722,7 +724,7 @@ async function uploadtoOneDrive (type,name){
             console.log(uploadUrl)
             // Step 2: Upload File to Session
             const uploadResult = await uploadFileInChunks(uploadUrl, blobe);
-
+            alert('File uploaded !')
             console.log('Upload result:', uploadResult);
 
         
