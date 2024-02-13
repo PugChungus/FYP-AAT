@@ -142,7 +142,7 @@ async function register() {
       return;
     }
 
-    if (specialcharregex.test(password)) {
+    if (!specialcharregex.test(password)) {
       alert("Password must contain at least one special Character")
       return;
     }
