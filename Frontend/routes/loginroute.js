@@ -29,9 +29,13 @@ loginRouter.post('/login', async (req, res) => {
     const email = req.body.email;
     const password = req.body.password;
     const emailRegex = /^[\w-]+(\.[\w-]+)*@[A-Za-z0-9]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$/;
-
+    const forbiddenPattern = /[<>&'"\;`|]/
+    const specialcharregex = /[?!@#$%&]/
     if (!emailRegex.test(email)) {
         return res.status(400).json({ error: 'Invalid email format' });
+    }
+    if (!forbiddenPattern.test(password)){
+        return res.status(400).json ({error: 'Forbidden Characters detected'})
     }
 
     try {
