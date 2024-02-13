@@ -1,7 +1,6 @@
 import { get_cookie } from "./cookie.js";
 import { get_email_via_id } from "./profile.js"; 
 
-const passwordRegex = /[<>&'"\$;`|]/;
 
 export async function changePassword(event) {
     event.preventDefault();
@@ -9,7 +8,7 @@ export async function changePassword(event) {
     const newPassword = document.getElementById('new-password').value;
     const confirmPassword = document.getElementById('confirm-password').value;
     const minLength = 8; 
-    const passwordRegex = /[<>&'"\$;`|]/
+    const passwordRegex = /[<>&'"\;`|]/
     const specialcharregex = /[?!@#$%&]/
     if (!currentPassword || !newPassword || !confirmPassword) {
         alert("All fields must be filled");

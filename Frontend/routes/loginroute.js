@@ -34,7 +34,7 @@ loginRouter.post('/login', async (req, res) => {
     if (!emailRegex.test(email)) {
         return res.status(400).json({ error: 'Invalid email format' });
     }
-    if (!forbiddenPattern.test(password)){
+    if (forbiddenPattern.test(password)){
         return res.status(400).json ({error: 'Forbidden Characters detected'})
     }
 

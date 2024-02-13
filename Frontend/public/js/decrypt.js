@@ -84,7 +84,7 @@ async function hideDropZoneAndFileDetails() {
     if (selectedFiles.files.length >= 2) {
         placeholderIcon.classList.add('bx', 'bxs-file-archive')
         downloadType.textContent = "Download Zip"
-        zipButton.addEventListener('click', async () => {
+        downloadButton.addEventListener('click', async () => {
             const zipFolderName = window.prompt('Enter the name for the zip folder (without extension)');
             if (zipFolderName) {
                 downloadDecryptedFiles('zip', zipFolderName);
@@ -100,6 +100,7 @@ async function hideDropZoneAndFileDetails() {
                 div.innerHTML = "";
                 seen.clear();
                 decryptHeader.style.display = 'block'
+                downloadContainer.style.display = 'none';
             }
 
         });
@@ -108,6 +109,19 @@ async function hideDropZoneAndFileDetails() {
              const googleFolderName = window.prompt('Enter the name for the zip folder (without extension)');
              if (googleFolderName) {
                  uploadtoGoogle('zip', googleFolderName);
+                 dropZone.style.display = 'block';
+                fileDetails.style.display = 'block';
+                decryptButton.style.display = 'block';
+                dropZoneEncasement.style.display = 'block';
+                googlebutton.style.display = 'none';
+                onedrivebutton.style.display = 'none';
+                downloadButton.style.display = 'none';
+                selectedFiles.files = []
+                var div = document.getElementById("file-details-container");
+                div.innerHTML = "";
+                seen.clear();
+                decryptHeader.style.display = 'block'
+                downloadContainer.style.display = 'none';
              }
          })
          //Create One Drive
@@ -115,6 +129,19 @@ async function hideDropZoneAndFileDetails() {
              const onedriveFolderName = window.prompt('Enter the name for the zip folder (without extension)');
              if (onedriveFolderName) {
                  uploadtoOneDrive('zip', onedriveFolderName);
+                 dropZone.style.display = 'block';
+                fileDetails.style.display = 'block';
+                decryptButton.style.display = 'block';
+                dropZoneEncasement.style.display = 'block';
+                googlebutton.style.display = 'none';
+                onedrivebutton.style.display = 'none';
+                downloadButton.style.display = 'none';
+                selectedFiles.files = []
+                var div = document.getElementById("file-details-container");
+                div.innerHTML = "";
+                seen.clear();
+                decryptHeader.style.display = 'block'
+                downloadContainer.style.display = 'none';
              }
          })
         
@@ -134,17 +161,45 @@ async function hideDropZoneAndFileDetails() {
             div.innerHTML = "";
             seen.clear();
             decryptHeader.style.display = 'block'
+            downloadContainer.style.display = 'none';
         });
         const individualGoogle = document.createElement('button');
         individualGoogle.textContent = 'Upload Files To Google Individually';
         individualGoogle.addEventListener('click', async () => {
             uploadtoGoogle('individual');
+            dropZone.style.display = 'block';
+            fileDetails.style.display = 'block';
+            decryptButton.style.display = 'block';
+            dropZoneEncasement.style.display = 'block';
+            googlebutton.style.display = 'none';
+            onedrivebutton.style.display = 'none';
+            downloadButton.style.display = 'none';
+            selectedFiles.files = []
+            var div = document.getElementById("file-details-container");
+            div.innerHTML = "";
+            seen.clear();
+            downloadContainer.style.display = 'none'
+            decryptHeader.style.display = 'block'
+            downloadContainer.style.display = 'none';
         });
 
         const individualOnedrive = document.createElement('button');
         individualOnedrive.textContent = 'Upload Files To OneDrive Individually';
         individualOnedrive.addEventListener('click', async () => {
             uploadtoOneDrive('individual');
+            dropZone.style.display = 'block';
+            fileDetails.style.display = 'block';
+            decryptButton.style.display = 'block';
+            dropZoneEncasement.style.display = 'block';
+            googlebutton.style.display = 'none';
+            onedrivebutton.style.display = 'none';
+            downloadButton.style.display = 'none';
+            selectedFiles.files = []
+            var div = document.getElementById("file-details-container");
+            div.innerHTML = "";
+            seen.clear();
+            downloadContainer.style.display = 'none'
+            decryptHeader.style.display = 'block'
         });
 
 
@@ -170,6 +225,7 @@ async function hideDropZoneAndFileDetails() {
             seen.clear();
             downloadContainer.style.display = 'none'
             decryptHeader.style.display = 'block'
+            downloadContainer.style.display = 'none';
         });
         // If there is only one file, create a simple download button
         googlebutton.style.display = 'block';
@@ -177,6 +233,20 @@ async function hideDropZoneAndFileDetails() {
         // Add click event listener to the download button
         googlebutton.addEventListener('click', async () => {
             uploadtoGoogle('individual', decryptedExtension);
+            dropZone.style.display = 'block';
+            fileDetails.style.display = 'block';
+            decryptButton.style.display = 'block';
+            dropZoneEncasement.style.display = 'block';
+            googlebutton.style.display = 'none';
+            onedrivebutton.style.display = 'none';
+            downloadButton.style.display = 'none';
+            selectedFiles.files = []
+            var div = document.getElementById("file-details-container");
+            div.innerHTML = "";
+            seen.clear();
+            downloadContainer.style.display = 'none'
+            decryptHeader.style.display = 'block'
+            downloadContainer.style.display = 'none';
         });
 
         // If there is only one file, create a simple download button
@@ -185,6 +255,20 @@ async function hideDropZoneAndFileDetails() {
         // Add click event listener to the download button
         onedrivebutton.addEventListener('click', async () => {
             uploadtoOneDrive('individual', decryptedExtension);
+            dropZone.style.display = 'block';
+            fileDetails.style.display = 'block';
+            decryptButton.style.display = 'block';
+            dropZoneEncasement.style.display = 'block';
+            googlebutton.style.display = 'none';
+            onedrivebutton.style.display = 'none';
+            downloadButton.style.display = 'none';
+            selectedFiles.files = []
+            var div = document.getElementById("file-details-container");
+            div.innerHTML = "";
+            seen.clear();
+            downloadContainer.style.display = 'none'
+            decryptHeader.style.display = 'block'
+            downloadContainer.style.display = 'none';
         });
         
         // Append the download button to the document or display it wherever needed
