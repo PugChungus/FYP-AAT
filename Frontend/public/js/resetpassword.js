@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-const passwordRegex = /[<>&'"\$;`|]/
+const passwordRegex = /[<>&'"\;`|]/
 
 export async function resetPassword() {
     try {
