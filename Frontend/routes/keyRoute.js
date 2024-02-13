@@ -7,7 +7,8 @@ dotenv.config()
 
 const keyRouter = express.Router();
 const encryption_key = "846cfa5d2e8dd94532d81a21eacc99d7f7a9bf5317fe2f7a52f3a646ac85a97d"
-const adminPassword = process.env.ADMIN_PASSWORD;
+const adminPassword = process.env.ADMIN_PASSWORD ? Buffer.from(process.env.ADMIN_PASSWORD, 'base64').toString('utf-8') : undefined;
+
 
 export let keys = {
     secretJwtKey: crypto.randomBytes(32).toString('hex'),

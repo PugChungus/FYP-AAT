@@ -37,6 +37,7 @@ from io import BytesIO
 import logging
 from logging.handlers import RotatingFileHandler
 
+
 app = Flask(__name__)
 
 CORS(
@@ -65,12 +66,26 @@ log_handler.setFormatter(formatter)
 app.logger.addHandler(log_handler)
 
 MYSQL_HOST = os.getenv('MYSQL_HOST')
-MYSQL_PORT = int(os.getenv('MYSQL_PORT'))
+MYSQL_PORT = os.getenv('MYSQL_PORT')
 MYSQL_USER = os.getenv('MYSQL_USER')
 MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD')
 MYSQL_DATABASE = os.getenv('MYSQL_DATABASE')
 PASSWORD = os.getenv('PASSWORD')
 
+if MYSQL_HOST:
+    MYSQL_HOST = base64.b64decode(MYSQL_HOST).decode('utf-8')
+if MYSQL_USER:
+    MYSQL_USER = base64.b64decode(MYSQL_USER).decode('utf-8')
+if MYSQL_PASSWORD:
+    MYSQL_PASSWORD = base64.b64decode(MYSQL_PASSWORD).decode('utf-8')
+if MYSQL_DATABASE:
+    MYSQL_DATABASE = base64.b64decode(MYSQL_DATABASE).decode('utf-8')
+if PASSWORD:
+    PASSWORD = base64.b64decode(PASSWORD).decode('utf-8')
+
+# Convert MYSQL_PORT to integer
+if MYSQL_PORT:
+    MYSQL_PORT = int(base64.b64decode(MYSQL_PORT).decode('utf-8'))
 pool = PooledDB(
     creator=pymysql,  # Database library/module
     maxconnections=None,  # Maximum number of connections in the pool
