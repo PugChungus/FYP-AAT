@@ -9,7 +9,8 @@ export async function changePassword(event) {
     const newPassword = document.getElementById('new-password').value;
     const confirmPassword = document.getElementById('confirm-password').value;
     const minLength = 8; 
-
+    const passwordRegex = /[<>&'"\$;`|]/
+    const specialcharregex = /[?!@#$%&]/
     if (!currentPassword || !newPassword || !confirmPassword) {
         alert("All fields must be filled");
         return;
@@ -46,10 +47,11 @@ export async function changePassword(event) {
         return;
       }
 
-    if (!/[^a-zA-Z0-9]/.test(newPassword)) {
-        alert("Password must contain at least one special Character")
-        return;
-      }
+
+    if (!specialcharregex.test(newPassword))
+    {
+        alert ("Password must contain atleast one special character")
+    }
 
     try {
         const jwtToken = await get_cookie();
