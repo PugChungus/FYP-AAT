@@ -37,7 +37,8 @@ accountRouter.post('/create_account', async (req, res) => {
         const lowercasedpassword = password.toLowerCase()
 
         const emailRegex = /^[\w-]+(\.[\w-]+)*@[A-Za-z0-9]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$/;
-        const forbiddenPattern = /[<>&'"\$;`|]/
+        const forbiddenPattern = /[<>&'"\;`|]/
+        const specialcharregex = /[?!@#$%&]/
         // Check if all fields are filled
         if (!username || !email || !password || !confirmPassword) {
             return res.status(400).json({ error: 'All fields must be filled' });
@@ -61,6 +62,9 @@ accountRouter.post('/create_account', async (req, res) => {
             return res.status(400).json({ error: 'Your password is execptionally weak, please choose a new one' });
         } else {
             console.log("Provided password is not in the list of insecure passwords.");
+        }
+        if (!specialcharregex.test(password)){
+            return res.status(400).json({error:'No special character detected'})
         }
 
         const minLength = 8; // You can adjust this value based on your requirements
