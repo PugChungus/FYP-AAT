@@ -109,6 +109,8 @@ export function showKeyRotationWarning() {
     await rotateKeys();
     // Remove the warning card after confirmation
     cardDiv.remove();
+
+    alert("Keys rotated")
   });
 
   // Style cardDiv
