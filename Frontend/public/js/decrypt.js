@@ -78,7 +78,6 @@ async function hideDropZoneAndFileDetails() {
     const googlebutton = document.getElementById('uploadgoogleButton')
     const onedrivebutton = document.getElementById('UploadToOneDrive')
     const downloadButton = document.getElementById('downloadButton');
-    const shareButton = document.getElementById('shareButton');
     const downloadType = document.querySelector('.downloadType')
     const placeholderIcon = document.getElementById('placeholderIcon')
 
@@ -147,10 +146,7 @@ async function hideDropZoneAndFileDetails() {
         individualOnedrive.addEventListener('click', async () => {
             uploadtoOneDrive('individual');
         });
-        // Append buttons to the card div
-        shareButton.addEventListener('click', async() => {
-            showModalMul();
-        })
+
 
     } else {
         // If there is only one file, create a simple download button
@@ -158,9 +154,6 @@ async function hideDropZoneAndFileDetails() {
         placeholderIcon.classList.add('bx', 'bx-file-blank')
         downloadType.textContent = 'Download Encrypted File';  // Reuse the existing variable
 
-        shareButton.style.display = 'block';
-        shareButton.onclick = () => showModal();
-        
         // Add click event listener to the download button
         downloadButton.addEventListener('click', async () => {
             downloadDecryptedFiles('individual', decryptedExtension);
@@ -171,7 +164,6 @@ async function hideDropZoneAndFileDetails() {
             googlebutton.style.display = 'none';
             onedrivebutton.style.display = 'none';
             downloadButton.style.display = 'none';
-            shareButton.style.display = 'none';
             selectedFiles.files = []
             var div = document.getElementById("file-details-container");
             div.innerHTML = "";

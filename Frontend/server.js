@@ -53,24 +53,25 @@ morgan.token('date', (req, res, tz) => {
     return moment().tz(tz).format('YYYY-MM-DD HH:mm:ss');
 });
 
-// Define custom token to log user input
-morgan.token('userInput', (req, res) => {
-    return JSON.stringify(req.body); // Assuming request body is JSON
+morgan.token('response-time', function (req, res) {
+    const diff = process.hrtime(req._startAt);
+    const responseTime = diff[0] * 1e3 + diff[1] * 1e-6;
+    return responseTime.toFixed(3);
+  
+  });
+
+morgan.token('user-agent', function (req) {
+  return req.headers['user-agent'];
+
 });
 
-// Define custom token for security headers
-morgan.token('securityHeaders', (req, res) => {
-    const securityHeaders = {
-        'Content-Security-Policy': res.get('Content-Security-Policy'),
-        'X-Frame-Options': res.get('X-Frame-Options'),
-        'X-XSS-Protection': res.get('X-XSS-Protection'),
-        // Add more security headers as needed
-    };
-    return JSON.stringify(securityHeaders);
+// Define custom token for request ID
+morgan.token('requestId', (req, res) => {
+    return req.headers['x-request-id'] || '-';
 });
 
 // Define custom format
-morgan.format('securityFormat', ':date[Asia/Singapore] | :remote-addr | :remote-user | :method | :url | :status | :res[content-length] | :response-time ms | :referrer | :user-agent | :req[header] | :res[header] | :userInput | :securityHeaders');
+morgan.format('securityFormat', ':date[Asia/Singapore] | :requestId | :remote-addr | :user-agent | :remote-user | :method | :url | :status | :res[content-length] | :response-time ms | :referrer | :user-agent | :req[header] | :res[header] | :response-time');
 
 // Log HTTP requests using Morgan with the rotating file stream and custom format
 app.use(morgan('securityFormat', { stream: createAccessLogStream() }));

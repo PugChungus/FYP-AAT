@@ -79,7 +79,6 @@ async function renderHistory() {
        
         for (let i = 0; i < historyData.length; i++) {
           const row = historyData[i];
-          console.log(`Row ${i + 1}:`, row);
           
           // Access individual values in the row
           const time = row.time;
