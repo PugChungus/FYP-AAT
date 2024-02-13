@@ -1286,6 +1286,7 @@ def download_single_encrypted_file(filename, email):
     id = getAccountIdFromCookie(authorization_header)
     email_from_cookie = getEmailAddressById(id, authorization_header)
     if email != email_from_cookie:
+        app.logger.critical(f"Unauthorized Access attempted by IP: {get_remote_addr()}")
         return jsonify({'error': 'Access forbidden'}), 401
     
     print(filename, file=sys.stderr)
@@ -1314,6 +1315,7 @@ def download_zip(filename,email):
     isValid = check_token_validity(authorization_header)
     if not isValid:
         print('Invalid Token.')
+        app.logger.critical(f"Invalid Token. download_zip/<filename>/<email>/f was attempted to be accessed by {get_remote_addr()}")
         return "Invalid Token."
     else:
         print('Valid Token')
@@ -1321,6 +1323,7 @@ def download_zip(filename,email):
     email_from_cookie = getEmailAddressById(id, authorization_header)
 
     if email != email_from_cookie:
+        app.logger.critical(f"Unauthorized Access attempted by IP: {get_remote_addr()}")
         return jsonify({'error': 'Access forbidden'}), 401
 
     print(filename, file=sys.stderr)
@@ -1432,11 +1435,13 @@ def clear_encrypted_folder(email):
     email_from_cookie = getEmailAddressById(id, authorization_header)
 
     if email != email_from_cookie:
+        app.logger.critical(f"Unauthorized Access attempted by IP: {get_remote_addr()}")
         return jsonify({'error': 'Access forbidden'}), 401
 
 
     if not isValid:
         print('Invalid Token.')
+        app.logger.critical(f"Invalid Token. clear_encrypted_folder/<email>/f was attempted to be accessed by {get_remote_addr()}")
         return "Invalid Token."
     else:
         print('Valid Token')
@@ -1453,11 +1458,13 @@ def clear_decrypted_folder(email):
     email_from_cookie = getEmailAddressById(id, authorization_header)
 
     if email != email_from_cookie:
+        app.logger.critical(f"Unauthorized Access attempted by IP: {get_remote_addr()}")
         return jsonify({'error': 'Access forbidden'}), 401
 
 
     if not isValid:
         print('Invalid Token.')
+        app.logger.critical(f"Invalid Token. clear_decrypted_folder/<email>/f was attempted to be accessed by {get_remote_addr()}")
         return "Invalid Token."
     else:
         print('Valid Token')
