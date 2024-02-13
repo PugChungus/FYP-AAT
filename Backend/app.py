@@ -1407,6 +1407,23 @@ def download_single_decrypted_file(filename,email):
 
 @app.route('/download_decrypted_zip/<filename>/<email>', methods=['GET'])
 def download_decrypted_zip(filename,email):
+    authorization_header = request.headers.get('Authorization')
+    isValid = check_token_validity(authorization_header)
+
+
+    if not isValid:
+        print('Invalid Token.')
+        app.logger.critical(f"Invalid Token. download_decrypted_zip/<filename>/<email>/f was attempted to be accessed by {get_remote_addr()}")
+        return "Invalid Token."
+    else:
+        print('Valid Token')
+        
+    id = getAccountIdFromCookie(authorization_header)
+    email_from_cookie = getEmailAddressById(id, authorization_header)
+    if email != email_from_cookie:
+        app.logger.critical(f"Unauthorized Access attempted by IP: {get_remote_addr()}")
+        return jsonify({'error': 'Access forbidden'}), 401
+
     print(filename, file=sys.stderr)
     for keys, value in user_dicts[email].items():
         print(keys, file=sys.stderr)
